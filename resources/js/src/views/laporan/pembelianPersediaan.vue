@@ -47,7 +47,7 @@
                             </div>
                         </div>
 
-                        <v-client-table :data="items" :columns="columns" :options="table_option">
+                        <v-client-table :data="items" :columns="columns" :options="table_pembelian">
                             <template #tglPembelian="props"> {{ moment(props.row.tglPembelian).format("D-M-YYYY") }} </template>
                             <template #subTotal="props"> {{ Number(props.row.subTotal).toLocaleString() }} </template>
                             <template #total="props"> {{ Number(props.row.total).toLocaleString() }} </template>
@@ -123,6 +123,7 @@
     import moment from "moment";
 
     import { useMeta } from '@/composables/use-meta';
+import { f } from 'feather-icons';
     useMeta({ title: 'Data Laporan Pembelian BBM' });
 
     const store = useStore();
@@ -130,9 +131,15 @@
 
     const columns = ref(['noNota', 'tglPembelian', 'nmSupplier', 'subTotal', 'disc', 'total', 'action']);
     const items = ref([]);
-    const table_option = ref({
+    const table_pembelian = ref({
         perPage: 10,
-        perPageValues: [5, 10, 20, 50],
+        perPageValues: [5, 10, 20, 50, 100],
+        perPageSelect: true,
+        
+
+        footerHeadings: true,
+        filterable: true,
+        filterable: ['noNota', 'tglPembelian', 'nmSupplier', 'subTotal', 'disc', 'total'],
         skin: 'table table-hover',
         columnsClasses: { action: 'actions text-center' },
         pagination: { nav: 'scroll', chunk: 5 },

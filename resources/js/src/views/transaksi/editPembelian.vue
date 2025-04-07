@@ -462,8 +462,15 @@
             const headerfull = Object.assign(header, headers)
             const detail =cartItems.value
             store.dispatch('CreatePembelian', [headerfull,detail] )
-            setTimeout(function() { getCart(); }, 5000);
-            getNoPembelian();
+            .then(response => {
+                // console.log('result: ', response)
+                getCart()
+                getNoPembelian();
+            })
+            .catch(error => {
+                // console.log('error: ', error)
+                return
+            })
     }
 
     onMounted( async () => {

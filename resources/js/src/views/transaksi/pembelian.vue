@@ -458,10 +458,15 @@
             const headerfull = Object.assign(header, headers)
             const detail =cartItems.value
             store.dispatch('CreatePembelian', [headerfull,detail] )
-            setTimeout(function() { 
+            .then(() => {
+                // console.log('berhasil')
                 getCart();
                 getNoPembelian();
-            }, 5000);
+            })
+            .catch(() => {
+                // console.log('gagal')
+                return
+            })
             
     }
 

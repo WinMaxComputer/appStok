@@ -36,9 +36,16 @@ class pembelianController extends Controller
                         'jthTempo'       => $request[0]['jthTempo'],
                         'updated_at'     => \Carbon\Carbon::now()->toDateTimeString()
                     ]);
-                    DB::table('tblpembelian_detail')->where('noNota', $noNota)->delete();
+                    DB::table('tblpembelian_detail')->where('r_noNota', $noNota)->delete();
+                    //====hapus jurnal
+                    $gl = DB::table('general_ledger')->where('order_no', $noNota)->get();
+                    for($i=0;$i< count($gl);$i++){
+                        DB::table('general_ledger')->where('notrans', $gl[$i]->notrans)->delete();
+                        DB::table('gl_detail')->where('rgl', $gl[$i]->notrans)->delete();
+                    };
+                    //=====end jurnal
                 } else {
-                    DB::table('tblpembelian_detail')->where('noNota', $noNota)->delete();
+                    DB::table('tblpembelian_detail')->where('r_noNota', $noNota)->delete();
                     DB::table('tblpembelian')->insert([
                         'noNota'         => $noNota,
                         'r_supplier'     => $request[0]['kdSupplier'],

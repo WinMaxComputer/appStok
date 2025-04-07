@@ -181,7 +181,8 @@
     const items = ref([]);
     const table_option = ref({
         perPage: 10,
-        perPageValues: [5, 10, 20, 50],
+        perPageValues: [5, 10, 20, 50, 100],
+        perPageSelect: true,
         skin: 'table table-hover',
         columnsClasses: { action: 'actions text-center' },
         pagination: { nav: 'scroll', chunk: 5 },
