@@ -390,16 +390,44 @@
     }
     // const kdbrg = ref([])
     const getkd = async () => {
-        await store.dispatch('GetNoBarang');
-        kdbrg.value = store.getters.NoBarang;
+        await store.dispatch('GetNoBarang')
+        .then(response => {
+            // console.log('response: ', response)
+            kdbrg.value = store.getters.NoBarang;
+        }).catch(error => {
+            // console.log('error: ', error)
+            return
+        })
+        
         // console.log(kdbrg.value)
     }
 
     const simpan_barang = () => {
         const isi = input.value
         store.dispatch('CreateBarang', isi )
-        bind_data();
-        getkd()
+        .then(response => {
+            bind_data();
+            getkd()
+            input.value = {
+                kdB: kdbrg,
+                kdktg: ktgs,
+                nmB: '',
+                satuanB: '',
+                hrgBeli: '',
+                hrgJual: '',
+                merek: '',
+                qtyMin: '',
+                qtyMax: '',
+                acc_id: accs,
+                acchpp: accs,
+                accpersediaan: accs,
+                accbiaya: accs
+            }
+        }).catch(error => {
+            // console.log('error: ', error)
+            return
+        })
+       
     }
     const edit_barang = () => {
         const isi = edit.value

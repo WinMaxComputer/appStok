@@ -91,6 +91,17 @@
 
                                 
                             </template>
+                            <table class="custom-footer">
+                            <tfoot>
+                                <tr>
+                                <td>Total</td>
+                                <td>34235</td>
+                                </tr>
+                            </tfoot>
+                            </table>
+
+
+
                         </v-client-table>
 
                         
@@ -105,6 +116,14 @@
         
     </div>
 </template>
+<style>
+.table-footer {
+  font-weight: bold;
+  background-color: #f8f8f8;
+  padding: 10px;
+  text-align: right;
+}
+</style>
 
 <script setup>
     import { computed, onMounted, ref, onBeforeMount } from 'vue';
@@ -135,9 +154,6 @@ import { f } from 'feather-icons';
         perPage: 10,
         perPageValues: [5, 10, 20, 50, 100],
         perPageSelect: true,
-        
-
-        footerHeadings: true,
         filterable: true,
         filterable: ['noNota', 'tglPembelian', 'nmSupplier', 'subTotal', 'disc', 'total'],
         skin: 'table table-hover',
