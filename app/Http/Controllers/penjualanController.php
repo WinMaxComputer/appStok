@@ -413,7 +413,7 @@ class penjualanController extends Controller
         $dataD = PenjualanDetail::where('r_noPenjualan', $noPenjualan)->join('tblbarang', 'tblpenjualan_detail.r_kdBarang', 'tblbarang.kdBarang')->get();
         $dataJ = PenjualanDetailJasa::where('r_noPenjualan', $noPenjualan)
         ->join('tbljasa', 'tblpenjualan_detail_jasa.r_kdJasa', 'tbljasa.kdJasa')
-        ->select('tbljasa.kdJasa', 'tbljasa.nmJasa', 'tblpenjualan_detail_jasa.*')
+        ->select('tbljasa.kdJasa', 'tbljasa.nmJasa', 'tbljasa.accid', 'tbljasa.accid_jasa' ,'tblpenjualan_detail_jasa.*')
         ->get();
         return response()->json([
             'success' => true,
