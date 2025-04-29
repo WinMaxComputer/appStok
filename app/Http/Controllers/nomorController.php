@@ -25,12 +25,12 @@ class nomorController extends Controller
     //
     public function kodePenjualan()
     {
-       
+        $computerName = gethostname();
         $count = Penjualan::all();
         if($count->isEmpty()){
             $tahun = date('Y');
             
-            $post = 'INV'.$tahun.'-'.'1';
+            $post = 'INV'.$tahun.$computerName.'-'.'1';
             return response()->json([
                 'success' => true,
                 'message' => 'Detail Post!',
@@ -40,16 +40,16 @@ class nomorController extends Controller
         }else{
             $no = 0 ;
             $count = Penjualan::all()->last();
-            $terakhir = substr($count->noPenjualan, 8, 20);
+            $terakhir = $count->idPenjualan; ;
             $kodeBaru = intval($terakhir) + 1  ;
 
             $tahun = date('Y');
-            $post = 'INV'.$tahun.'-'.$kodeBaru;
+            $post = 'INV'.$tahun.$computerName.'-'.$kodeBaru;
             
 
             if (Penjualan::where('noPenjualan', $post)->exists()) {
                 $kodeBarulagi = intval($kodeBaru) + 1 ;
-                $post = 'INV'.$tahun.'-'.$kodeBarulagi;
+                $post = 'INV'.$computerName.$tahun.'-'.$kodeBarulagi;
                 return response()->json([
                     'success' => true,
                     'message' => 'Detail Post!',
@@ -81,7 +81,7 @@ class nomorController extends Controller
             $no = 0 ;
             $count = Persediaan::all()->last();
             //$kodeBaru = $count->kdBarang  ;
-            $terakhir = substr($count->kdPersediaan, 6,  20);
+            $terakhir = $count->idPersediaan ;
             $kodeBaru = $terakhir + 1  ;
 
             // $tahun = date('Y');
@@ -123,7 +123,7 @@ class nomorController extends Controller
             $no = 0 ;
             $count = Jasa::all()->last();
             //$kodeBaru = $count->kdBarang  ;
-            $terakhir = substr($count->kdJasa, 6,  20);
+            $terakhir = $count->id ;
             $kodeBaru = $terakhir + 1  ;
 
             // $tahun = date('Y');
@@ -153,10 +153,11 @@ class nomorController extends Controller
 
     public function kodePembelian()
     {
+        $computerName = gethostname();
         $count = Pembelian::all();
         if($count->isEmpty()){
             $tahun = date('Y');
-            $post = 'PB'.$tahun.'-'.'1';
+            $post = 'PB'.$tahun.$computerName.'-'.'1';
             return response()->json([
                 'success' => true,
                 'message' => 'Detail Post!',
@@ -166,11 +167,11 @@ class nomorController extends Controller
 
             $no = 0 ;
             $count = Pembelian::all()->last();
-            $terakhir = substr($count->noNota, 7,  20);
+            $terakhir = $count->idPembelian;
             $kodeBaru = $terakhir + 1  ;
 
             $tahun = date('Y');
-            $post = 'PB'.$tahun.'-'.$kodeBaru;
+            $post = 'PB'.$tahun.$computerName.'-'.$kodeBaru;
 
             if (Pembelian::where('noNota', $post)->exists()) {
                 $kodeBarulagi = $kodeBaru + 1 ;
@@ -204,7 +205,7 @@ class nomorController extends Controller
         }else{
             $no = 0 ;
             $count = Supplier::all()->last();
-            $terakhir = substr($count->kdSupplier, 3,  20);
+            $terakhir = $count->id;
             $kodeBaru = $terakhir + 1  ;
 
             // $tahun = date('Y');
@@ -281,8 +282,7 @@ class nomorController extends Controller
             ], 200);
         }else{
             $no = 0 ;
-            $count = Kategori::all()->last();
-            $terakhir = substr($count->kodeKtg, 8,  20);
+            $terakhir = Kategori::max('id');
             $kodeBaru = $terakhir + 1  ;
 
             $tahun = date('Y');
@@ -320,8 +320,7 @@ class nomorController extends Controller
         }else{
 
             $no = 0 ;
-            $count = Opnum::all()->last();
-            $terakhir = substr($count->kdOpnum, 8,  20);
+            $terakhir = Opnum::max('id');
             $kodeBaru = $terakhir + 1  ;
 
             $tahun = date('mY');
@@ -493,16 +492,14 @@ class nomorController extends Controller
         }else{
 
             $no = 0 ;
-            $count = Inventaris::all()->last();
-            $terakhir = substr($count->kode_inventaris, 8,  20);
+            $terakhir = Inventaris::max('id_inventaris');
             $kodeBaru = $terakhir + 1  ;
 
             $tahun = date('mY');
             $post = 'IV'.$tahun.''.$kodeBaru;
 
             if (Inventaris::where('kode_inventaris', $post)->exists()) {
-                $count = Inventaris::all()->last();
-                $terakhir = substr($count->kode_inventaris, 8,  20);
+                $terakhir = Inventaris::max('id_inventaris');
                 $kodeBarulagi = $kodeBaru + 1 ;
                 $post = 'IV'.$tahun.$kodeBarulagi;
                 return response()->json([
@@ -536,16 +533,14 @@ class nomorController extends Controller
         }else{
 
             $no = 0 ;
-            $count = Penyusutan::all()->last();
-            $terakhir = substr($count->penyusutan_sysno, 8,  20);
+            $terakhir = Penyusutan::max('id_penyusutan');
             $kodeBaru = $terakhir + 1  ;
 
             $tahun = date('mY');
             $post = 'SS'.$tahun.''.$kodeBaru;
 
             if (Penyusutan::where('penyusutan_sysno', $post)->exists()) {
-                $count = Penyusutan::all()->last();
-                $terakhir = substr($count->penyusutan_sysno, 8,  20);
+                $terakhir = Penyusutan::max('id_penyusutan');
                 $kodeBarulagi = $kodeBaru + 1 ;
                 $post = 'SS'.$tahun.$kodeBarulagi;
                 return response()->json([
@@ -579,16 +574,14 @@ class nomorController extends Controller
         }else{
 
             $no = 0 ;
-            $count = Pengadaan::all()->last();
-            $terakhir = substr($count->pengadaan_sysno, 9,  20);
+            $terakhir = Pengadaan::max('id_pengadaan');
             $kodeBaru = $terakhir + 1  ;
 
             $tahun = date('mY');
             $post = 'PGA'.$tahun.''.$kodeBaru;
 
             if (Pengadaan::where('pengadaan_sysno', $post)->exists()) {
-                $count = Pengadaan::all()->last();
-                $terakhir = substr($count->pengadaan_sysno, 9,  20);
+                $terakhir = Pengadaan::max('id_pengadaan');
                 $kodeBarulagi = $kodeBaru + 1 ;
                 $post = 'PGA'.$tahun.$kodeBarulagi;
                 return response()->json([
