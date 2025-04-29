@@ -25,7 +25,10 @@ class nomorController extends Controller
     //
     public function kodePenjualan()
     {
-        $computerName = gethostname();
+        
+        // $computerName = gethostbyaddr($_SERVER['REMOTE_ADDR']);
+        $ip = request()->ip(); // Get the client's IP address
+        $computerName = gethostbyaddr($ip); // Get the hostname
         $count = Penjualan::all();
         if($count->isEmpty()){
             $tahun = date('Y');
@@ -153,7 +156,7 @@ class nomorController extends Controller
 
     public function kodePembelian()
     {
-        $computerName = gethostname();
+        $computerName = gethostbyaddr($_SERVER['REMOTE_ADDR']);
         $count = Pembelian::all();
         if($count->isEmpty()){
             $tahun = date('Y');
@@ -167,7 +170,7 @@ class nomorController extends Controller
 
             $no = 0 ;
             $count = Pembelian::all()->last();
-            $terakhir = $count->idPembelian;
+            $terakhir = Pembelian::max('idPembelian'); // $count->idPembelian;
             $kodeBaru = $terakhir + 1  ;
 
             $tahun = date('Y');
