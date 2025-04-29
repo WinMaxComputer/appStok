@@ -28,7 +28,7 @@ class nomorController extends Controller
         
         // $computerName = gethostbyaddr($_SERVER['REMOTE_ADDR']);
         $ip = request()->ip(); // Get the client's IP address
-        $computerName = gethostbyaddr($ip); // Get the hostname
+        $computerName = php_uname('n'); // Get the hostname
         $count = Penjualan::all();
         if($count->isEmpty()){
             $tahun = date('Y');
