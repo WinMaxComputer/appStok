@@ -27,13 +27,13 @@ class nomorController extends Controller
     {
         
         // $computerName = gethostbyaddr($_SERVER['REMOTE_ADDR']);
-        $ip = request()->ip(); // Get the client's IP address
-        $computerName = gethostbyaddr($ip); // Get the hostname
+        // $ip = request()->ip(); // Get the client's IP address
+        // $computerName = gethostbyaddr($ip); // Get the hostname
         $count = Penjualan::all();
         if($count->isEmpty()){
             $tahun = date('Y');
             
-            $post = 'INV'.$tahun.$computerName.'-'.'1';
+            $post = 'INV'.$tahun.'-'.'1';
             return response()->json([
                 'success' => true,
                 'message' => 'Detail Post!',
@@ -47,12 +47,12 @@ class nomorController extends Controller
             $kodeBaru = intval($terakhir) + 1  ;
 
             $tahun = date('Y');
-            $post = 'INV'.$tahun.$computerName.'-'.$kodeBaru;
+            $post = 'INV'.$tahun.'-'.$kodeBaru;
             
 
             if (Penjualan::where('noPenjualan', $post)->exists()) {
                 $kodeBarulagi = intval($kodeBaru) + 1 ;
-                $post = 'INV'.$computerName.$tahun.'-'.$kodeBarulagi;
+                $post = 'INV'.$tahun.'-'.$kodeBarulagi;
                 return response()->json([
                     'success' => true,
                     'message' => 'Detail Post!',
@@ -156,11 +156,11 @@ class nomorController extends Controller
 
     public function kodePembelian()
     {
-        $computerName = gethostbyaddr($_SERVER['REMOTE_ADDR']);
+        // $computerName = gethostbyaddr($_SERVER['REMOTE_ADDR']);
         $count = Pembelian::all();
         if($count->isEmpty()){
             $tahun = date('Y');
-            $post = 'PB'.$tahun.$computerName.'-'.'1';
+            $post = 'PB'.$tahun.'-'.'1';
             return response()->json([
                 'success' => true,
                 'message' => 'Detail Post!',
@@ -174,7 +174,7 @@ class nomorController extends Controller
             $kodeBaru = $terakhir + 1  ;
 
             $tahun = date('Y');
-            $post = 'PB'.$tahun.$computerName.'-'.$kodeBaru;
+            $post = 'PB'.$tahun.'-'.$kodeBaru;
 
             if (Pembelian::where('noNota', $post)->exists()) {
                 $kodeBarulagi = $kodeBaru + 1 ;
