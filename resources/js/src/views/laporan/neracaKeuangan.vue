@@ -218,7 +218,7 @@
     const store = useStore();
 
     const sorting = ref({
-        startDate: '01-01-2022', // moment().subtract(30,'d').format("D-M-YYYY"),
+        startDate: moment().startOf('month').format("D-M-YYYY"), // moment().subtract(30,'d').format("D-M-YYYY"),
         endDate: moment().format("D-M-YYYY")
     });
 

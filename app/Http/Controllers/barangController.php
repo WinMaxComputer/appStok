@@ -374,6 +374,7 @@ class barangController extends Controller
             $exception = DB::transaction(function() use ($request){ 
                 // $id = $request->input('idB');
                 $kdBarang = $request->input('kdB');
+                $barcode = $request->input('barcode');
                 $nmBarang = $request->input('nmB');
                 $satuan = $request->input('satuanB');
                 $kategori = $request->input('kdktg');
@@ -391,6 +392,7 @@ class barangController extends Controller
                 $post = Barang::upsert([
                         [
                             'kdBarang'     => $kdBarang,
+                            'barCode'     => $barcode,
                             'nmBarang'     => $nmBarang,
                             'hrgPokok'     => $hrgBeli,
                             'hrgJual'       => $hrgJual,
@@ -413,6 +415,7 @@ class barangController extends Controller
                     uniqueBy: ['id', 'kdBarang'],
                     update: [
                         'nmBarang'     => $nmBarang,
+                        'barCode'     => $barcode,
                         'hrgPokok'     => $hrgBeli,
                         'hrgJual'       => $hrgJual,
                         'ktgBarang'   => $kategori,

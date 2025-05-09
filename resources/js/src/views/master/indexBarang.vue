@@ -150,6 +150,12 @@
                         <input v-model="edit.qtyMax" class="form-control" placeholder="Qty Max" @keypress="onlyNumber" />
                     </div>
                 </div>
+                <div class="row mb-2">
+                    <div class="col-sm">
+                        <label for="inputState">Barcode</label>
+                        <input v-model="edit.barcode" class="form-control" placeholder="Barcode" />
+                    </div>
+                </div>
                 <div class="row mb-4">
                     <div class="col-sm">
                         <label for="inputState">Akun Penjualan</label>
@@ -235,6 +241,12 @@
                                         </div>
                                         
                                     </div>
+                                    <div class="row mb-2">
+                                        <div class="col-sm">
+                                            <label for="inputState">Barcode</label>
+                                            <input v-model="input.barcode" class="form-control" placeholder="Barcode" />
+                                        </div>
+                                    </div>
 
                                     <div class="row mb-4">
                                         <div class="col-sm">
@@ -297,7 +309,7 @@
     const store = useStore();
     
 
-    const columns = ref(['kdBarang', 'nmBarang', 'hrgPokok', 'hrgJual', 'namaKtg', 'stokPersediaan', 'kartuStok' ,'action']);
+    const columns = ref(['kdBarang','barCode' , 'nmBarang', 'hrgPokok', 'hrgJual', 'namaKtg', 'stokPersediaan', 'kartuStok' ,'action']);
 
     const modalinput = ref(false);
     const items = ref([]);
@@ -432,8 +444,16 @@
     const edit_barang = () => {
         const isi = edit.value
         store.dispatch('CreateBarang', isi )
-        bind_data();
-        getkd()
+        .then(response => {
+            bind_data();
+            getkd()
+            isVisible.value = false;
+        }).catch(error => {
+            // console.log('error: ', error)
+            return
+        })
+        // console.log(isi)
+        
     }
 
     const export_table = (type) => {
@@ -549,6 +569,7 @@
         edit.value = ({
             kdB: item.kdBarang,
             kdktg: item.ktgBarang,
+            barcode: item.barCode,
             nmB: item.nmBarang,
             satuanB: item.satuanBarang,
             hrgBeli: item.hrgPokok,

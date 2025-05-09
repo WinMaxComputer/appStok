@@ -15,6 +15,7 @@ const state = {
     nopengadaan: [],
     nopenyusutan: [],
     nopelanggan: [],
+    nopenjualan: [],
   };
   
 const getters = {

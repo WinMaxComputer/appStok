@@ -26,7 +26,7 @@
 
 .invoice-container {
   width: 100%;
-  padding: 0 25px;
+  padding: 0 5px;
   margin: 0 auto;
 }
 
@@ -38,7 +38,7 @@
   border-radius: 6px;
 
   .inv-number {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 700;
     margin-bottom: 0;
     color: $m-color_6;
@@ -88,7 +88,7 @@
 .invoice .content-section {
   .inv--head-section {
     h3.in-heading {
-      font-size: 18px;
+      font-size: 14px;
       font-weight: 600;
       color: $m-color_10;
       margin: 0;
@@ -114,7 +114,7 @@
     }
 
     .inv-brand-name {
-      font-size: 23px;
+      font-size: 20px;
       font-weight: 600;
       margin-bottom: 0;
       align-self: center;
@@ -124,8 +124,8 @@
   .inv--detail-section {
     .inv-to {
       font-weight: 700;
-      font-size: 15px;
-      margin-bottom: 15px;
+      font-size: 12px;
+      margin-bottom: 10px;
     }
 
     .inv-customer-name {
@@ -138,7 +138,7 @@
     .inv-detail-title {
       font-weight: 700;
       margin-bottom: 0;
-      font-size: 15px;
+      font-size: 13px;
       margin-bottom: 15px;
     }
 
@@ -158,12 +158,12 @@
 
       .inv-title {
         font-weight: 400;
-        font-size: 20px;
+        font-size: 14px;
       }
 
       .inv-number {
         font-weight: 400;
-        font-size: 18px;
+        font-size: 14px;
         color: $primary;
       }
     }

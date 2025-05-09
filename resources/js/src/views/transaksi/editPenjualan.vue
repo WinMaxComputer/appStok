@@ -50,9 +50,12 @@
                                                     <div class="form-group row">
                                                         <label for="company-address" class="col-sm-3 col-form-label col-form-label-sm">Term</label>
                                                         <div class="col-sm-9">
-                                                            <select id="inputState" v-model="params.termPenjualan" class="form-select">
-                                                                <option value="0" selected>Cash</option>
-                                                                <option value="1">Kredit</option>
+                                                            <select id="inputState" v-model="params.term" class="form-select">
+                                                                <option v-for="option in [{ value: '0', label: 'Cash' }, { value: '1', label: 'Kredit' }]" 
+                                                                    :key="option.value" 
+                                                                    :value="option.value">
+                                                                    {{ option.label }}
+                                                                </option>
                                                             </select>
                                                         </div>
                                                     </div>
@@ -445,21 +448,23 @@
         id: String,
         startDate: String,
         kd_trans: String,
-        regu: String,
+        term: String,
+        jthTempo: String,
+        termPenjualan: String,
     });
 
     const params = ref({
         noNota: props.kd_trans,
         tglNota: props.startDate,// moment(tglP).format("YYYY-MM-DD"),
-        term: 0,
-        jthTempo: moment().format("YYYY-MM-DD"),
+        term: props.term,
+        jthTempo: props.jthTempo,
         notes: '',
         subtotal: subtotal,
         subtotaljasa: subtotaljasa,
         tax: tax,
         disc: disc,
         total: total, 
-        termPenjualan: 0,
+        termPenjualan: props.termPenjualan,
     });
 
     const paramspelanggan = ref({

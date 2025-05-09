@@ -26,8 +26,13 @@ class penjualanController extends Controller
                 $pph22 = 10 ; //$detop[0]['pph22'];
                 $type = $request[0]['term'];
                 $piutang = 0;
+                $acc_id_k = '11110';
                 if($type == '1'){
                     $piutang = $total;
+                    $startDate = $request[0]['tglNota'];
+                    $endDate = $request[0]['jthTempo'];
+                    $dateDifference = \Carbon\Carbon::parse($startDate)->diffInDays(\Carbon\Carbon::parse($endDate));
+                    $acc_id_k = '11501';
                 }
                 
                 $post = DB::table('tblpenjualan')->upsert([
@@ -40,7 +45,7 @@ class penjualanController extends Controller
                     'taxPenjualan'     => $request[0]['tax'],
                     'totalPenjualan'     => $request[0]['total'],
                     'notePenjualan'     => $request[0]['notes'],
-                    'termPenjualan'     => $request[0]['term'],
+                    'termPenjualan'     => $dateDifference,
                     'jthTempo'     => $request[0]['jthTempo'],
                     'typeBayar'     => $request[0]['term'],
                     'piutangPenjualan'     => $piutang,
@@ -56,12 +61,13 @@ class penjualanController extends Controller
                     'taxPenjualan'     => $request[0]['tax'],
                     'totalPenjualan'     => $request[0]['total'],
                     'notePenjualan'     => $request[0]['notes'],
-                    'termPenjualan'     => $request[0]['term'],
+                    'termPenjualan'     => $dateDifference,
                     'jthTempo'     => $request[0]['jthTempo'],
+                    'typeBayar'     => $request[0]['term'],
+                    'piutangPenjualan'     => $piutang,
                     'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
                     'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
-                ]
-            );
+                ]);
                 
                 $detpem = $request[1];
                 if (isset($detpem)) {
@@ -113,7 +119,7 @@ class penjualanController extends Controller
                         $accid = $detpem[$i]['accid']; // acc id yg di debet
                         $acc_id_d = $detpem[$i]['accid_persediaan']; // acc id yg di debet
                         $acc_hpp = $detpem[$i]['accid_hpp'];
-                        $acc_id_k = '11110'; // $request[0]['subtotal']; // acc id yg di kredit
+                        // $acc_id_k = '11110'; // $request[0]['subtotal']; // acc id yg di kredit
                         $acc = '32300';
                         $acc_pph = '23100'; // acc hutang pph
                         $memo = 'Penjualan-'.$nmBarang;
@@ -225,7 +231,7 @@ class penjualanController extends Controller
 
 
                         //===========jurnal
-                        $accid = $detpemjasa[$i]['accid']; // acc id yg di debet
+                        // $accid = $detpemjasa[$i]['accid']; // acc id yg di debet
                         $accid_jasa = $detpemjasa[$i]['accid_jasa'];
                         $acc = '32300'; // laba ditahan
                         $memo = 'Penjualan-Jasa'.$nmJasa;
@@ -240,7 +246,7 @@ class penjualanController extends Controller
                         $ac = [
                             [
                                 'rgl' => $rgl,
-                                'acc_id' => $accid,
+                                'acc_id' => $acc_id_k,
                                 'debet' => $subtotal,
                                 'kredit' => 0,
                                 'trans_detail' => 'Penjualan-Jasa'.$nmJasa,
@@ -293,8 +299,9 @@ class penjualanController extends Controller
                 }
                    
 
-                DB::commit();
+                // DB::commit();
             });
+            DB::commit();
             if(is_null($exception)) {
                 // $lastInsertId = DB::getPdo()->lastInsertId();
                 // $lastInsert = DB::table('tblpenjualan')->where('noPenjualan', $noNota)->first();

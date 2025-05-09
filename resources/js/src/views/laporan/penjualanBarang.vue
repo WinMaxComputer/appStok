@@ -52,6 +52,9 @@
                             <template #subTotalPenjualan="props"> {{ Number(props.row.subTotalPenjualan).toLocaleString() }} </template>
                             <template #totalPenjualan="props"> {{ Number(props.row.totalPenjualan).toLocaleString() }} </template>
                             <template #taxPenjualan="props"> {{ Number(props.row.taxPenjualan).toLocaleString() }} </template>
+                            <template #typeBayar="props">
+                                {{ props.row.typeBayar === '0' ? 'Cash' : 'Kredit' }}
+                            </template>
                             <template #action="props">
                                 <router-link :to="{name: 'invoice-penjualan', params: {id: props.row.noPenjualan}}">
                                     <svg
@@ -70,7 +73,13 @@
                                         <circle cx="12" cy="12" r="3"></circle>
                                     </svg>
                                 </router-link>
-                                <router-link :to="{name: 'editpenjualan', params: {startDate: props.row.tglPenjualan, kd_trans:props.row.noPenjualan, regu:props.row.r_regu }}" >
+                                <router-link :to="{name: 'editpenjualan', params: {
+                                                                                    startDate: props.row.tglPenjualan, 
+                                                                                    kd_trans:props.row.noPenjualan, 
+                                                                                    term:props.row.typeBayar,
+                                                                                    jthTempo:props.row.jthTempo,
+                                                                                    termPenjualan:props.row.termPenjualan,
+                                                                                    }}" >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="24"
@@ -177,7 +186,7 @@
     const store = useStore();
     const router = useRouter()
 
-    const columns = ref(['noPenjualan', 'tglPenjualan', 'nmPelanggan', 'subTotalPenjualan', 'totalPenjualan', 'action']);
+    const columns = ref(['noPenjualan', 'tglPenjualan', 'nmPelanggan', 'typeBayar', 'totalPenjualan', 'action']);
     const items = ref([]);
     const table_option = ref({
         perPage: 10,
@@ -192,7 +201,7 @@
             filterPlaceholder: 'Search...',
             limit: 'Results:',
         },
-        sortable: ['noPenjualan', 'tglPenjualan', 'nmPelanggan', 'subTotalPenjualan', 'discPenjualan',],
+        sortable: ['noPenjualan', 'tglPenjualan', 'nmPelanggan', 'typeBayar', 'totalPenjualan'],
         sortIcon: {
             base: 'sort-icon-none',
             up: 'sort-icon-asc',

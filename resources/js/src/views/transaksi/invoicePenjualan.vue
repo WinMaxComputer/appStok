@@ -37,18 +37,20 @@
                                                         </div>
 
                                                         <div class="col-sm-6 text-sm-end">
-                                                            <p class="inv-list-number"><span class="inv-title">Invoice : </span> <span class="inv-number">{{ noNota }}</span></p>
+                                                            
                                                         </div>
 
-                                                        <div class="col-sm-6 align-self-center">
+                                                        <div class="col-sm-7 align-self-center">
                                                             <p class="inv-street-addr">Jln Jepun Bali No.10X Lukluk Mengwi Badung - Bali</p>
                                                             <p class="inv-email-address">info@winmaxbali.id</p>
                                                             <p class="inv-email-address">+6281 8688 114</p>
+                                                            <p class="inv-email-address">Term: {{ typeBayar === '0' ? 'Cash' : 'Kredit' }} <span v-if="typeBayar === '1'">{{ termPenjualan }} Hari</span></p>
                                                         </div>
-                                                        <div class="col-sm-6 align-self-center mt-3 text-sm-end">
-                                                            <p class="inv-created-date"><span class="inv-title">Invoice Date : </span> <span class="inv-date">{{ tglNota }}</span></p>
+                                                        <div class="col-sm-5 align-self-center mt-3 text-sm-end">
+                                                            <p class="inv-list-number"><span class="inv-title">Invoice : </span> <span class="inv-number">{{ noNota }}</span></p>
+                                                            <p class="inv-created-date"><span class="inv-title">Invoice Date : </span> <span class="inv-date">{{ new Date(tglNota).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}</span></p>
                                                             <p class="inv-created-date"><span class="inv-title">
-                                                                Kepada : </span> <span class="inv-date">{{ nmPelanggan }}</span>
+                                                                Kpd : </span> <span class="inv-date">{{ nmPelanggan }}</span>
                                                                 {{ alamatPelanggan }}
                                                             </p>
                                                             <!-- <p class="inv-due-date"><span class="inv-title">Alamat : </span> <span class="inv-date">Jln Kaswari no 77</span></p> -->
@@ -120,23 +122,23 @@
                                                             <div class="text-sm-end">
                                                                 <div class="row">
                                                                     <div class="col-sm-8 col-7">
-                                                                        <p class="">Sub Total:</p>
+                                                                        <p class="text-end">Sub Total:</p>
                                                                     </div>
                                                                     <div class="col-sm-4 col-5">
-                                                                        <p class="">{{ items.reduce((sum, item) => sum + Number(item.totalJual), 0).toLocaleString() }}</p>
+                                                                        <p class="text-end">{{ items.reduce((sum, item) => sum + Number(item.totalJual), 0).toLocaleString() }}</p>
                                                                     </div>
                                                                     
                                                                     <div class="col-sm-8 col-7">
                                                                         <p class="discount-rate">Sub Total Jasa</p>
                                                                     </div>
                                                                     <div class="col-sm-4 col-5">
-                                                                        <p class="">{{ items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0).toLocaleString() }}</p>
+                                                                        <p class="text-end">{{ items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0).toLocaleString() }}</p>
                                                                     </div>
                                                                     <div class="col-sm-8 col-7">
-                                                                        <h5 class="">Grand Total :</h5>
+                                                                        <h5 class="text-end">Grand Total :</h5>
                                                                     </div>
                                                                     <div class="col-sm-4 col-5">
-                                                                        <h5 class="">{{ (Number( items.reduce((sum, item) => sum + Number(item.totalJual), 0) - Number(discPenjualan)) +  items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0)).toLocaleString() }}</h5>
+                                                                        <h5 class="text-end">{{ (Number( items.reduce((sum, item) => sum + Number(item.totalJual), 0) - Number(discPenjualan)) +  items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0)).toLocaleString() }}</h5>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -157,6 +159,7 @@
                             <div class="invoice-actions-btn">
                                 <div class="invoice-action-btn">
                                     <div class="row">
+                                        
                                         <div class="col-xl-12 col-md-3 col-sm-6">
                                             <a href="javascript:;" class="btn btn-primary btn-send">Send Invoice</a>
                                         </div>
@@ -164,11 +167,11 @@
                                             <a href="javascript:;" class="btn btn-secondary btn-print action-print" @click="print()">Print</a>
                                         </div>
                                         <div class="col-xl-12 col-md-3 col-sm-6">
-                                            <router-link to="/penjualan" class="btn btn-warning btn-back">Back</router-link>
+                                            <router-link to="/laporan/penjualan-barang" class="btn btn-warning btn-print">Back</router-link>
                                         </div>
                                         <div class="col-xl-12 col-md-3 col-sm-6">
 
-                                            <router-link to="/apps/invoice/edit" class="btn btn-dark btn-edit">Edit</router-link>
+                                            <router-link :to="{ name: 'editpenjualan', params: { kd_trans: invoiceId, startDate: tglNota  } }" class="btn btn-dark btn-edit">Edit</router-link>
                                         </div>
                                     </div>
                                 </div>
@@ -203,6 +206,8 @@
     const noNota = ref('');
     const tglNota = ref('');
     const discPenjualan = ref(0);
+    const typeBayar = ref('');
+    const termPenjualan = ref('');
 
 
 
@@ -255,6 +260,8 @@
                 noNota.value = store.getters.SdetailPenjualan[0][0].noPenjualan;
                 tglNota.value = store.getters.SdetailPenjualan[0][0].tglPenjualan;
                 discPenjualan.value = store.getters.SdetailPenjualan[0][0].discPenjualan;
+                typeBayar.value = store.getters.SdetailPenjualan[0][0].typeBayar;
+                termPenjualan.value = store.getters.SdetailPenjualan[0][0].termPenjualan;
             // console.log(nmPelanggan.value);
                 console.log(response);
             }).catch((error) => {

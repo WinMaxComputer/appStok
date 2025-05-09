@@ -41,7 +41,7 @@
                                                         <!-- <div class="row invoice layout-top-spacing layout-spacing apps-invoice"></div> -->
                                                         <button type="button" class="btn btn-danger btn-lg mb-3 me-3" v-if="load"><span class="spinner-border text-white me-2 align-self-center loader-sm">Loading...</span> Loading</button> 
                                                         <!-- <div class="table-responsive"> -->
-                                                            <table border="1" cellspacing="3" width="80%">
+                                                            <table style="font-size:8px">
                                                                 <tr>
                                                                     <td><h6>LAPORAN LABA RUGI PEDIODE TGL {{ sorting.startDate }} S/D {{ sorting.endDate }}</h6></td>
                                                                 </tr>
@@ -412,7 +412,8 @@
     const load = ref();
 
     const sorting = ref({
-        startDate: moment().subtract(30,'d').format("D-M-YYYY"),
+
+        startDate: moment().startOf('month').format("D-M-YYYY"),
         endDate: moment().format("D-M-YYYY")
     });
 

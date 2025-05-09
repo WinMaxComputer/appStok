@@ -109,12 +109,17 @@
 
                                     <div class="invoice-detail-items">
                                         <div class="row">
+                                            <div class="form-group col-xs-2">
+                                                <label for="Inputqty">Barcode</label>
+                                                <input type="text" ref="InputBarcode" v-model="barcode" class="form-control form-control-sm" placeholder="Barcode" @keyup.enter="addToCart(brg)" />
+                                            </div>
                                             <div class="form-group col-md-3">
                                                 <label for="inputCity">NAMA BARANG</label>
                                                 <multiselect 
                                                     v-model="brg" 
                                                     :options="pembelian.barangs" 
                                                     :searchable="true"
+                                                    @select="focusInput()"
                                                     track-by="nmPersediaan"
                                                     label="nmPersediaan"
                                                     open-direction="top"
@@ -123,24 +128,24 @@
                                                     select-label="" >
                                                 </multiselect>
                                             </div>
-                                            <div class="form-group col-md-2">
-                                                <label for="inputState">HARGA</label>
-                                                <input type="text" v-model="brg.lastPrice" class="form-control form-control-sm" placeholder="Price" @keypress="onlyNumber" />
+                                            <div class="form-group col-sm-2">
+                                                <label for="InputHarga">HARGA</label>
+                                                <input type="text" ref="InputHarga" v-model="brg.lastPrice" class="form-control form-control-sm" placeholder="Price" @keyup.enter="moveToQty()" @keypress="onlyNumber" />
+                                            </div>
+                                            <div class="form-group col-sm-1">
+                                                <label for="Inputqty">QTY</label>
+                                                <input type="text" ref="Inputqty" v-model="qty" class="form-control form-control-sm" placeholder="Quantity" @keyup.enter="addToCart(brg)" @keypress="onlyNumber" />
                                             </div>
                                             <div class="form-group col-sm-2">
-                                                <label for="inputZip">QTY</label>
-                                                <input type="text" v-model="qty" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
-                                            </div>
-                                            <div class="form-group col-md-2">
                                                 <label for="satuan">SATUAN</label>
-                                                <input type="text" v-model="brg.satuanPersediaan" class="form-control form-control-sm" id="satuan" />
+                                                <input type="text" v-model="brg.satuanPersediaan" class="form-control form-control-sm"  />
                                             </div>
-                                            <div class="form-group col-md-2">
+                                            <div class="form-group col-sm-2">
                                                 <label for="inputZip">TOTAL</label><br>
                                                 <!-- {{ new Intl.NumberFormat().format(brg.lastPrice * qty) }} -->
                                                 <input type="text" v-model="tot" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
                                             </div>
-                                            <div class="form-group col-md-1">
+                                            <div class="form-group col-sm-1">
                                                 <label for="aksi">Aksi</label>
                                                 <button @click="addToCart(brg)" class="btn btn-xs btn-primary">
                                                     + 
@@ -340,8 +345,11 @@
 
     const items = ref([]);
     const brg = ref([]);
+    const barcode = ref('');
     const nopembelian = ref([]);
     const qty = ref(1);
+    const Inputqty = ref(null);
+    const InputHarga = ref(null);
     const tot = ref();
     const subtotal = ref();
     const total = ref();
@@ -388,6 +396,18 @@
         // console.log(suppliers)
         return { barangs, pajak, suppliers, nopembelian, accs, tot }
     });
+    
+    const moveToQty = () => {
+        Inputqty.value?.focus();
+    };
+    const focusInput = () => {
+        setTimeout(() => {
+            console.log('Input focused after timeout');
+            InputHarga.value?.focus();
+        }, 0);
+        
+    };
+
 
     const getBarang=() => {
         store.dispatch('GetPersediaan')
@@ -480,7 +500,7 @@
         params.value.due_date = dt;
 
         // console.log(paramssupplier.value)
-       
+        // Inputqty.value?.focus();
         getBarang();
         // getAcc();
         getSupplier();
@@ -497,7 +517,7 @@
         params.value.due_date = dt;
 
         // console.log(paramssupplier.value)
-       
+        
         getBarang();
         // getAcc();
         getSupplier();
