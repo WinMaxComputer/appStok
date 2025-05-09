@@ -154,25 +154,25 @@
                     <div class="col-sm">
                         <label for="inputState">Akun Penjualan</label>
                         <select id="inputState" v-model="edit.acc_id" class="form-select">
-                            <option  v-for="ac in accs" :value="ac.acc_id" :key="ac.acc_id">{{ ac.name }}</option>
+                            <option  v-for="ac in accs.filter(ac => ac.acc_id.toString().startsWith('41'))" :value="ac.acc_id" :key="ac.acc_id">{{ ac.name }}</option>
                         </select>
                     </div>
                     <div class="col-sm">
                         <label for="inputState">Akun Hpp</label>
                         <select id="inputState" v-model="edit.acchpp" class="form-select">
-                            <option :value="ac.acc_id" v-for="ac in accs" :key="ac.acc_id">{{ ac.name }}</option>
+                            <option :value="ac.acc_id" v-for="ac in accs.filter(ac => ac.acc_id.toString().startsWith('51'))" :key="ac.acc_id">{{ ac.name }}</option>
                         </select>
                     </div>
                     <div class="col-sm">
                         <label for="inputState">Akun Persediaan</label>
                         <select id="inputState" v-model="edit.accpersediaan" class="form-select">
-                            <option :value="ac.acc_id" v-for="ac in accs" :key="ac.acc_id" selected>{{ ac.name }}</option>
+                            <option :value="ac.acc_id" v-for="ac in accs.filter(ac => ac.acc_id.toString().startsWith('116'))" :key="ac.acc_id" selected>{{ ac.name }}</option>
                         </select>
                     </div>
                     <div class="col-sm">
                         <label for="inputState">Akun Tekor</label>
                         <select id="inputState" v-model="edit.accbiaya" class="form-select">
-                            <option :value="ac.acc_id" v-for="ac in accs" :key="ac.acc_id" selected>{{ ac.name }}</option>
+                            <option :value="ac.acc_id" v-for="ac in accs.filter(ac => ac.acc_id.toString().startsWith('52'))" :key="ac.acc_id" selected>{{ ac.name }}</option>
                         </select>
                     </div>
                 </div>
@@ -240,25 +240,25 @@
                                         <div class="col-sm">
                                             <label for="inputState">Akun Penjualan</label>
                                             <select id="inputState" v-model="input.acc_id" class="form-select">
-                                                <option :value="ac.acc_id" v-for="ac in accs" :key="ac.acc_id" selected>{{ ac.name }}</option>
+                                                <option :value="ac.acc_id" v-for="ac in accs.filter(ac => ac.acc_id.toString().startsWith('41'))" :key="ac.acc_id" selected>{{ ac.name }}</option>
                                             </select>
                                         </div>
                                         <div class="col-sm">
                                             <label for="inputState">Akun Hpp</label>
                                             <select id="inputState" v-model="input.acchpp" class="form-select">
-                                                <option :value="ac.acc_id" v-for="ac in accs" :key="ac.acc_id" selected>{{ ac.name }}</option>
+                                                <option :value="ac.acc_id" v-for="ac in accs.filter(ac => ac.acc_id.toString().startsWith('51'))" :key="ac.acc_id" selected>{{ ac.name }}</option>
                                             </select>
                                         </div>
                                         <div class="col-sm">
                                             <label for="inputState">Akun Persediaan</label>
                                             <select id="inputState" v-model="input.accpersediaan" class="form-select">
-                                                <option :value="ac.acc_id" v-for="ac in accs" :key="ac.acc_id" selected>{{ ac.name }}</option>
+                                                <option :value="ac.acc_id" v-for="ac in accs.filter(ac => ac.acc_id.toString().startsWith('116'))" :key="ac.acc_id" selected>{{ ac.name }}</option>
                                             </select>
                                         </div>
                                         <div class="col-sm">
                                             <label for="inputState">Akun Tekor</label>
                                             <select id="inputState" v-model="input.accbiaya" class="form-select">
-                                                <option :value="ac.acc_id" v-for="ac in accs" :key="ac.acc_id" selected>{{ ac.name }}</option>
+                                                <option :value="ac.acc_id" v-for="ac in accs.filter(ac => ac.acc_id.toString().startsWith('52'))" :key="ac.acc_id" selected>{{ ac.name }}</option>
                                             </select>
                                         </div>
                                     </div>
@@ -302,8 +302,8 @@
     const modalinput = ref(false);
     const items = ref([]);
     const table_option = ref({
-        perPage: 10,
-        perPageValues: [5, 10, 20, 50, 100],
+        perPage: 20,
+        perPageValues: [20, 100, 150, 200],
         perPageSelect: true,
         skin: 'table table-hover',
         columnsClasses: { action: 'actions text-center' },
@@ -561,7 +561,7 @@
             accpersediaan: item.accid_persediaan,
             accbiaya: item.accid_biaya
         });
-        console.log(item);
+        // console.log(item);
         // alert('ID: ' + item.kdBarang + ', Name: ' + item.nmBarang);
     };
 

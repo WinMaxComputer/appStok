@@ -29,7 +29,7 @@
                                         <div class="col-sm">
                                             <label for="inputState">Akun</label>
                                             <select id="inputState" v-model="inputb.acc" class="form-select">
-                                                <option :value="ac.acc_id" v-for="ac in accs" :key="ac.acc_id" selected>{{ ac.name }}</option>
+                                                <option :value="ac.acc_id" v-for="ac in accs.filter(ac => ac.acc_id.toString().startsWith('6'))" :key="ac.acc_id" selected>{{ ac.name }}</option>
                                             </select>
                                         </div>
                                     </div>
@@ -148,30 +148,32 @@ const GetCoaList=() => {
 }
 
 const simpnBiaya = async () =>{
-    console.log(inputb.value)
+    // console.log(inputb.value)
     if (localStorage.getItem('biaya')==='[]'){
             // cartKupon.value = [];
             // console.log(cartItems.value)
             cartBiaya.value.push(inputb.value);
             localStorage.setItem('biaya', JSON.stringify(cartBiaya.value))
             await store.dispatch('NewBiaya', cartBiaya.value)
-            getlistb();
-            reset_input();
+            .then(() => {
+                // console.log(cartKupon.value)
+                getlistb();
+                reset_input();
+            })
+            
     }else{
             // cartKupon.value = JSON.parse(localStorage.getItem('kupon'))
             
             cartBiaya.value.push(inputb.value);
             localStorage.setItem('biaya',JSON.stringify(cartBiaya.value));
             await store.dispatch('NewBiaya', cartBiaya.value)
-            // console.log(inputk.value)
-            getlistb();
-            reset_input();
+            .then(() => {
+                // console.log(cartKupon.value)
+                getlistb();
+                reset_input();
+            })
+            // console.log(cartKupon.value)
     }
-    // inputb.value = {
-    //     ketBiaya: '',
-    //     nilaiBiaya: ''
-    // }
-    // alert('simpan  biaya')
 }
 
 const reset_input = () => {

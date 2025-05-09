@@ -86,22 +86,22 @@ class biayaController extends Controller
                             'void_flag' => 0,
                         ],
                         //=========pph pasal4
-                        [
-                            'rgl' => $rgl,
-                            'acc_id' => $acc_id_k,
-                            'debet' => $pphps4_dibayar,
-                            'kredit' => 0,
-                            'trans_detail' => 'Trans-biaya',
-                            'void_flag' => 0,
-                        ],
-                        [
-                            'rgl' => $rgl,
-                            'acc_id' => $acc_pph,
-                            'debet' => 0,
-                            'kredit' => $pphps4_dibayar,
-                            'trans_detail' => 'Trans-biaya',
-                            'void_flag' => 0,
-                        ]
+                        // [
+                        //     'rgl' => $rgl,
+                        //     'acc_id' => $acc_id_k,
+                        //     'debet' => $pphps4_dibayar,
+                        //     'kredit' => 0,
+                        //     'trans_detail' => 'Trans-biaya',
+                        //     'void_flag' => 0,
+                        // ],
+                        // [
+                        //     'rgl' => $rgl,
+                        //     'acc_id' => $acc_pph,
+                        //     'debet' => 0,
+                        //     'kredit' => $pphps4_dibayar,
+                        //     'trans_detail' => 'Trans-biaya',
+                        //     'void_flag' => 0,
+                        // ]
                         //==========endpph pasal 4
                         
                     ];
