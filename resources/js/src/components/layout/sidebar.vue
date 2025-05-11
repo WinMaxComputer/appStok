@@ -221,7 +221,9 @@
                         </div>
                     </a>
                     <ul id="apps" class="collapse submenu list-unstyled" data-bs-parent="#sidebar">
-                        
+                        <li>
+                            <router-link to="/penjualan" @click="toggleMobileMenu">PENJUALAN BARANG</router-link>
+                        </li>
                         <li>
                             <router-link to="/pembelian" @click="toggleMobileMenu">PEMBELIAN BARANG</router-link>
                         </li>
@@ -229,7 +231,10 @@
                             <router-link to="/pembelian-inventaris" @click="toggleMobileMenu">PEMBELIAN INVENTARIS</router-link>
                         </li>
                         <li>
-                            <router-link to="/penjualan" @click="toggleMobileMenu">PENJUALAN BARANG</router-link>
+                            <router-link to="/pembayaran-penjualan" @click="toggleMobileMenu">PEMBAYARAN PIUTANG</router-link>
+                        </li>
+                        <li>
+                            <router-link to="/pembayaran-pembelian" @click="toggleMobileMenu">PEMBAYARAN HUTANG</router-link>
                         </li>
                         <li class="menu">
                             <a class="dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#opnum" aria-controls="opnum" aria-expanded="false">

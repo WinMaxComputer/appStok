@@ -125,6 +125,10 @@
 
                                                 <div class="invoice-detail-items">
                                                     <div class="row">
+                                                        <div class="form-group col-xs-2">
+                                                            <label for="Inputqty">Barcode</label>
+                                                            <input type="text" ref="InputBarcode" v-model="barcode" class="form-control form-control-sm" placeholder="Barcode" @keyup.enter="addToCartB(barcode)" />
+                                                        </div>
                                                         <div class="form-group col-md-3">
                                                             <label for="inputCity">NAMA BARANG</label>
                                                             <multiselect 
@@ -256,7 +260,7 @@
                                     </div>
                                             
 
-                                    <div class="invoice-detail-items" >
+                                    <div v-if="cartItemsPenJasa" class="invoice-detail-items" >
                                         <div class="inv--product-table-section">
                                             <div class="table-responsive">
                                                 <table class="table table-hover table-bordered item-table">
@@ -320,11 +324,7 @@
                                                                 </div>
                                                             </div>
                                                             <div class="col-sm-4">
-                                                                <!-- <router-link to="/apps/invoice/preview" class="btn btn-dark btn-preview">Preview</router-link> -->
-                                                                <a href="javascript:;" @click="addPayment" class="btn btn-dark btn-preview" data-bs-toggle="modal" data-bs-target="#modalPayment">Pembayaran</a>
-                                                            </div>
-                                                            <div class="col-sm-4">
-                                                                <a href="javascript:;" @click="simpanPenjualan" class="btn btn-success btn-download">Save</a>
+                                                                <button @click="openModal()" class="btn btn-success btn-download">PAYMENT</button>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -373,6 +373,75 @@
                                         </div>
                                     </div>
 
+                                    <Modal 
+                                        v-model:visible="isVisible" 
+                                        :draggable="true" 
+                                        :title="'PEMBAYARAN NOTA'"
+                                        :showCancelButton="false" 
+                                        :cancelButton="{text: 'cancel', onclick: () => {isVisible = false}, loading: false}"
+                                        :okButton="{text: 'SAVE', onclick: () => {simpanPenjualan()}, loading: false}"
+                                        width="60%">
+                                        
+                                        <div class="col-md-12 mb-3">
+                                            <label class="form-label">Riwayat Pembayaran</label>
+                                            <table class="table table-bordered table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>No Bayar</th>
+                                                        <th>Tanggal</th>
+                                                        <th>Jumlah</th>
+                                                        <th>Metode</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-for="bayar in listPembayaran" :key="bayar.noBayar">
+                                                        <td>{{ bayar.noBayar }}</td>
+                                                        <td>{{ bayar.tglBayar }}</td>
+                                                        <td>{{ new Intl.NumberFormat().format(bayar.jmlBayar) }}</td>
+                                                        <td>{{ bayar.metodeBayar }}</td>
+                                                    </tr>
+                                                    <tr v-if="!listPembayaran || listPembayaran.length === 0">
+                                                        <td colspan="4" class="text-center">Belum ada pembayaran</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="totals-row">
+                                                <div class="invoice-totals-row ">
+                                                    <div style="font-size: 20px;">
+                                                        <div v-if="params.term === '0'">Cash</div>
+                                                        <div v-else-if="params.term === '1'">Kredit</div>
+                                                    </div>
+                                                    <!-- <div class="invoice-summary-label"></div> -->
+                                                    <div class="invoice-summary-value">
+                                                        <div class="balance-due-amount">
+                                                            <span style="font-size: 30px;">{{ new Intl.NumberFormat().format(Math.floor(total)) }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12" v-if="params.term === '0'">
+                                            <div class="totals-row">
+                                                <div class="invoice-totals-row ">
+                                                    <div style="font-size: 20px;">Method</div>
+                                                    <!-- <div class="invoice-summary-label"></div> -->
+                                                    <div class="invoice-summary-value">
+                                                        <div class="balance-due-amount">
+                                                            <select v-model="paramsbayar.metodeBayar" >
+                                                                <option value="cash" selected>Cash</option>
+                                                                <option value="credit_card">Credit Card</option>
+                                                                <option value="bank_transfer">Bank Transfer</option>
+                                                                <option value="ewallet">E-Wallet</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Modal>
+
                                     <div class="invoice-detail-note">
                                         <div class="row">
                                             <div class="col-md-12 align-self-center">
@@ -416,7 +485,7 @@
     import '@suadelabs/vue3-multiselect/dist/vue3-multiselect.css';
 
     import moment from "moment";
-
+    import { Modal } from 'usemodal-vue3';
 
     import { useStore } from 'vuex';
     import { useRouter, useRoute } from 'vue-router'
@@ -428,6 +497,8 @@
     const router = useRouter();
     const route = useRoute();
 
+    const isVisible = ref(false);
+    const barcode = ref('');
     const cartItemsPen = ref([])
     const cartItemsPenJasa = ref([])
     const subtotal = ref()
@@ -442,6 +513,7 @@
     const tot = ref();
     const totjasa = ref();
     const divpajak = ref(false)
+    const listPembayaran = ref({});
     // const oldnota = ref(headerfull.value.noPenjualan);
     // let nop = headerfull[0].noPenjualan;
     const props = defineProps({
@@ -465,6 +537,13 @@
         disc: disc,
         total: total, 
         termPenjualan: props.termPenjualan,
+    });
+
+    const paramsbayar = ref({
+        noBayar: null,
+        tglBayar: params.value.jthTempo,
+        jmlBayar: total,
+        metodeBayar: 'cash',
     });
 
     const paramspelanggan = ref({
@@ -568,6 +647,17 @@
         // localStorage.setItem('headerEditPen', '[]')
     })
 
+    const openModal = () => {
+        getPembayaran()
+        // Logic to open the modal
+        console.log('Modal opened');
+        isVisible.value = true;
+        
+    };
+    const getPembayaran = async () => {
+        await store.dispatch('GetListBayarPenjualan', { noJual: props.kd_trans });
+        listPembayaran.value = store.getters.SlistBayarPenjualan;
+    };
     // const getBarang=() => {
     //     store.dispatch('GetBarang')
     // }
@@ -638,10 +728,11 @@
                 console.log('berhasil dihapus')
                 const header =params.value
                 const headers =paramspelanggan.value
+                const bayar = paramsbayar.value
                 const headerfull = Object.assign(header, headers)
                 const detailjasa =cartItemsPenJasa.value;
                 const detail =cartItemsPen.value
-                store.dispatch('CreatePenjualan', [headerfull,detail,detailjasa] )
+                store.dispatch('CreatePenjualan', [headerfull,detail,detailjasa,bayar] )
             
                 total.value = 0
                 subtotal.value = 0
@@ -685,7 +776,18 @@
                 cartItemsPen.value[objIndex].total = parseInt(newTotal);
                 cartItemsPen.value[objIndex].totalhpp = parseInt(newTotalHpp);
                 localStorage.setItem('cartItemsPen',JSON.stringify(cartItemsPen.value));
-                alert(oldName+' Quantity Update')
+                const toast = window.Swal.mixin({
+                    toast: true,
+                    position: 'top-center',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    padding: '2em',
+                });
+                toast.fire({
+                    icon: 'success',
+                    title: oldName + ' Quantity Update',
+                    padding: '2em',
+                });
                 getCart();
                 getTotal()
                 // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
@@ -710,8 +812,128 @@
             getCart();
             getTotal()
             // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
-            alert(brg.nmBarang+ " berhasil disimpan")
+            const toast = window.Swal.mixin({
+                toast: true,
+                position: 'top-center',
+                showConfirmButton: false,
+                timer: 3000,
+                padding: '2em',
+            });
+            toast.fire({
+                icon: 'success',
+                title: brg.nmBarang + " berhasil disimpan",
+                padding: '2em',
+            });
             }
+    }
+
+    function addToCartB(barcode) {
+        store.dispatch('CheckBarangExist', {kdBarang: barcode})
+            .then((response) => {
+                // console.log(response.data);
+                const brg = response.data.data;
+                if (!response.data.exist === true) {
+                    const toast = window.Swal.mixin({
+                        toast: true,
+                        position: 'top-center',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        padding: '2em',
+                    });
+                    toast.fire({
+                        icon: 'error',
+                        title: 'Barang tidak ditemukan di database',
+                        padding: '2em',
+                    });
+                    return;
+                }
+                // console.log(brg)
+                if (localStorage.getItem('cartItemsPen')===null){
+                    cartItemsPen.value = [];
+                    // console.log(cartItems.value)
+                }else{
+                    cartItemsPen.value = JSON.parse(localStorage.getItem('cartItemsPen'));
+                }
+                    const oldItems = JSON.parse(localStorage.getItem('cartItemsPen')) || [];
+                    // console.log(oldItems)
+                    const existingItem = oldItems.find(({ kdBarang }) => kdBarang === brg.kdBarang);
+                    if (existingItem) {
+                        const objIndex = cartItemsPen.value.findIndex((e => e.kdBarang === brg.kdBarang));
+                        const oldName = cartItemsPen.value[objIndex].nmBarang;
+                        const oldQty = cartItemsPen.value[objIndex].qty;
+                        const oldTotal = cartItemsPen.value[objIndex].total;
+                        const oldTotalHpp = cartItemsPen.value[objIndex].totalhpp;
+                        const newQty = parseInt(oldQty) + parseInt(qty.value) ;
+                        const newTotal = parseInt(oldTotal) + parseInt(qty.value * brg.hrgJual) ;
+                        const newTotalHpp = parseInt(oldTotalHpp) + parseInt(qty.value * brg.hrgPokok) ;
+                        cartItemsPen.value[objIndex].qty = parseInt(newQty);
+                        cartItemsPen.value[objIndex].total = parseInt(newTotal);
+                        cartItemsPen.value[objIndex].totalhpp = parseInt(newTotalHpp);
+                        localStorage.setItem('cartItemsPen',JSON.stringify(cartItemsPen.value));
+                        const toast = window.Swal.mixin({
+                            toast: true,
+                            position: 'top-center',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            padding: '2em',
+                        });
+                        toast.fire({
+                            icon: 'success',
+                            title: oldName + ' Quantity Update',
+                            padding: '2em',
+                        });
+                        getCart();
+                        getTotal()
+                        // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
+                    }else{
+                    cartItemsPen.value.push({
+                        kdBarang:brg.kdBarang, 
+                        nmBarang:brg.nmBarang,
+                        accid:brg.accid,
+                        accid_persediaan:brg.accid_persediaan,
+                        accid_hpp:brg.accid_hpp,
+                        hrgJual:brg.hrgJual,
+                        accid:brg.accid,
+                        accid_persediaan:brg.accid_persediaan,
+                        qty:qty.value,
+                        satuan:brg.satuanBarang,
+                        total:(qty.value * brg.hrgJual) - (qty.value * brg.hrgJual * disc.value / 100),
+                        disc:disc.value,
+                        totalhpp:qty.value * brg.hrgPokok, 
+                        kategori:brg.ktgBarang
+                    });	
+                    localStorage.setItem('cartItemsPen',JSON.stringify(cartItemsPen.value));
+                    getCart();
+                    getTotal()
+                    // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
+                    const toast = window.Swal.mixin({
+                        toast: true,
+                        position: 'top-center',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        padding: '2em',
+                    });
+                    toast.fire({
+                        icon: 'success',
+                        title: brg.nmBarang + " berhasil disimpan",
+                        padding: '2em',
+                    });
+                }
+            })
+            .catch(() => {
+                const toast = window.Swal.mixin({
+                    toast: true,
+                    position: 'top-center',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    padding: '2em',
+                });
+                toast.fire({
+                    icon: 'error',
+                    title: 'Terjadi kesalahan saat memeriksa barang',
+                    padding: '2em',
+                });
+            });
     }
 
     function addToCartJasa(jsa) {

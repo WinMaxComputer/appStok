@@ -27,6 +27,29 @@ class barangController extends Controller
         ], 200);
     }
 
+    public function checkBarangExist(Request $request)
+    {
+        $kdBarang = $request->input('kdBarang');
+        $barang = DB::table('tblpersediaan')
+            ->join('tblbarang', 'tblpersediaan.kdPersediaan', '=', 'tblbarang.kdBarang')
+            ->where('tblpersediaan.kdPersediaan', $kdBarang)
+            ->orWhere('tblbarang.barCode', $kdBarang)
+            ->first();
+        if ($barang) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Barang ditemukan',
+                'data' => $barang,
+                'exist' => true
+            ], 200);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Barang tidak ditemukan'
+            ], 404);
+        }
+    }
+
     public function indexPersediaan()
     {
         $posts = Persediaan::join('tblkategori', 'tblpersediaan.ktgPersediaan', '=', 'tblkategori.kodeKtg')
@@ -585,7 +608,7 @@ class barangController extends Controller
                 DB::table('gl_detail')->truncate();
                 DB::table('tblinventaris_pengadaan')->truncate();
                 DB::table('tblinventaris_pengadaan_detail')->truncate();
-
+                DB::table('tblpembayaran_penjualan')->truncate();
                 DB::table('tblinventaris_penyusutan')->truncate();
                 DB::table('tblinventaris_penyusutan_detail')->truncate();
                 DB::table('tblkartu_stok')->truncate();

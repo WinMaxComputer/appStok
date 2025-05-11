@@ -49,7 +49,7 @@
 
                         <v-client-table :data="items" :columns="columns" :options="table_option">
                             <template #tglPenjualan="props"> {{ moment(props.row.tglPenjualan).format("DD-MM-YYYY") }} </template>
-                            <template #subTotalPenjualan="props"> {{ Number(props.row.subTotalPenjualan).toLocaleString() }} </template>
+                            <template #piutangPenjualan="props"> {{ Number(props.row.piutangPenjualan).toLocaleString() }} </template>
                             <template #totalPenjualan="props"> {{ Number(props.row.totalPenjualan).toLocaleString() }} </template>
                             <template #taxPenjualan="props"> {{ Number(props.row.taxPenjualan).toLocaleString() }} </template>
                             <template #typeBayar="props">
@@ -186,7 +186,7 @@
     const store = useStore();
     const router = useRouter()
 
-    const columns = ref(['noPenjualan', 'tglPenjualan', 'nmPelanggan', 'typeBayar', 'totalPenjualan', 'action']);
+    const columns = ref(['noPenjualan', 'tglPenjualan', 'nmPelanggan', 'typeBayar', 'piutangPenjualan' ,'totalPenjualan', 'action']);
     const items = ref([]);
     const table_option = ref({
         perPage: 10,

@@ -13,7 +13,28 @@ const getters = {
     StateKategori: state => state.kategori,
 };
 
-const actions = {  
+const actions = {
+    async CheckBarangExist({ commit }, id) {
+        try {
+            const response = await axios.post('/api/check/barang/', id);
+            return response; // Assuming the API returns a boolean field 'exists'
+        } catch (err) {
+            const toast = window.Swal.mixin({
+                toast: true,
+                position: 'top-center',
+                showConfirmButton: false,
+                timer: 3000,
+                padding: '2em',
+            });
+            toast.fire({
+                title: 'Error!',
+                text: 'Gagal memeriksa keberadaan barang',
+                icon: 'error',
+                padding: '2em',
+            });
+            throw err;
+        }
+    },
     async CreateBarang({dispatch}, post) {
         try{
             await axios.post('/api/store/barang', post)

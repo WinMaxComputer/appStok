@@ -1,5 +1,6 @@
 //store/modules/auth.js
 
+import PembayaranPiutang from '@/views/transaksi/pembayaranPiutang.vue';
 import axios from 'axios';
 const state = {
     pembelian: [],
@@ -15,7 +16,9 @@ const state = {
     detailpenjualan: [],
     detailpembelian: [],
     editaplusan:[],
-    editbiaya: []
+    editbiaya: [],
+    // pembayaran: [],
+    pembayaranPiutang: [],
   };
   
 const getters = {
@@ -216,7 +219,40 @@ const actions = {
         }
         // await dispatch('GetPembelian')
     },
-
+    async SimpanPembayaranPenjualan({ dispatch }, detail) {
+        let response
+        try {
+            response = await axios.post('/api/store/pembayaran-penjualan', detail)
+            const toast = window.Swal.mixin({
+                toast: true,
+                position: 'top-center',
+                showConfirmButton: false,
+                timer: 3000,
+                padding: '2em',
+            });
+            toast.fire({
+                icon: 'success',
+                title: 'Pembayaran penjualan berhasil disimpan',
+                padding: '2em',
+            });
+            return response;
+        } catch (ex) {
+            const toast = window.Swal.mixin({
+                toast: true,
+                position: 'top-center',
+                showConfirmButton: false,
+                timer: 3000,
+                padding: '2em'
+            });
+            toast.fire({
+                title: 'Error!',
+                text: 'Gagal menyimpan pembayaran penjualan',
+                icon: 'error',
+                padding: '2em'
+            });
+            throw 'error';
+        }
+    },
     async CreatePenjualanKupon({dispatch}, detail) {
         let response
         try {

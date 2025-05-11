@@ -9,6 +9,7 @@ use App\Models\PenjualanDetailJasa;
 use App\Models\Penjualan;
 use App\Models\GeneralLedger;
 use App\Models\KuponPenjualan;
+use App\Models\Bayarjual;
 class penjualanController extends Controller
 {
     //
@@ -26,13 +27,39 @@ class penjualanController extends Controller
                 $pph22 = 10 ; //$detop[0]['pph22'];
                 $type = $request[0]['term'];
                 $piutang = 0;
-                $acc_id_k = '11110';
+                // $acc_id_k = '11110';
+                if($request[3]['metodeBayar'] == 'cash'){
+                    $acc_id_k = '11110'; // $detpro[$i]['accid']; // acc id yg di debet
+                }else{
+                    $acc_id_k = '11210'; // $detpro[$i]['accid']; // acc id yg di debet
+                }
                 if($type == '1'){
                     $piutang = $total;
                     $startDate = $request[0]['tglNota'];
                     $endDate = $request[0]['jthTempo'];
                     $dateDifference = \Carbon\Carbon::parse($startDate)->diffInDays(\Carbon\Carbon::parse($endDate));
                     $acc_id_k = '11501';
+                }else{
+                    $piutang = 0;
+                    $startDate = $request[0]['tglNota'];
+                    $endDate = $request[0]['jthTempo'];
+                    $dateDifference = \Carbon\Carbon::parse($startDate)->diffInDays(\Carbon\Carbon::parse($endDate));
+
+                    DB::table('tblpembayaran_penjualan')->updateOrInsert(
+                        [
+                            'noBayar' => $noNota
+                        ],
+                        [
+                            'noJual' => $noNota,
+                            'noBayar' => isset($request[3]['noBayar']) ? $request[3]['noBayar'] : null,
+                            'tglBayar' => isset($request[3]['tglBayar']) ? $request[3]['tglBayar'] : null,
+                            'jmlBayar' => isset($request[3]['jmlBayar']) ? $request[3]['jmlBayar'] : 0,
+                            'metodeBayar' => isset($request[3]['metodeBayar']) ? $request[3]['metodeBayar'] : null,
+                            'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
+                            'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
+                        ]
+                    );
+                    
                 }
                 
                 $post = DB::table('tblpenjualan')->upsert([
@@ -68,7 +95,7 @@ class penjualanController extends Controller
                     'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
                     'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                 ]);
-                
+                Bayarjual::where('noJual', $noNota)->delete();
                 $detpem = $request[1];
                 if (isset($detpem)) {
                     PenjualanDetail::where('r_noPenjualan', $noNota)->delete();

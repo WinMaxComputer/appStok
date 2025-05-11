@@ -119,6 +119,18 @@ const routes = [
         props: true,
     },
     {
+        path: '/pembayaran-penjualan',
+        name: 'pembayaran-penjualan',
+        component: () => import(/* webpackChunkName: "components-tabs" */ '../views/transaksi/pembayaranPiutang.vue'),
+        props: true,
+    },
+    {
+        path: '/pembayaran-pembelian',
+        name: 'pembayaran-pembelian',
+        component: () => import(/* webpackChunkName: "components-tabs" */ '../views/transaksi/pembayaranHutang.vue'),
+        props: true,
+    },
+    {
         path: '/invoice/penjualan',
         name: 'invoice-penjualan',
         component: () => import(/* webpackChunkName: "apps-invoice-preview" */ '../views/transaksi/invoicePenjualan.vue'),

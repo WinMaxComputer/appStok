@@ -120,12 +120,17 @@
                                             <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
                                                 <div class="invoice-detail-items">
                                                     <div class="row">
+                                                        <div class="form-group col-xs-2">
+                                                            <label for="Inputqty">Barcode</label>
+                                                            <input type="text" ref="InputBarcode" v-model="barcode" class="form-control form-control-sm" placeholder="Barcode" @keyup.enter="addToCartB(barcode)" />
+                                                        </div>
                                                         <div class="form-group col-md-3">
                                                             <label for="inputCity">NAMA BARANG</label>
                                                             <multiselect 
                                                                 v-model="brg" 
                                                                 :options="penjualan.barangs" 
                                                                 :searchable="true"
+                                                                @select="focusInput()"
                                                                 track-by="nmBarang"
                                                                 label="nmBarang"
                                                                 open-direction="top"
@@ -136,15 +141,15 @@
                                                         </div>
                                                         <div class="form-group col-md-2">
                                                             <label for="inputState">HARGA</label>
-                                                            <input type="text" v-model="brg.hrgJual" class="form-control form-control-sm" placeholder="Price" @keypress="onlyNumber" />
+                                                            <input type="number" v-model="brg.hrgJual" ref="InputHarga" class="form-control form-control-sm" placeholder="Price" @keypress="onlyNumber" />
                                                         </div>
                                                         <div class="form-group col-sm-1">
                                                             <label for="inputZip">QTY</label>
-                                                            <input type="text" v-model="qty" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
+                                                            <input type="number" v-model="qty" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
                                                         </div>
                                                         <div class="form-group col-sm-1">
                                                             <label for="inputZip">Disc</label>
-                                                            <input type="text" v-model="disc" class="form-control form-control-sm" placeholder="Diskon" @keypress="onlyNumber" />
+                                                            <input type="number" v-model="disc" class="form-control form-control-sm" placeholder="Diskon" @keypress="onlyNumber" />
                                                         </div>
                                                         <div class="form-group col-md-2">
                                                             <label for="satuan">SATUAN</label>
@@ -263,7 +268,7 @@
                                         <!-- <button type="button" class="btn btn-secondary additem btn-sm" @click="add_item()">Add Item</button> -->
                                     </div>
 
-                                    <div class="invoice-detail-items" >
+                                    <div v-if="cartItemsPenJasa" class="invoice-detail-items" >
                                         <div class="inv--product-table-section">
                                             <div class="table-responsive">
                                                 <table class="table table-hover table-bordered item-table">
@@ -331,7 +336,7 @@
                                                                 <a href="javascript:;" @click="addPayment" class="btn btn-dark btn-preview" data-bs-toggle="modal" data-bs-target="#modalPayment">Pembayaran</a>
                                                             </div> -->
                                                             <div class="col-sm-4">
-                                                                <a href="javascript:;" @click="simpanPenjualan" class="btn btn-success btn-download">Save</a>
+                                                                <button @click="openModal()" class="btn btn-success btn-download">PAYMENT</button>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -349,7 +354,7 @@
                                                             <div class="subtotal-amount"><span class="currency"></span><span class="amount">{{new Intl.NumberFormat().format(subtotal)}}</span></div>
                                                         </div>
                                                     </div>
-                                                    <div class="invoice-totals-row invoice-summary-subtotal" >
+                                                    <div v-if="cartItemsPenJasa" class="invoice-totals-row invoice-summary-subtotal"  >
                                                         <div class="invoice-summary-label">Total Jasa</div>
                                                          <div class="invoice-summary-label"></div>
                                                         <div class="invoice-summary-value">
@@ -367,7 +372,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="invoice-totals-row invoice-summary-balance-due">
-                                                        <div class="invoice-summary-label">Total</div>
+                                                        <div >Total</div>
                                                          <!-- <div class="invoice-summary-label"></div> -->
                                                         <div class="invoice-summary-value">
                                                             <div class="balance-due-amount"><span class="currency"></span>
@@ -379,6 +384,83 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    <Modal 
+                                        v-model:visible="isVisible" 
+                                        :draggable="true" 
+                                        :title="'PEMBAYARAN NOTA'"
+                                        :showCancelButton="false" 
+                                        :cancelButton="{text: 'cancel', onclick: () => {isVisible = false}, loading: false}"
+                                        :okButton="{text: 'SAVE', onclick: () => {simpanPenjualan()}, loading: false}"
+                                        width="60%">
+
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label for="noBayar" class="form-label">No Bayar</label>
+                                                <input
+                                                    type="text"
+                                                    v-model="paramsbayar.noBayar"
+                                                    class="form-control"
+                                                    placeholder="Nomor Pembayaran"
+                                                />
+                                                <input type="text" v-model="paramsbayar.jmlBayar" />
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="tglBayar" class="form-label">Tanggal Bayar</label>
+                                                <flat-pickr
+                                                    v-model="paramsbayar.tglBayar"
+                                                    class="form-control"
+                                                    placeholder="Tanggal Pembayaran"
+                                                ></flat-pickr>
+                                            </div>
+                                        </div>
+                                            <div class="col-md-12">
+                                                <div class="totals-row">
+                                                    <div class="invoice-totals-row ">
+                                                        <div style="font-size: 20px;">
+                                                            <div v-if="params.term === '0'">Cash</div>
+                                                            <div v-else-if="params.term === '1'">Kredit</div>
+                                                        </div>
+                                                        <!-- <div class="invoice-summary-label"></div> -->
+                                                        <div class="invoice-summary-value">
+                                                            <div class="balance-due-amount">
+                                                                <span style="font-size: 30px;">{{ new Intl.NumberFormat().format(Math.floor(total)) }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12" v-if="params.term === '0'">
+                                                <div class="totals-row">
+                                                    <div class="invoice-totals-row ">
+                                                        <div style="font-size: 20px;">Method</div>
+                                                        <!-- <div class="invoice-summary-label"></div> -->
+                                                        <div class="invoice-summary-value">
+                                                            <div class="balance-due-amount">
+                                                                <select v-model="paramsbayar.metodeBayar" >
+                                                                    <option value="cash" selected>Cash</option>
+                                                                    <option value="credit_card">Credit Card</option>
+                                                                    <option value="bank_transfer">Bank Transfer</option>
+                                                                    <option value="ewallet">E-Wallet</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- <div class="col-md-12">
+                                                <div class="totals-row">
+                                                    <div class="invoice-totals-row ">
+                                                        <div style="font-size: 17px;">Payment</div>
+                                                        <div class="invoice-summary-value">
+                                                            <div class="balance-due-amount">
+                                                                <input type="number" v-model="paramsacc.nilai" placeholder="Payment Amount" @keypress="onlyNumber" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div> -->
+                                    </Modal>
 
                                     <div class="invoice-detail-note">
                                         <div class="row">
@@ -419,6 +501,8 @@
     import 'flatpickr/dist/flatpickr.css';
     import '@/assets/sass/forms/custom-flatpickr.css';
 
+    import { Modal } from 'usemodal-vue3';
+
     import Multiselect from '@suadelabs/vue3-multiselect';
     import '@suadelabs/vue3-multiselect/dist/vue3-multiselect.css';
 
@@ -435,6 +519,9 @@
     const route = useRoute();
 
     const items = ref([]);
+    const Inputqty = ref(null);
+    const InputHarga = ref(null);
+    const barcode = ref('');
     const brg = ref([]);
     const jsa = ref([]);
     const nopenjualan = ref([]);
@@ -451,7 +538,7 @@
     const params = ref({
         noNota: nopenjualan,
         tglNota: moment().format("YYYY-MM-DD"),
-        term: 0,
+        term: '0',
         jthTempo: moment().format("YYYY-MM-DD"),
         notes: '',
         subtotal: subtotal,
@@ -459,6 +546,7 @@
         tax: tax,
         // disc: disc,
         total: total,
+        paymentMethod: 'cash',
     });
     const paramspelanggan = ref({
         kdPelanggan: '',
@@ -467,6 +555,12 @@
         noHpPelanggan: '',
 
     });
+    const paramsbayar = ref({
+        noBayar: null,
+        tglBayar: params.value.jthTempo,
+        jmlBayar: total,
+        metodeBayar: 'cash',
+    });
     const paramsacc = ref({
         noAcc: '',
         nmAcc: '',
@@ -474,6 +568,9 @@
         // tlpSupplier: '',
 
     });
+
+    const isVisible = ref(false);
+
     const cartItemsPen = ref([])
     const cartItemsPenJasa = ref([])
     const divpajak = ref(false)
@@ -493,6 +590,14 @@
         return { barangs, jasas, pelanggans, nopenjualan, accs, tot, totjasa }
     });
 
+    const focusInput = () => {
+        setTimeout(() => {
+            console.log('Input focused after timeout');
+            InputHarga.value?.focus();
+        }, 0);
+        
+    };
+
     const getBarang=() => {
         store.dispatch('GetBarang')
         store.dispatch('GetJasa')
@@ -501,9 +606,15 @@
         store.dispatch('GetPelanggan')
     }
     const getNoPenjualan=() => {
-        store.dispatch('GetNoPenjualan');
-        nopenjualan.value = store.getters.NoPenjualan;
+        store.dispatch('GetNoPenjualan').then(() => {
+            nopenjualan.value = store.getters.NoPenjualan;
+        });
     }
+    const getNoPembayaran = async () => {
+        await store.dispatch('GetNoBayarPenjualan').then(() => {
+            paramsbayar.value.noBayar = store.getters.NoBayarPenjualan;
+        });
+    };
     const getAcc=() => {
         store.dispatch('GetAcc')
     }
@@ -559,10 +670,11 @@
     const simpanPenjualan=() => {
         const header =params.value
         const headers =paramspelanggan.value
+        const bayar = paramsbayar.value
         const headerfull = Object.assign(header, headers)
         const detail =cartItemsPen.value;
         const detailjasa =cartItemsPenJasa.value;
-        store.dispatch('CreatePenjualan', [headerfull,detail,detailjasa])
+        store.dispatch('CreatePenjualan', [headerfull,detail,detailjasa,bayar])
         .then(response => {
             if(response.status == 200){
                 total.value = 0
@@ -585,8 +697,12 @@
     onMounted(() => {
         divpajak.value = false
         // console.log('on mount page penjualan')
-        
-       
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'F2') {
+                event.preventDefault();
+                openModal();
+            }
+        });
         getBarang();
         // getAcc();
         getPelanggan();
@@ -594,7 +710,16 @@
         getCartJasa();
         getNoPenjualan();
         getTotal();  
+        // getNoPembayaran();
     });
+
+    const openModal = () => {
+        getNoPembayaran()
+        // Logic to open the modal
+        console.log('Modal opened');
+        isVisible.value = true;
+        
+    };
 
     // const change_file = (event) => {
     //     selected_file.value = URL.createObjectURL(event.target.files[0]);
@@ -636,34 +761,166 @@
                 cartItemsPen.value[objIndex].total = parseInt(newTotal);
                 cartItemsPen.value[objIndex].totalhpp = parseInt(newTotalHpp);
                 localStorage.setItem('cartItemsPen',JSON.stringify(cartItemsPen.value));
-                alert(oldName+' Quantity Update')
+                const toast = window.Swal.mixin({
+                    toast: true,
+                    position: 'top-center',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    padding: '2em',
+                });
+                toast.fire({
+                    icon: 'success',
+                    title: oldName + ' Quantity Update',
+                    padding: '2em',
+                });
                 getCart();
                 getTotal()
                 // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
             }else{
-            cartItemsPen.value.push({
-                kdBarang:brg.kdBarang, 
-                nmBarang:brg.nmBarang,
-                accid:brg.accid,
-                accid_persediaan:brg.accid_persediaan,
-                accid_hpp:brg.accid_hpp,
-                hrgJual:brg.hrgJual,
-                accid:brg.accid,
-                accid_persediaan:brg.accid_persediaan,
-                qty:qty.value,
-                satuan:brg.satuanBarang,
-                total:(qty.value * brg.hrgJual) - (qty.value * brg.hrgJual * disc.value / 100),
-                disc:disc.value,
-                totalhpp:qty.value * brg.hrgPokok, 
-                kategori:brg.ktgBarang
-            });	
-            localStorage.setItem('cartItemsPen',JSON.stringify(cartItemsPen.value));
-            getCart();
-            getTotal()
-            // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
-            alert(brg.nmBarang+ " berhasil disimpan")
+                cartItemsPen.value.push({
+                    kdBarang:brg.kdBarang, 
+                    nmBarang:brg.nmBarang,
+                    accid:brg.accid,
+                    accid_persediaan:brg.accid_persediaan,
+                    accid_hpp:brg.accid_hpp,
+                    hrgJual:brg.hrgJual,
+                    accid:brg.accid,
+                    accid_persediaan:brg.accid_persediaan,
+                    qty:qty.value,
+                    satuan:brg.satuanBarang,
+                    total:(qty.value * brg.hrgJual) - (qty.value * brg.hrgJual * disc.value / 100),
+                    disc:disc.value,
+                    totalhpp:qty.value * brg.hrgPokok, 
+                    kategori:brg.ktgBarang
+                });	
+                localStorage.setItem('cartItemsPen',JSON.stringify(cartItemsPen.value));
+                getCart();
+                getTotal()
+                // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
+                const toast = window.Swal.mixin({
+                    toast: true,
+                    position: 'top-center',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    padding: '2em',
+                });
+                toast.fire({
+                    icon: 'success',
+                    title: brg.nmBarang + " berhasil disimpan",
+                    padding: '2em',
+                });
             }
     }
+
+    function addToCartB(barcode) {
+        store.dispatch('CheckBarangExist', {kdBarang: barcode})
+            .then((response) => {
+                // console.log(response.data);
+                const brg = response.data.data;
+                if (!response.data.exist === true) {
+                    const toast = window.Swal.mixin({
+                        toast: true,
+                        position: 'top-center',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        padding: '2em',
+                    });
+                    toast.fire({
+                        icon: 'error',
+                        title: 'Barang tidak ditemukan di database',
+                        padding: '2em',
+                    });
+                    return;
+                }
+                // console.log(brg)
+                if (localStorage.getItem('cartItemsPen')===null){
+                    cartItemsPen.value = [];
+                    // console.log(cartItems.value)
+                }else{
+                    cartItemsPen.value = JSON.parse(localStorage.getItem('cartItemsPen'));
+                }
+                    const oldItems = JSON.parse(localStorage.getItem('cartItemsPen')) || [];
+                    // console.log(oldItems)
+                    const existingItem = oldItems.find(({ kdBarang }) => kdBarang === brg.kdBarang);
+                    if (existingItem) {
+                        const objIndex = cartItemsPen.value.findIndex((e => e.kdBarang === brg.kdBarang));
+                        const oldName = cartItemsPen.value[objIndex].nmBarang;
+                        const oldQty = cartItemsPen.value[objIndex].qty;
+                        const oldTotal = cartItemsPen.value[objIndex].total;
+                        const oldTotalHpp = cartItemsPen.value[objIndex].totalhpp;
+                        const newQty = parseInt(oldQty) + parseInt(qty.value) ;
+                        const newTotal = parseInt(oldTotal) + parseInt(qty.value * brg.hrgJual) ;
+                        const newTotalHpp = parseInt(oldTotalHpp) + parseInt(qty.value * brg.hrgPokok) ;
+                        cartItemsPen.value[objIndex].qty = parseInt(newQty);
+                        cartItemsPen.value[objIndex].total = parseInt(newTotal);
+                        cartItemsPen.value[objIndex].totalhpp = parseInt(newTotalHpp);
+                        localStorage.setItem('cartItemsPen',JSON.stringify(cartItemsPen.value));
+                        const toast = window.Swal.mixin({
+                            toast: true,
+                            position: 'top-center',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            padding: '2em',
+                        });
+                        toast.fire({
+                            icon: 'success',
+                            title: oldName + ' Quantity Update',
+                            padding: '2em',
+                        });
+                        getCart();
+                        getTotal()
+                        // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
+                    }else{
+                    cartItemsPen.value.push({
+                        kdBarang:brg.kdBarang, 
+                        nmBarang:brg.nmBarang,
+                        accid:brg.accid,
+                        accid_persediaan:brg.accid_persediaan,
+                        accid_hpp:brg.accid_hpp,
+                        hrgJual:brg.hrgJual,
+                        accid:brg.accid,
+                        accid_persediaan:brg.accid_persediaan,
+                        qty:qty.value,
+                        satuan:brg.satuanBarang,
+                        total:(qty.value * brg.hrgJual) - (qty.value * brg.hrgJual * disc.value / 100),
+                        disc:disc.value,
+                        totalhpp:qty.value * brg.hrgPokok, 
+                        kategori:brg.ktgBarang
+                    });	
+                    localStorage.setItem('cartItemsPen',JSON.stringify(cartItemsPen.value));
+                    getCart();
+                    getTotal()
+                    // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
+                    const toast = window.Swal.mixin({
+                        toast: true,
+                        position: 'top-center',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        padding: '2em',
+                    });
+                    toast.fire({
+                        icon: 'success',
+                        title: brg.nmBarang + " berhasil disimpan",
+                        padding: '2em',
+                    });
+                }
+            })
+            .catch(() => {
+                const toast = window.Swal.mixin({
+                    toast: true,
+                    position: 'top-center',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    padding: '2em',
+                });
+                toast.fire({
+                    icon: 'error',
+                    title: 'Terjadi kesalahan saat memeriksa barang',
+                    padding: '2em',
+                });
+            });
+    }
+
     function addToCartJasa(jsa) {
         // console.log(brg)
         if (localStorage.getItem('cartItemsPenJasa')===null){
@@ -809,3 +1066,5 @@
         }   
     }
 </script>
+
+

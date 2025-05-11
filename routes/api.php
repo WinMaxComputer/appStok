@@ -34,6 +34,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/store/opnum', [App\Http\Controllers\barangController::class, 'simpanOpnum']);
     Route::post('/update/barang', [App\Http\Controllers\barangController::class, 'update']);
     Route::delete('/hapus/barang/{id}', [App\Http\Controllers\barangController::class, 'destroy']);
+    Route::post('/check/barang', [App\Http\Controllers\barangController::class, 'checkBarangExist']);
 
         //=====JASA============
     Route::get('/jasa', [App\Http\Controllers\jasaController::class, 'index']);
@@ -70,6 +71,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/list-biaya', [App\Http\Controllers\laporanController::class, 'daftarBiaya']);
     Route::post('/list-jurnalumum', [App\Http\Controllers\laporanController::class, 'daftarGJ']);
     Route::post('/laporan-barang', [App\Http\Controllers\laporanController::class, 'laporanBrg']);
+    Route::post('/list-bayarpenjualan', [App\Http\Controllers\laporanController::class, 'laporanBayarPenjualan']);
     Route::post('/laporan-opnum', [App\Http\Controllers\laporanController::class, 'laporanOpnum']);
     Route::post('/laporan-penyusutan', [App\Http\Controllers\laporanController::class, 'laporanPenyusutan']);
     Route::post('/listpenjualan-kupon', [App\Http\Controllers\laporanController::class, 'listKupon']);
@@ -117,6 +119,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/kdpengadaan', [App\Http\Controllers\nomorController::class, 'kodePengadaan']);
     Route::get('/kdpenyusutan', [App\Http\Controllers\nomorController::class, 'kodePenyusutan']);
     Route::get('/kdpenjualan', [App\Http\Controllers\nomorController::class, 'kodePenjualan']);
+    Route::get('/kdbayarpenjualan', [App\Http\Controllers\nomorController::class, 'kodeBayarPenjualan']);
     Route::get('/kdkupon', [App\Http\Controllers\nomorController::class, 'kodeKupon']);
     Route::get('/kdkategori', [App\Http\Controllers\nomorController::class, 'kodeKategori']);
     Route::get('/kdopnum', [App\Http\Controllers\nomorController::class, 'kodeStokOpname']);
@@ -156,6 +159,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/store/penjualan', [App\Http\Controllers\penjualanController::class, 'simpanPenjualan']);
     Route::post('/store/penjualan-kupon', [App\Http\Controllers\penjualanController::class, 'simpanPenjualanKupon']);
     Route::post('/getdetail-penjualan', [App\Http\Controllers\penjualanController::class, 'getDetailPenjualan']);
+
+    Route::post('/store/pembayaran-penjualan', [App\Http\Controllers\pembayaranController::class, 'bayarPenjualan']);
     
 
     //============biaya

@@ -40,6 +40,49 @@ class laporanController extends Controller
         ], 200);
     }
 
+    public function laporanBayarPenjualan(Request $request){
+        $noJual = $request->input('noJual');
+        if($noJual == null){
+            $startDate = date("Y-m-d", strtotime($request->input('startDate')));
+            $endDate = date("Y-m-d", strtotime($request->input('endDate')));
+            
+            $lap = DB::table('tblpembayaran_penjualan')
+                    ->join('tblpenjualan', 'tblpembayaran_penjualan.noJual', 'tblpenjualan.noPenjualan')
+                    ->join('tblpelanggan', 'tblpenjualan.r_pelanggan', 'tblpelanggan.kdPelanggan')
+                    ->select(
+                        'tblpembayaran_penjualan.*',
+                        'tblpenjualan.tglPenjualan',
+                        'tblpelanggan.nmPelanggan'
+                    )
+                    ->whereBetween('tblpembayaran_penjualan.tglBayar', [$startDate, $endDate])
+                    ->orderBy('tblpembayaran_penjualan.id', 'desc')
+                    ->get();
+            return response()->json([
+                'success' => true,
+                'message' => 'Laporan Pembayaran Penjualan',
+                'data' => $lap
+            ], 200);
+        }else{
+            $lap = DB::table('tblpembayaran_penjualan')
+                ->join('tblpenjualan', 'tblpembayaran_penjualan.noJual', 'tblpenjualan.noPenjualan')
+                ->join('tblpelanggan', 'tblpenjualan.r_pelanggan', 'tblpelanggan.kdPelanggan')
+                ->select(
+                    'tblpembayaran_penjualan.*',
+                    'tblpenjualan.tglPenjualan',
+                    'tblpelanggan.nmPelanggan'
+                )
+                ->where('tblpembayaran_penjualan.noJual', $noJual)
+                ->orderBy('tblpembayaran_penjualan.id', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Laporan Pembayaran Penjualan',
+                'data' => $lap
+            ], 200);
+        }
+    }
+
     public function pembelianBrg(Request $request){
         $startDate = date("Y-m-d", strtotime($request->input('startDate')));
         $endDate = date("Y-m-d", strtotime($request->input('endDate')));
@@ -566,6 +609,7 @@ class laporanController extends Controller
                 DB::table('tblpenjualan_detail')->where('r_noPenjualan', $kd)->delete();
                 DB::table('tblpenjualan_detail_jasa')->where('r_noPenjualan', $kd)->delete();
                 DB::table('tblkartu_stok')->where('r_notrans', $kd)->delete();
+                DB::table('tblpembayaran_penjualan')->where('noJual', $kd)->delete();
                 DB::commit();
             });
             if(is_null($exception)) {

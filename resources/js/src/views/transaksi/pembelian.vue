@@ -111,7 +111,7 @@
                                         <div class="row">
                                             <div class="form-group col-xs-2">
                                                 <label for="Inputqty">Barcode</label>
-                                                <input type="text" ref="InputBarcode" v-model="barcode" class="form-control form-control-sm" placeholder="Barcode" @keyup.enter="addToCart(brg)" />
+                                                <input type="text" ref="InputBarcode" v-model="barcode" class="form-control form-control-sm" placeholder="Barcode" @keyup.enter="addToCartB(barcode)" />
                                             </div>
                                             <div class="form-group col-md-3">
                                                 <label for="inputCity">NAMA BARANG</label>
@@ -542,50 +542,45 @@
     };
 
     function addToCart(brg) {
-        // console.log(brg)
-        if (localStorage.getItem('cartItemsP')===null){
-            cartItems.value = [];
-            // console.log(cartItems.value)
-        }else{
-            cartItems.value = JSON.parse(localStorage.getItem('cartItemsP'));
-        }
-            const oldItems = JSON.parse(localStorage.getItem('cartItemsP')) || [];
-            // console.log(oldItems)
-            const existingItem = oldItems.find(({ kdBarang }) => kdBarang === brg.kdPersediaan);
-            if (existingItem) {
-                const objIndex = cartItems.value.findIndex((e => e.kdBarang === brg.kdPersediaan));
-                const oldName = cartItems.value[objIndex].nmBarang;
-                const oldQty = cartItems.value[objIndex].qty;
-                const oldTotal = cartItems.value[objIndex].total;
-                const newQty = parseInt(oldQty) + parseInt(qty.value) ;
-                const newTotal = parseInt(oldTotal) + parseInt(qty.value * brg.lastPrice) ;
-                cartItems.value[objIndex].qty = parseInt(newQty);
-                cartItems.value[objIndex].total = parseInt(newTotal);
-                localStorage.setItem('cartItemsP',JSON.stringify(cartItems.value));
-                // alert(oldName+' Quantity Update')
-                getCart();
-                reset_form();
-                // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
-                const toast = window.Swal.mixin({
-                    toast: true,
-                    position: 'top-center',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    padding: '2em',
-                });
-                toast.fire({
-                    icon: 'success',
-                    title: oldName+' Quantity Update',
-                    padding: '2em',
-                });
-            }else{
-                cartItems.value.push({kdBarang:brg.kdPersediaan, nmBarang:brg.nmPersediaan,accid_persediaan:brg.accid_persediaan,hrgPokok:brg.lastPrice,qty:qty.value,satuan:brg.satuanPersediaan,total:qty.value * brg.lastPrice});	
-                localStorage.setItem('cartItemsP',JSON.stringify(cartItems.value));
-                getCart();
-                reset_form();
-                // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
-                // alert(brg.nmPersediaan+ " berhasil disimpan")
-                const toast = window.Swal.mixin({
+        store.dispatch('CheckBarangExist', {kdBarang: brg.kdPersediaan})
+            .then((response) => {
+                console.log(response.data);
+                if (!response.data.exist === true && brg.lastPrice == null) {
+                    const toast = window.Swal.mixin({
+                        toast: true,
+                        position: 'top-center',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        padding: '2em',
+                    });
+                    toast.fire({
+                        icon: 'error',
+                        title: 'Barang tidak ditemukan di database',
+                        padding: '2em',
+                    });
+                    return;
+                }
+                // Proceed with adding to cart if exists
+                if (localStorage.getItem('cartItemsP') === null) {
+                    cartItems.value = [];
+                } else {
+                    cartItems.value = JSON.parse(localStorage.getItem('cartItemsP'));
+                }
+                const oldItems = JSON.parse(localStorage.getItem('cartItemsP')) || [];
+                const existingItem = oldItems.find(({ kdBarang }) => kdBarang === brg.kdPersediaan);
+                if (existingItem) {
+                    const objIndex = cartItems.value.findIndex((e => e.kdBarang === brg.kdPersediaan));
+                    const oldName = cartItems.value[objIndex].nmBarang;
+                    const oldQty = cartItems.value[objIndex].qty;
+                    const oldTotal = cartItems.value[objIndex].total;
+                    const newQty = parseInt(oldQty) + parseInt(qty.value);
+                    const newTotal = parseInt(oldTotal) + parseInt(qty.value * brg.lastPrice);
+                    cartItems.value[objIndex].qty = parseInt(newQty);
+                    cartItems.value[objIndex].total = parseInt(newTotal);
+                    localStorage.setItem('cartItemsP', JSON.stringify(cartItems.value));
+                    getCart();
+                    reset_form();
+                    const toast = window.Swal.mixin({
                         toast: true,
                         position: 'top-center',
                         showConfirmButton: false,
@@ -594,10 +589,100 @@
                     });
                     toast.fire({
                         icon: 'success',
-                        title: brg.nmPersediaan+ " berhasil disimpan",
+                        title: oldName + ' Quantity Update',
                         padding: '2em',
                     });
-            }
+                } else {
+                    cartItems.value.push({
+                        kdBarang: brg.kdPersediaan,
+                        nmBarang: brg.nmPersediaan,
+                        accid_persediaan: brg.accid_persediaan,
+                        hrgPokok: brg.lastPrice,
+                        qty: qty.value,
+                        satuan: brg.satuanPersediaan,
+                        total: qty.value * brg.lastPrice
+                    });
+                    localStorage.setItem('cartItemsP', JSON.stringify(cartItems.value));
+                    getCart();
+                    reset_form();
+                    const toast = window.Swal.mixin({
+                        toast: true,
+                        position: 'top-center',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        padding: '2em',
+                    });
+                    toast.fire({
+                        icon: 'success',
+                        title: brg.nmPersediaan + " berhasil disimpan",
+                        padding: '2em',
+                    });
+                }
+            })
+            .catch(() => {
+                const toast = window.Swal.mixin({
+                    toast: true,
+                    position: 'top-center',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    padding: '2em',
+                });
+                toast.fire({
+                    icon: 'error',
+                    title: 'Terjadi kesalahan saat memeriksa barang',
+                    padding: '2em',
+                });
+            });
+        
+    }
+
+    function addToCartB(barcode) {
+
+        store.dispatch('CheckBarangExist', {kdBarang: barcode})
+            .then((response) => {
+                // console.log(response.data);
+               const brga = response.data.data;
+                    // Set the multiselect value to the found item by kdPersediaan
+                const found = pembelian.value.barangs.find(item => item.kdPersediaan === brga.kdBarang);
+                if (found) {
+                    // Set brg multiselect value to the found item
+                    brg.value = found;
+                    focusInput()
+                }
+             
+                if (!response.data.exist === true) {
+                    const toast = window.Swal.mixin({
+                        toast: true,
+                        position: 'top-center',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        padding: '2em',
+                    });
+                    toast.fire({
+                        icon: 'error',
+                        title: 'Barang tidak ditemukan di database',
+                        padding: '2em',
+                    });
+                    return;
+                }
+                // Proceed with adding to cart if exists
+                
+            })
+            .catch(() => {
+                const toast = window.Swal.mixin({
+                    toast: true,
+                    position: 'top-center',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    padding: '2em',
+                });
+                toast.fire({
+                    icon: 'error',
+                    title: 'Terjadi kesalahan saat memeriksa barang',
+                    padding: '2em',
+                });
+            });
+        
     }
     function removeItem(id) {
         // alert(id)

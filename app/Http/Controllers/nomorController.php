@@ -18,6 +18,7 @@ use App\Models\Inventaris;
 use App\Models\Pengadaan;
 use App\Models\Penyusutan;
 use App\Models\Jasa;
+use App\Models\Bayarjual;
 use Illuminate\Support\Facades\DB;
 
 class nomorController extends Controller
@@ -64,6 +65,48 @@ class nomorController extends Controller
                     'success' => true,
                     'message' => 'Post Tidak Ditemukan!',
                     'kdPenjualan'    => $post,
+                    // 'panjang' => $newid
+                ], 200);
+            }
+        }
+    }
+    public function kodeBayarPenjualan(){
+        
+        $count = Bayarjual::all();
+        if($count->isEmpty()){
+            $tahun = date('Y');
+            
+            $post = 'PYM'.$tahun.'-'.'1';
+            return response()->json([
+                'success' => true,
+                'message' => 'Detail Post!',
+                'kdBayarPenjualan'    => $post,
+                // 'panjang' => $newid
+            ], 200);
+        }else{
+            $no = 0 ;
+            $count = Bayarjual::all()->last();
+            $terakhir = $count->id; ;
+            $kodeBaru = intval($terakhir) + 1  ;
+
+            $tahun = date('Y');
+            $post = 'PYM'.$tahun.'-'.$kodeBaru;
+            
+
+            if (Bayarjual::where('noBayar', $post)->exists()) {
+                $kodeBarulagi = intval($kodeBaru) + 1 ;
+                $post = 'INV'.$tahun.'-'.$kodeBarulagi;
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Detail Post!',
+                    'kdBayarPenjualan'    => $post,
+                    // 'panjang' => $newid
+                ], 200);
+            } else {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Post Tidak Ditemukan!',
+                    'kdBayarPenjualan'    => $post,
                     // 'panjang' => $newid
                 ], 200);
             }
