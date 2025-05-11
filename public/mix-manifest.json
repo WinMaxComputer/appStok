@@ -1,5 +1,5 @@
 {
-    "/js/main.js": "/js/main.js?id=9ad96f0abbfe0afd279ab68fec96a1c9",
+    "/js/main.js": "/js/main.js?id=de06b01f428cbd0a0c35d99daa34fd0c",
     "/js/chunks/index2.56f1431c20a46819.js": "/js/chunks/index2.56f1431c20a46819.js?id=23be8d8acd8b8a979e985e8f9b887d86",
     "/js/chunks/components-tabs.ba333d19074bb0b3.js": "/js/chunks/components-tabs.ba333d19074bb0b3.js?id=1c7625f3537c0a336b9168a67a6f0519",
     "/js/chunks/apps-invoice-preview.5cc5a72f6614054e.js": "/js/chunks/apps-invoice-preview.5cc5a72f6614054e.js?id=8efb55ceb608d5ab51a459452b8b21cf",
@@ -104,5 +104,12 @@
     "/js/chunks/components-tabs.5279e40f3b0954a2.js": "/js/chunks/components-tabs.5279e40f3b0954a2.js?id=f142175f56606ff1de07f863b6c0c2f1",
     "/js/chunks/apps-calendar.8a46d85ae9681a0b.js": "/js/chunks/apps-calendar.8a46d85ae9681a0b.js?id=ac8cb74e7b748a0870172a552bb2a0d1",
     "/js/chunks/apps-invoice-add.456b11063db9d915.js": "/js/chunks/apps-invoice-add.456b11063db9d915.js?id=95604019ef259910fa462d70e351a6a7",
-    "/js/chunks/apps-invoice-edit.b551aa51023dfcaa.js": "/js/chunks/apps-invoice-edit.b551aa51023dfcaa.js?id=8f131f09cd4d77d0ee89616ae3090c2a"
+    "/js/chunks/apps-invoice-edit.b551aa51023dfcaa.js": "/js/chunks/apps-invoice-edit.b551aa51023dfcaa.js?id=8f131f09cd4d77d0ee89616ae3090c2a",
+    "/js/chunks/components-tabs.d2be5bd49877dd7c.js": "/js/chunks/components-tabs.d2be5bd49877dd7c.js?id=11672b10ca49565fe3059f9ad5649ec5",
+    "/js/chunks/components-tabs.08b6ce87eef48a05.js": "/js/chunks/components-tabs.08b6ce87eef48a05.js?id=b5247a72ab5cfe8a66a98b7755971014",
+    "/js/chunks/components-tabs.03b68f7067584fe6.js": "/js/chunks/components-tabs.03b68f7067584fe6.js?id=ae99b7724bd5583d06ef54a686c7337f",
+    "/js/chunks/components-tabs.bf6e361e1c183bfa.js": "/js/chunks/components-tabs.bf6e361e1c183bfa.js?id=dcc2b4a255b267838be94a78081a219d",
+    "/js/chunks/components-tabs.b48cedc62ce87e37.js": "/js/chunks/components-tabs.b48cedc62ce87e37.js?id=43b63aa24f4c4d23e7ba5c698b163eea",
+    "/js/chunks/components-tabs.b6762028041d28d7.js": "/js/chunks/components-tabs.b6762028041d28d7.js?id=6a65da1ec62fd4c45b5426958ea3a414",
+    "/js/chunks/components-tabs.bba83d64c631fb67.js": "/js/chunks/components-tabs.bba83d64c631fb67.js?id=dd9b08f986f1666decb1e4195208312a"
 }

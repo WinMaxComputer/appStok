@@ -440,7 +440,7 @@
         total.value = (subtotal.value - (subtotal.value * disc.value / 100)) + tax.value
         
         
-        console.log('total dengan pajak:'+tax.value)
+        // console.log('total dengan pajak:'+tax.value)
         // return { tot }
     }
 

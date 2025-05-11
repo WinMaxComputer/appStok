@@ -104,49 +104,30 @@
                             :cancelButton="{text: 'cancel', onclick: () => {isVisible = false}, loading: false}"
                             :okButton="{text: 'SAVE', onclick: () => {simpanPembayaran()}, loading: false}"
                             width="60%">
-                            <div class="col-md-12 mb-3">
-                                <label class="form-label">Riwayat Pembayaran</label>
-                                <table class="table table-bordered table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>No Bayar</th>
-                                            <th>Tanggal</th>
-                                            <th>Jumlah</th>
-                                            <th>Metode</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="bayar in listPembayaran" :key="bayar.noBayar">
-                                            <td>{{ bayar.noBayar }}</td>
-                                            <td>{{ bayar.tglBayar }}</td>
-                                            <td>{{ new Intl.NumberFormat().format(bayar.jmlBayar) }}</td>
-                                            <td>{{ bayar.metodeBayar }}</td>
-                                        </tr>
-                                        <tr v-if="!listPembayaran || listPembayaran.length === 0">
-                                            <td colspan="4" class="text-center">Belum ada pembayaran</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="noBayar" class="form-label">No Bayar</label>
-                                    <input
-                                        type="text"
-                                        v-model="paramsbayar.noBayar"
-                                        class="form-control"
-                                        placeholder="Nomor Pembayaran"
-                                    />
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">Riwayat Pembayaran</label>
+                                    <table class="table table-bordered table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>No Bayar</th>
+                                                <th>Tanggal</th>
+                                                <th>Jumlah</th>
+                                                <th>Metode</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="bayar in listPembayaran" :key="bayar.noBayar">
+                                                <td>{{ bayar.noBayar }}</td>
+                                                <td>{{ bayar.tglBayar }}</td>
+                                                <td>{{ new Intl.NumberFormat().format(bayar.jmlBayar) }}</td>
+                                                <td>{{ bayar.metodeBayar }}</td>
+                                            </tr>
+                                            <tr v-if="!listPembayaran || listPembayaran.length === 0">
+                                                <td colspan="4" class="text-center">Belum ada pembayaran</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
-                                <div class="col-md-6">
-                                    <label for="tglBayar" class="form-label">Tanggal Bayar</label>
-                                    <flat-pickr
-                                        v-model="paramsbayar.tglBayar"
-                                        class="form-control"
-                                        placeholder="Tanggal Pembayaran"
-                                    ></flat-pickr>
-                                </div>
-                            </div>
                                 <div class="col-md-12">
                                     <div class="totals-row">
                                         <div class="invoice-totals-row ">

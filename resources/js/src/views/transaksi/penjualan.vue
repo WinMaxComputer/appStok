@@ -141,11 +141,11 @@
                                                         </div>
                                                         <div class="form-group col-md-2">
                                                             <label for="inputState">HARGA</label>
-                                                            <input type="number" v-model="brg.hrgJual" ref="InputHarga" class="form-control form-control-sm" placeholder="Price" @keypress="onlyNumber" />
+                                                            <input type="number" v-model="brg.hrgJual" ref="InputHarga" class="form-control form-control-sm" placeholder="Price" @keyup.enter="moveToQty()" @keypress="onlyNumber" />
                                                         </div>
                                                         <div class="form-group col-sm-1">
                                                             <label for="inputZip">QTY</label>
-                                                            <input type="number" v-model="qty" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
+                                                            <input type="number" v-model="qty" ref="Inputqty" class="form-control form-control-sm" placeholder="Quantity" @keyup.enter="addToCart(brg)" @keypress="onlyNumber" />
                                                         </div>
                                                         <div class="form-group col-sm-1">
                                                             <label for="inputZip">Disc</label>
@@ -188,17 +188,17 @@
                                                         </div>
                                                         <div class="form-group col-md-2">
                                                             <label for="inputState">HARGA</label>
-                                                            <input type="text" v-model="jsa.biayaJasa" class="form-control form-control-sm" placeholder="Price" @keypress="onlyNumber" />
+                                                            <input type="number" v-model="jsa.biayaJasa" class="form-control form-control-sm" placeholder="Price"  @keypress="onlyNumber" />
                                                         </div>
                                                         <div class="form-group col-sm-1">
                                                             <label for="inputZip">QTY</label>
-                                                            <input type="text" v-model="qtyjasa" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
+                                                            <input type="number" v-model="qtyjasa" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
                                                         </div>
                                                         
                                                         <div class="form-group col-md-2">
                                                             <label for="inputZip">TOTAL</label><br>
                                                             <!-- {{ new Intl.NumberFormat().format(brg.hrgJual * qty) }} -->
-                                                            <input type="text" v-model="totjasa" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
+                                                            <input type="number" v-model="totjasa" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
                                                         </div>
                                                         <div class="form-group col-md-1">
                                                             <label for="aksi">Aksi</label>
@@ -394,26 +394,6 @@
                                         :okButton="{text: 'SAVE', onclick: () => {simpanPenjualan()}, loading: false}"
                                         width="60%">
 
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <label for="noBayar" class="form-label">No Bayar</label>
-                                                <input
-                                                    type="text"
-                                                    v-model="paramsbayar.noBayar"
-                                                    class="form-control"
-                                                    placeholder="Nomor Pembayaran"
-                                                />
-                                                <input type="text" v-model="paramsbayar.jmlBayar" />
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label for="tglBayar" class="form-label">Tanggal Bayar</label>
-                                                <flat-pickr
-                                                    v-model="paramsbayar.tglBayar"
-                                                    class="form-control"
-                                                    placeholder="Tanggal Pembayaran"
-                                                ></flat-pickr>
-                                            </div>
-                                        </div>
                                             <div class="col-md-12">
                                                 <div class="totals-row">
                                                     <div class="invoice-totals-row ">
@@ -590,6 +570,9 @@
         return { barangs, jasas, pelanggans, nopenjualan, accs, tot, totjasa }
     });
 
+    const moveToQty = () => {
+        Inputqty.value?.focus();
+    };
     const focusInput = () => {
         setTimeout(() => {
             console.log('Input focused after timeout');
