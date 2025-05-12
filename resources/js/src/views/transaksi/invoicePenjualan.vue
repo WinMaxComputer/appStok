@@ -41,9 +41,9 @@
                                                         </div>
 
                                                         <div class="col-sm-7 align-self-center">
-                                                            <p class="inv-street-addr">Jln Jepun Bali No.10X Lukluk Mengwi Badung - Bali</p>
+                                                            <p class="inv-street-addr">Jln Raya Kutuh No.8 Tabanan - Bali</p>
                                                             <p class="inv-email-address">info@winmaxbali.id</p>
-                                                            <p class="inv-email-address">+6281 8688 114</p>
+                                                            <p class="inv-email-address">+6285 9361 00511</p>
                                                             <p class="inv-email-address">Term: {{ typeBayar === '0' ? 'Cash' : 'Kredit' }} <span v-if="typeBayar === '1'">{{ termPenjualan }} Hari</span></p>
                                                         </div>
                                                         <div class="col-sm-5 align-self-center mt-3 text-sm-end">
@@ -115,7 +115,7 @@
                                                     <div class="row mt-4">
                                                         <div class="col-sm-5 col-12 order-sm-0 order-1">
                                                             <img :src="`https://api.qrserver.com/v1/create-qr-code/?size=50x50&data=${noNota}`" alt="QR Code" />
-                                                            <p class="inv-email-address">Invoice ini sudah di ttd secara digital oleh WinMax Bali<br>Terima kasih</p>
+                                                            <p class="inv-email-address">Invoice ini sudah di ttd secara digital oleh Swamerta Supplier<br>Terima kasih</p>
                                                         </div>
                                                         <div class="col-sm-3 col-12 order-sm-0 order-1" v-if="ttdPenerima"> 
                                                             <p>Penerima,</p>

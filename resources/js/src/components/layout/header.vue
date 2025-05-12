@@ -10,7 +10,7 @@
                         </router-link>
                     </li>
                     <li class="nav-item theme-text">
-                        <router-link to="/" class="nav-link"> WinMax Bali </router-link>
+                        <router-link to="/" class="nav-link"> Swamerta Supplier </router-link>
                     </li>
                 </ul>
                 <div class="d-none horizontal-menu">

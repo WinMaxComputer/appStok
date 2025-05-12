@@ -12,5 +12,5 @@ export const usePageTitle = (pageTitle) =>
     );
 
 export const useMeta = (data) => {
-    return useHead({ ...data, title: `${data.title} | WinMax Bali` });
+    return useHead({ ...data, title: `${data.title} | Swamerta` });
 };
