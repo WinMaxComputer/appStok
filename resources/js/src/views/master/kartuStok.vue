@@ -63,9 +63,9 @@
                                                             <table class="table">
                                                                 <thead>
                                                                     <tr>
-                                                                        <th colspan="2">LAPORAN  BARANG {{ props.nmBarang }}</th>
+                                                                        <th colspan="2">LAPORAN  BARANG {{ sorting.nmBarang }}</th>
                                                                         <th colspan="2">Periode Tgl {{ sorting.startDate }} sd {{ sorting.endDate }}</th>
-                                                                        <th colspan="2">Kode barang : {{ props.kdBarang }}</th>
+                                                                        <th colspan="2">Kode barang : {{ sorting.kdBarang }}</th>
                                                                     </tr>
                                                                     <tr>
                                                                         <th>Tanggal</th>
@@ -238,7 +238,7 @@
 </template>
 
 <script setup>
-    import { computed, onMounted, ref } from 'vue';
+    import { computed, onMounted, ref, onBeforeMount } from 'vue';
 
     //pdf export
     import jsPDF from 'jspdf';
@@ -278,16 +278,11 @@
         endDate: moment().format("D-M-YYYY")
     });
 
-    const props = defineProps({
-        endDate: String,
-        startDate: String,
-        kdBarang: String,
-        nmBarang: String,
-    });
+    // const props = ref();
 
     onMounted(() => {
         bind_data();
-        kdb.value = props.kdBarang ;
+        // kdb.value = props.kdBarang ;
         // total_aplusan();
         // console.log(props)
         // const awal = moment(props.startDate, 'YYYY-MM-DD');
@@ -300,7 +295,13 @@
         // console.log(daylist);
     });
 
-    
+    onBeforeMount(() => {
+        kdb.value = store.getters.SetViewStok[0].kdBarang;
+        sorting.value.kdBarang = store.getters.SetViewStok[0].kdBarang;
+        sorting.value.nmBarang = store.getters.SetViewStok[0].nmBarang;
+        sorting.value.startDate = store.getters.SetViewStok[0].startDate || moment().subtract(30, 'd').format("D-M-YYYY");
+        sorting.value.endDate = store.getters.SetViewStok[0].endDate || moment().format("D-M-YYYY");
+    });
 
     var getDaysArray = function(start, end) {
         for(var arr=[],dt=new Date(start); dt<=new Date(end); dt.setDate(dt.getDate()+1)){
@@ -310,7 +311,7 @@
     };
 
     const bind_data = async () => {
-        await store.dispatch('GetKartuStok', {startDate: props.startDate, endDate: props.endDate, kdBarang: props.kdBarang});
+        await store.dispatch('GetKartuStok', {startDate: sorting.value.startDate, endDate: sorting.value.endDate, kdBarang: kdb.value});
         setTimeout(function() { items.value = store.getters.StateListKartuStok; }, 2000);
         // console.log(props.kdBarang)
     }
@@ -323,37 +324,33 @@
     
     const cari = async () =>{
        
-        await store.dispatch('GetKartuStok', {startDate: sorting.value.startDate, endDate: sorting.value.endDate, kdBarang: kdb.value});
-        setTimeout(function() { items.value = store.getters.StateListKartuStok; }, 2000);
+        await store.dispatch('GetKartuStok', {startDate: sorting.value.startDate, endDate: sorting.value.endDate, kdBarang: kdb.value})
+        .then(() => {
+            items.value = store.getters.StateListKartuStok;
 
-         sorting.value = {
-            startDate: sorting.value.startDate,
-            endDate: sorting.value.endDate,
-
-        }
-
-        let arr = store.getters.StateListKartuStok;
-        let sum_beli = 0;
-        let sum_unit_beli = 0;
-        let sum_jual = 0;
-        let sum_unit_jual = 0;
-        let harga_pokok = 0;
-        arr.forEach(element => {
-            sum_beli +=  parseInt(element.total_beli);
-            sum_unit_beli +=  parseInt(element.unit_beli);
-            sum_jual +=  parseInt(element.total_jual);
-            sum_unit_jual +=  parseInt(element.unit_jual);
-            // harga_pokok = parseInt(element.total_beli) / parseInt(element.unit_beli);
+            let arr = store.getters.StateListKartuStok;
+            let sum_beli = 0;
+            let sum_unit_beli = 0;
+            let sum_jual = 0;
+            let sum_unit_jual = 0;
+            let harga_pokok = 0;
+            arr.forEach(element => {
+                sum_beli +=  parseInt(element.total_beli);
+                sum_unit_beli +=  parseInt(element.unit_beli);
+                sum_jual +=  parseInt(element.total_jual);
+                sum_unit_jual +=  parseInt(element.unit_jual);
+                // harga_pokok = parseInt(element.total_beli) / parseInt(element.unit_beli);
+            });
+            unit_beli_s.value = sum_unit_beli ;
+            total_beli_s.value = sum_beli;
+            unit_jual_s.value = sum_unit_jual;
+            total_jual_s.value = sum_jual;
+            hpp_brg.value = sum_beli / sum_unit_beli;
+            // console.log(sorting.value.startDate)
+            // console.log(sorting.value.endDate)
+            // console.log(kdb.value)
         });
-        unit_beli_s.value = sum_unit_beli ;
-        total_beli_s.value = sum_beli;
-        unit_jual_s.value = sum_unit_jual;
-        total_jual_s.value = sum_jual;
-        hpp_brg.value = sum_beli / sum_unit_beli;
-        // props.startDate = sorting.startDate.value;
-        // props.endDate = sorting.endDate.value;
-        // console.log(sorting.startDate.value)
-        // console.log(arr);
+
     }
 
     const export_table = (type) => {

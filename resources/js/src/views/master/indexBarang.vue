@@ -32,8 +32,13 @@
                             <template #hrgJual="props"> {{ Number(props.row.hrgJual).toLocaleString() }} </template>
                             <template #hrgPokok="props"> {{ Number(props.row.hrgPokok).toLocaleString() }} </template>
                             <template #kartuStok="props"> 
-                                <router-link :to="{name: 'kartu-stok', params: {startDate: sorting.startDate, endDate:sorting.endDate ,kdBarang:props.row.kdBarang,nmBarang:props.row.nmBarang }}"  >
-                                    <svg
+                                <a href="javascript:void(0);" @click="viewstok([{
+                                                        startDate: sorting.startDate,
+                                                        endDate:sorting.endDate ,
+                                                        kdBarang:props.row.kdBarang,
+                                                        nmBarang:props.row.nmBarang
+                                                    }])"  >
+                                <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="24"
                                         height="24"
@@ -47,8 +52,9 @@
                                     >
                                         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                                         <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                                    </svg>
-                                </router-link>
+                                    </svg>    
+                                                    
+                                </a>
                             </template>
                             <template #action="props">
 
@@ -302,11 +308,14 @@
     import moment from "moment";
     import { Modal } from 'usemodal-vue3';
     import { useStore } from 'vuex';
+    import { useRouter, useRoute } from 'vue-router'
 
     import { useMeta } from '@/composables/use-meta';
     useMeta({ title: 'Data Barang' });
 
     const store = useStore();
+    const router = useRouter();
+    const route = useRoute();
     
 
     const columns = ref(['kdBarang','barCode' , 'nmBarang', 'hrgPokok', 'hrgJual', 'namaKtg', 'stokPersediaan', 'kartuStok' ,'action']);
@@ -563,6 +572,14 @@
             .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
             .join(' ');
     };
+    const viewstok = (data) => {
+        store.commit('SetViewStok', data)
+        router.push({ name: 'kartu-stok' })
+        // alert('ID: ' + item.kdBarang + ', Name: ' + item.nmBarang);
+        // console.log(item);
+        // alert('ID: ' + item.kdBarang + ', Name: ' + item.nmBarang);
+    };
+
     const view_row = (item) => {
         modalinput.value = true
         isVisible.value = true;

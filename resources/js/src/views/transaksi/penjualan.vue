@@ -658,7 +658,8 @@
         const headerfull = Object.assign(header, headers)
         const detail =cartItemsPen.value;
         const detailjasa =cartItemsPenJasa.value;
-        store.dispatch('CreatePenjualan', [headerfull,detail,detailjasa,bayar])
+        const edit = { editid: 0};
+        store.dispatch('CreatePenjualan', [headerfull,detail,detailjasa,bayar,edit])
         .then(response => {
             if(response.status == 200){
                 total.value = 0
@@ -670,9 +671,8 @@
                 total.value = 0
                 divpajak.value = false
                 
-                commit('setListpobbm', { id: response.data.data })
-
-                router.push({ name: 'invoice-penjualan', state: { id: response.data.data } });
+                store.commit('setIdnota', response.data.data )
+                router.push({ name: 'invoice-penjualan' });
             }
             console.log(response.data)
         }).catch(error => {

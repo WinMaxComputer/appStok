@@ -22,6 +22,7 @@ const state = {
 
     idnota: [],
     editnota: [],
+    viewstok: [],
     
   };
   
@@ -39,7 +40,9 @@ const getters = {
     SdetailPembelian: state => state.detailpembelian,
     SeditAplusan: state => state.editaplusan,
     SeditBiaya: state => state.editbiaya,
-    SetidNota: state => state.editnota,
+    SetidNota: state => state.idnota,
+    SetEditNota: state => state.editnota,
+    SetViewStok: state => state.viewstok,
 
 };
 
@@ -1032,6 +1035,9 @@ const mutations = {
     setEditNota(state, editjual){
         state.editnota = editjual
     },
+    SetViewStok(state, view){
+        state.viewstok = view
+    }
 
 };
 

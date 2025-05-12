@@ -42,9 +42,9 @@
 
                                                         <div class="col-sm-7 align-self-center">
                                                             <p class="inv-street-addr">Jln Raya Kutuh No.8 Tabanan - Bali</p>
-                                                            <p class="inv-email-address">info@winmaxbali.id</p>
+                                                            <p class="inv-email-address">info@the-swand.com</p>
                                                             <p class="inv-email-address">+6285 9361 00511</p>
-                                                            <p class="inv-email-address">Term: {{ typeBayar === '0' ? 'Cash' : 'Kredit' }} <span v-if="typeBayar === '1'">{{ termPenjualan }} Hari</span></p>
+                                                            <p class="inv-email-address">Term: {{ typeBayar === '0' ? 'Cash' : 'Kredit' }} <span v-if="typeBayar === '1'">Tempo {{ new Date(jthTempo).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}</span></p>
                                                         </div>
                                                         <div class="col-sm-5 align-self-center mt-3 text-sm-end">
                                                             <p class="inv-list-number"><span class="inv-title">Invoice : </span> <span class="inv-number">{{ noNota }}</span></p>
@@ -117,10 +117,10 @@
                                                             <img :src="`https://api.qrserver.com/v1/create-qr-code/?size=50x50&data=${noNota}`" alt="QR Code" />
                                                             <p class="inv-email-address">Invoice ini sudah di ttd secara digital oleh Swamerta Supplier<br>Terima kasih</p>
                                                         </div>
-                                                        <div class="col-sm-3 col-12 order-sm-0 order-1" v-if="ttdPenerima"> 
-                                                            <p>Penerima,</p>
-                                                            <img :src="ttdPenerima" alt="Tanda Tangan Penerima" style="max-width: 100%; max-height: 100px;" />
-                                                            <p class="inv-email-address">{{ namaPenerima }}</p>
+                                                        <div class="col-sm-3 col-12 order-sm-0 order-1" > 
+                                                            <p v-if="ttdPenerima">Penerima,</p>
+                                                            <img :src="ttdPenerima" alt="Tanda Tangan Penerima" style="max-width: 100%; max-height: 100px;" v-if="ttdPenerima" />
+                                                            <p class="inv-email-address" v-if="ttdPenerima">{{ namaPenerima }}</p>
                                                         </div>
                                                         <div class="col-sm-4 col-12 order-sm-1 order-0">
                                                            
@@ -252,6 +252,7 @@
     const isVisible = ref(false);
     const invoiceId = ref('');
     const ttdPenerima = ref();
+    const jthTempo = ref();
 
 
 
@@ -377,6 +378,7 @@
                 termPenjualan.value = store.getters.SdetailPenjualan[0][0].termPenjualan;
                 namaPenerima.value = store.getters.SdetailPenjualan[0][0].penerimaNota;
                 ttdPenerima.value = store.getters.SdetailPenjualan[0][0].ttdPenerima;
+                jthTempo.value = store.getters.SdetailPenjualan[0][0].jthTempo;
             // console.log(nmPelanggan.value);
                 console.log(response);
             }).catch((error) => {

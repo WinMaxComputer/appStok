@@ -57,7 +57,7 @@
                             </template>
                             <template #action="props">
                                 
-                                <a @click="viewnota(id= props.row.noPenjualan)">
+                                <a href="javascript:void(0);" @click="viewnota(id= props.row.noPenjualan)">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="24"
@@ -74,7 +74,7 @@
                                         <circle cx="12" cy="12" r="3"></circle>
                                     </svg>
                                 </a>
-                                <a @click="editnota([{
+                                <a href="javascript:void(0);" @click="editnota([{
                                                     startDate: props.row.tglPenjualan, 
                                                     kd_trans:props.row.noPenjualan, 
                                                     term:props.row.typeBayar,
@@ -97,28 +97,7 @@
                                     </svg>
                                 </a>
                                     
-                                <router-link :to="{name: 'editpenjualan', params: {
-                                                                                    startDate: props.row.tglPenjualan, 
-                                                                                    kd_trans:props.row.noPenjualan, 
-                                                                                    term:props.row.typeBayar,
-                                                                                    jthTempo:props.row.jthTempo,
-                                                                                    termPenjualan:props.row.termPenjualan,
-                                                                                    }}" >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        class="feather feather-edit-2"
-                                    >
-                                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                                    </svg>
-                                </router-link>
+                                
                                 <a href="javascript:void(0);" @click="delete_row(props.row)" >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -271,7 +250,7 @@
 
     const viewnota = (id) => {
         store.commit('setIdnota', id)
-        router.push({ path: '/invoice/penjualan' })
+        router.push({ name: 'invoice-penjualan' })
     }
     const editnota = (data) => {
         store.commit('setEditNota', data)

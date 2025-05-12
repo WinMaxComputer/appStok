@@ -17,7 +17,7 @@ class penjualanController extends Controller
         $noNota = $request[0]['noNota'];
         try{
             $exception = DB::transaction(function() use ($request){ 
-                $editid = $request->input('editid');
+                $editid = $request[4]['editid'];
                 // array key 0 = Header
                 // array kkey 1 = Detail
                 $tglNota = $request[0]['tglNota'];
@@ -44,21 +44,24 @@ class penjualanController extends Controller
                     $startDate = $request[0]['tglNota'];
                     $endDate = $request[0]['jthTempo'];
                     $dateDifference = \Carbon\Carbon::parse($startDate)->diffInDays(\Carbon\Carbon::parse($endDate));
-
-                    DB::table('tblpembayaran_penjualan')->updateOrInsert(
-                        [
-                            'noBayar' => $noNota
-                        ],
-                        [
-                            'noJual' => $noNota,
-                            'noBayar' => isset($request[3]['noBayar']) ? $request[3]['noBayar'] : null,
-                            'tglBayar' => isset($request[3]['tglBayar']) ? $request[3]['tglBayar'] : null,
-                            'jmlBayar' => isset($request[3]['jmlBayar']) ? $request[3]['jmlBayar'] : 0,
-                            'metodeBayar' => isset($request[3]['metodeBayar']) ? $request[3]['metodeBayar'] : null,
-                            'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
-                            'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
-                        ]
-                    );
+                    if($editid == 1){
+                        
+                    }else{
+                        DB::table('tblpembayaran_penjualan')->updateOrInsert(
+                            [
+                                'noBayar' => $noNota
+                            ],
+                            [
+                                'noJual' => $noNota,
+                                'noBayar' => isset($request[3]['noBayar']) ? $request[3]['noBayar'] : null,
+                                'tglBayar' => isset($request[3]['tglBayar']) ? $request[3]['tglBayar'] : null,
+                                'jmlBayar' => isset($request[3]['jmlBayar']) ? $request[3]['jmlBayar'] : 0,
+                                'metodeBayar' => isset($request[3]['metodeBayar']) ? $request[3]['metodeBayar'] : null,
+                                'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
+                                'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
+                            ]
+                        );
+                    }
                     
                 }
                 

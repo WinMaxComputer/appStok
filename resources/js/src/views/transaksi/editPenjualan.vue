@@ -616,6 +616,8 @@
         paramspelanggan.value.noHpPelanggan = arr[0][0].noHpPelanggan;
         paramspelanggan.value.almtPelanggan = arr[0][0].almtPelanggan;
 
+
+
         getPelanggan();
         getAcc();
         getSubtotal();
@@ -629,17 +631,17 @@
 
     onBeforeMount(() => {
         params.value = {
-            noNota: store.getters.SetidNota[0].kd_trans,
-            tglNota: store.getters.SetidNota[0].startDate,// moment(tglP).format("YYYY-MM-DD"),
-            term: store.getters.SetidNota[0].term,
-            jthTempo: store.getters.SetidNota[0].jthTempo,
+            noNota: store.getters.SetEditNota[0].kd_trans,
+            tglNota: store.getters.SetEditNota[0].startDate,// moment(tglP).format("YYYY-MM-DD"),
+            term: store.getters.SetEditNota[0].term,
+            jthTempo: store.getters.SetEditNota[0].jthTempo,
             notes: '',
             subtotal: subtotal,
             subtotaljasa: subtotaljasa,
             tax: tax,
             disc: disc,
             total: total, 
-            termPenjualan: store.getters.SetidNota[0].termPenjualan,
+            termPenjualan: store.getters.SetEditNota[0].termPenjualan,
         }
         // setTimeout(() => {
             console.log(' before onmount edit')
@@ -669,7 +671,7 @@
         
     };
     const getPembayaran = async () => {
-        await store.dispatch('GetListBayarPenjualan', { noJual: props.kd_trans });
+        await store.dispatch('GetListBayarPenjualan', { noJual: params.value.noNota });
         listPembayaran.value = store.getters.SlistBayarPenjualan;
     };
     // const getBarang=() => {
@@ -736,7 +738,7 @@
         store.dispatch('GetJasa')
     }
     const simpanPenjualan=() => {
-        store.dispatch('DeletePenjualan', { id:props.kd_trans})
+        store.dispatch('DeletePenjualan', { id: params.value.noNota })
         .then(response => {
             if(response.status == 200){
                 console.log('berhasil dihapus')
@@ -746,7 +748,8 @@
                 const headerfull = Object.assign(header, headers)
                 const detailjasa =cartItemsPenJasa.value;
                 const detail =cartItemsPen.value
-                store.dispatch('CreatePenjualan', [headerfull,detail,detailjasa,bayar] )
+                const edit = { editid: 1};
+                store.dispatch('CreatePenjualan', [headerfull,detail,detailjasa,bayar,edit] )
             
                 total.value = 0
                 subtotal.value = 0
