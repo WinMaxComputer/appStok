@@ -211,7 +211,7 @@
                                                                 <a href="javascript:;" @click="addPayment" class="btn btn-dark btn-preview" data-bs-toggle="modal" data-bs-target="#modalPayment">Pembayaran</a>
                                                             </div> -->
                                                             <div class="col-sm-4">
-                                                                <a href="javascript:;" @click="simpanPembelian" class="btn btn-success btn-download">Save</a>
+                                                                <a href="javascript:;" @click="openModal()" class="btn btn-success btn-download">Save</a>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -259,7 +259,6 @@
                                                     <div class="invoice-totals-row invoice-summary-total">
                                                          <div class="invoice-summary-label">Disc</div>
                                                         <input type="text" v-model="params.disc" class="form-control form-control-sm" >%
-                                                        <div class="invoice-summary-label"></div>
                                                         <div class="invoice-summary-value">
                                                             <div class="total-amount"><span class="currency"></span><span>{{ new Intl.NumberFormat().format(Math.floor(subtotal * disc / 100)) }}</span></div>
                                                         </div>
@@ -275,18 +274,63 @@
                                                         </div>
                                                     </div>
                                                     <div class="invoice-totals-row invoice-summary-balance-due">
-                                                        <div class="invoice-summary-label">Total</div>
-                                                         <div class="invoice-summary-label"></div>
+                                                        <div >Total</div>
                                                         <div class="invoice-summary-value">
-                                                            <!-- <div class="balance-due-amount"> -->
+                                                            <div class="balance-due-amount">
                                                                 <span>{{ new Intl.NumberFormat().format(Math.floor(total)) }}</span>
-                                                            <!-- </div> -->
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+
+                                    <Modal 
+                                        v-model:visible="isVisible" 
+                                        :draggable="true" 
+                                        :title="'PEMBAYARAN NOTA'"
+                                        :showCancelButton="false" 
+                                        :cancelButton="{text: 'cancel', onclick: () => {isVisible = false}, loading: false}"
+                                        :okButton="{text: 'SAVE', onclick: () => {simpanPembelian()}, loading: false}"
+                                        width="60%">
+
+                                            <div class="col-md-12">
+                                                <div class="totals-row">
+                                                    <div class="invoice-totals-row ">
+                                                        <div style="font-size: 20px;">
+                                                            <div v-if="params.term === '0'">Cash</div>
+                                                            <div v-else-if="params.term === '1'">Kredit</div>
+                                                        </div>
+                                                        <!-- <div class="invoice-summary-label"></div> -->
+                                                        <div class="invoice-summary-value">
+                                                            <div class="balance-due-amount">
+                                                                <span style="font-size: 30px;">{{ new Intl.NumberFormat().format(Math.floor(total)) }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12" v-if="params.term === '0'">
+                                                <div class="totals-row">
+                                                    <div class="invoice-totals-row ">
+                                                        <div style="font-size: 20px;">Method</div>
+                                                        <!-- <div class="invoice-summary-label"></div> -->
+                                                        <div class="invoice-summary-value">
+                                                            <div class="balance-due-amount">
+                                                                <select v-model="paramsbayar.metodeBayar" >
+                                                                    <option value="cash" selected>Cash</option>
+                                                                    <option value="credit_card">Credit Card</option>
+                                                                    <option value="bank_transfer">Bank Transfer</option>
+                                                                    <option value="ewallet">E-Wallet</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </Modal>
+
 
                                     <div class="invoice-detail-note">
                                         <div class="row">
@@ -331,6 +375,7 @@
     import '@suadelabs/vue3-multiselect/dist/vue3-multiselect.css';
 
     import moment from "moment";
+    import { Modal } from 'usemodal-vue3';
 
     import { computed, ref, onMounted, watch } from 'vue';
     import { useStore } from 'vuex';
@@ -360,7 +405,7 @@
     const params = ref({
         noNota: nopembelian,
         tglNota: moment().format("YYYY-MM-DD"),
-        term: 0,
+        term: '0',
         jthTempo: moment().format("YYYY-MM-DD"),
         notes: '',
         subtotal: subtotal,
@@ -382,6 +427,15 @@
         // tlpSupplier: '',
 
     });
+    const paramsbayar = ref({
+        noBayar: null,
+        tglBayar: params.value.jthTempo,
+        jmlBayar: total,
+        metodeBayar: 'cash',
+    });
+
+    const isVisible = ref(false);
+
     const cartItems = ref([])
     const divpajak = ref(false)
     // const currency_list = ref([]);
@@ -408,6 +462,14 @@
         
     };
 
+    const openModal = () => {
+        getNoPembayaran()
+        // Logic to open the modal
+        console.log('Modal opened');
+        isVisible.value = true;
+        
+    };
+
 
     const getBarang=() => {
         store.dispatch('GetPersediaan')
@@ -419,6 +481,11 @@
         store.dispatch('GetNoPembelian');
         nopembelian.value = store.getters.NoPembelian;
     }
+    const getNoPembayaran = async () => {
+        await store.dispatch('GetNoBayarPembelian').then(() => {
+            paramsbayar.value.noBayar = store.getters.NoBayarPembelian;
+        });
+    };
     // const getAcc=() => {
     //     store.dispatch('GetAcc')
     // }
@@ -475,18 +542,20 @@
     const simpanPembelian=() => {
         const header =params.value
         const headers =paramssupplier.value
-            const headerfull = Object.assign(header, headers)
-            const detail =cartItems.value
-            store.dispatch('CreatePembelian', [headerfull,detail] )
-            .then(() => {
-                // console.log('berhasil')
-                getCart();
-                getNoPembelian();
-            })
-            .catch(() => {
-                // console.log('gagal')
-                return
-            })
+        const bayar = paramsbayar.value
+        const headerfull = Object.assign(header, headers)
+        const detail =cartItems.value
+        store.dispatch('CreatePembelian', [headerfull,detail,bayar] )
+        .then(() => {
+            // console.log('berhasil')
+            getCart();
+            getNoPembelian();
+            isVisible.value = false;
+        })
+        .catch(() => {
+            // console.log('gagal')
+            return
+        })
             
     }
 

@@ -120,6 +120,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/kdpenyusutan', [App\Http\Controllers\nomorController::class, 'kodePenyusutan']);
     Route::get('/kdpenjualan', [App\Http\Controllers\nomorController::class, 'kodePenjualan']);
     Route::get('/kdbayarpenjualan', [App\Http\Controllers\nomorController::class, 'kodeBayarPenjualan']);
+    Route::get('/kdbayarpembelian', [App\Http\Controllers\nomorController::class, 'kodeBayarPembelian']);
     Route::get('/kdkupon', [App\Http\Controllers\nomorController::class, 'kodeKupon']);
     Route::get('/kdkategori', [App\Http\Controllers\nomorController::class, 'kodeKategori']);
     Route::get('/kdopnum', [App\Http\Controllers\nomorController::class, 'kodeStokOpname']);
@@ -161,6 +162,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/getdetail-penjualan', [App\Http\Controllers\penjualanController::class, 'getDetailPenjualan']);
 
     Route::post('/store/pembayaran-penjualan', [App\Http\Controllers\pembayaranController::class, 'bayarPenjualan']);
+    Route::post('/add/penerima-nota', [App\Http\Controllers\pembayaranController::class, 'penerimaNota']);
     
 
     //============biaya

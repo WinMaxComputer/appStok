@@ -56,7 +56,7 @@
                                 {{ props.row.typeBayar === '0' ? 'Cash' : 'Kredit' }}
                             </template>
                             <template #action="props">
-                                <router-link :to="{name: 'invoice-penjualan', params: {id: props.row.noPenjualan}}">
+                                <button class="btn btn-primary" @click="openModal(id = props.row.noPenjualan, sisa = props.row.piutangPenjualan)" >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="24"
@@ -71,24 +71,6 @@
                                     >
                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                         <circle cx="12" cy="12" r="3"></circle>
-                                    </svg>
-                                </router-link>
-                                <button class="btn btn-primary" @click="openModal(id = props.row.noPenjualan, sisa = props.row.piutangPenjualan)" >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        class="feather feather-dollar-sign"
-                                    >
-                                        <line x1="12" y1="1" x2="12" y2="23"></line>
-                                        <path d="M16 7c-4 0-4 3-4 3s0 3 4 3"></path>
-                                        <path d="M8 17c4 0 4-3 4-3s0-3-4-3"></path>
                                     </svg>
                                 </button>
                                 

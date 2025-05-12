@@ -117,7 +117,12 @@
                                                             <img :src="`https://api.qrserver.com/v1/create-qr-code/?size=50x50&data=${noNota}`" alt="QR Code" />
                                                             <p class="inv-email-address">Invoice ini sudah di ttd secara digital oleh WinMax Bali<br>Terima kasih</p>
                                                         </div>
-                                                        <div class="col-sm-7 col-12 order-sm-1 order-0">
+                                                        <div class="col-sm-3 col-12 order-sm-0 order-1" v-if="ttdPenerima"> 
+                                                            <p>Penerima,</p>
+                                                            <img :src="ttdPenerima" alt="Tanda Tangan Penerima" style="max-width: 100%; max-height: 100px;" />
+                                                            <p class="inv-email-address">{{ namaPenerima }}</p>
+                                                        </div>
+                                                        <div class="col-sm-4 col-12 order-sm-1 order-0">
                                                            
                                                             <div class="text-sm-end">
                                                                 <div class="row">
@@ -127,18 +132,22 @@
                                                                     <div class="col-sm-4 col-5">
                                                                         <p class="text-end">{{ items.reduce((sum, item) => sum + Number(item.totalJual), 0).toLocaleString() }}</p>
                                                                     </div>
+
+                                                                    <div v-if="items_jasa.length > 0">
+                                                                        <div class="col-sm-8 col-7" >
+                                                                            <p class="discount-rate">Sub Total Jasa</p>
+                                                                        </div>
+                                                                        <div class="col-sm-4 col-5">
+                                                                            <p class="text-end">{{ items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0).toLocaleString() }}</p>
+                                                                        </div>
+                                                                    </div>
                                                                     
+
                                                                     <div class="col-sm-8 col-7">
-                                                                        <p class="discount-rate">Sub Total Jasa</p>
+                                                                        <p class="text-end">Grand Total :</p>
                                                                     </div>
                                                                     <div class="col-sm-4 col-5">
-                                                                        <p class="text-end">{{ items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0).toLocaleString() }}</p>
-                                                                    </div>
-                                                                    <div class="col-sm-8 col-7">
-                                                                        <h5 class="text-end">Grand Total :</h5>
-                                                                    </div>
-                                                                    <div class="col-sm-4 col-5">
-                                                                        <h5 class="text-end">{{ (Number( items.reduce((sum, item) => sum + Number(item.totalJual), 0) - Number(discPenjualan)) +  items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0)).toLocaleString() }}</h5>
+                                                                        <p class="text-end">{{ (Number( items.reduce((sum, item) => sum + Number(item.totalJual), 0) - Number(discPenjualan)) +  items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0)).toLocaleString() }}</p>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -155,13 +164,41 @@
                             </div>
                         </div>
 
+                        <Modal 
+                            v-model:visible="isVisible" 
+                            :draggable="true" 
+                            :title="'PENERIMA'"
+                            :showCancelButton="false" 
+                            :cancelButton="{text: 'cancel', onclick: () => {isVisible = false}, loading: false}"
+                            :okButton="{text: 'SAVE', onclick: () => {simpanPenerima()}, loading: false}"
+                            width="60%">
+
+                                <div>
+                                    <label for="namaPenerima" class="form-label">Nama Penerima</label>
+                                    <input
+                                        id="namaPenerima"
+                                        v-model="namaPenerima"
+                                        type="text"
+                                        class="form-control"
+                                        placeholder="Masukkan nama penerima"
+                                        autocomplete="off"
+                                    />
+                                </div>
+                                <Vue3Signature  ref="signature1" :sigOption="state.option" :w="'1280px'" :h="'400px'"
+                                                :disabled="state.disabled" class="example"></Vue3Signature>
+                                <button @click="save('image/jpeg')">Save</button>
+                                <button @click="clear">Clear</button>
+                                <button @click="undo">Undo</button>
+                                <button @click="handleDisabled">disabled</button>
+                            </Modal>
+
                         <div class="col-xl-3">
                             <div class="invoice-actions-btn">
                                 <div class="invoice-action-btn">
                                     <div class="row">
                                         
                                         <div class="col-xl-12 col-md-3 col-sm-6">
-                                            <a href="javascript:;" class="btn btn-primary btn-send">Send Invoice</a>
+                                            <a href="javascript:;" class="btn btn-primary btn-send" @click="openModal()">Penerima</a>
                                         </div>
                                         <div class="col-xl-12 col-md-3 col-sm-6">
                                             <a href="javascript:;" class="btn btn-secondary btn-print action-print" @click="print()">Print</a>
@@ -185,11 +222,14 @@
 </template>
 
 <script setup>
-    import { onMounted, ref } from 'vue';
+    import { onMounted, ref, reactive } from 'vue';
     import '@/assets/sass/apps/invoice-preview.scss';
 
     import { useMeta } from '@/composables/use-meta';
     useMeta({ title: 'Invoice' });
+
+    import { Modal } from 'usemodal-vue3';
+    import Vue3Signature from "vue3-signature"
 
     import { useRouter, useRoute } from 'vue-router'
     import { useStore } from 'vuex';
@@ -208,6 +248,10 @@
     const discPenjualan = ref(0);
     const typeBayar = ref('');
     const termPenjualan = ref('');
+    const namaPenerima = ref('');
+    const isVisible = ref(false);
+    const invoiceId = ref(route.params.id);
+    const ttdPenerima = ref();
 
 
 
@@ -243,9 +287,72 @@
     const print = () => {
         window.print();
     };
-    
-    const invoiceId = ref(route.params.id);
 
+    const openModal = () => {
+        
+        // Logic to open the modal
+        // console.log('Modal opened' + invoiceId.value);
+        isVisible.value = true;
+        
+    };
+    const state = reactive({
+        count: 0,
+        option: {
+            penColor: "rgb(0, 0, 0)",
+            backgroundColor: "rgb(255,255,255)"
+        },
+        disabled: false
+    })
+    const signature1 = ref(null)
+
+    const save = (t) => {
+    console.log(signature1.value.save(t))
+    }
+
+    const clear = () => {
+    signature1.value.clear()
+    }
+
+    const undo = () => {
+    signature1.value.undo();
+    }
+
+    const addWaterMark = () => {
+    signature1.value.addWaterMark({
+        text: "mark text",          // watermark text, > default ''
+        font: "20px Arial",         // mark font, > default '20px sans-serif'
+        style: 'all',               // fillText and strokeText,  'all'/'stroke'/'fill', > default 'fill
+        fillStyle: "red",           // fillcolor, > default '#333'
+        strokeStyle: "blue",	       // strokecolor, > default '#333'
+        x: 100,                     // fill positionX, > default 20
+        y: 200,                     // fill positionY, > default 20
+        sx: 100,                    // stroke positionX, > default 40
+        sy: 200                     // stroke positionY, > default 40
+    });
+    }
+
+    const handleDisabled = () => {
+    state.disabled = !state.disabled
+    }
+
+    const simpanPenerima = () => {
+        // Logic to save the recipient name
+        store.dispatch('penerimaNota', {
+            noNota: invoiceId.value,
+            namaPenerima: namaPenerima.value,
+            signature: signature1.value.save('image/jpeg')
+        }).then((response) => {
+            
+            isVisible.value = false;
+            getInvoiceDetails
+            
+        }).catch((error) => {
+            console.error('Error saving recipient name:', error);
+        });
+        // console.log('Recipient name saved:', namaPenerima.value + ' ' + invoiceId.value);
+        
+    };
+    
     const getInvoiceDetails = async () => {
         try {
             // const response = await axios.get(`/api/invoices/${invoiceId.value}`);
@@ -257,11 +364,13 @@
                 items_jasa.value = store.getters.SdetailPenjualan[2];
                 nmPelanggan.value = store.getters.SdetailPenjualan[0][0].nmPelanggan;
                 alamatPelanggan.value = store.getters.SdetailPenjualan[0][0].almtPelanggan;
-                noNota.value = store.getters.SdetailPenjualan[0][0].noPenjualan;
+                noNota.value = invoiceId.value;
                 tglNota.value = store.getters.SdetailPenjualan[0][0].tglPenjualan;
                 discPenjualan.value = store.getters.SdetailPenjualan[0][0].discPenjualan;
                 typeBayar.value = store.getters.SdetailPenjualan[0][0].typeBayar;
                 termPenjualan.value = store.getters.SdetailPenjualan[0][0].termPenjualan;
+                namaPenerima.value = store.getters.SdetailPenjualan[0][0].penerimaNota;
+                ttdPenerima.value = store.getters.SdetailPenjualan[0][0].ttdPenerima;
             // console.log(nmPelanggan.value);
                 console.log(response);
             }).catch((error) => {

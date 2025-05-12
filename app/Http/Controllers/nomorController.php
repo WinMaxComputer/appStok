@@ -19,6 +19,7 @@ use App\Models\Pengadaan;
 use App\Models\Penyusutan;
 use App\Models\Jasa;
 use App\Models\Bayarjual;
+use App\Models\Bayarbeli;
 use Illuminate\Support\Facades\DB;
 
 class nomorController extends Controller
@@ -95,7 +96,7 @@ class nomorController extends Controller
 
             if (Bayarjual::where('noBayar', $post)->exists()) {
                 $kodeBarulagi = intval($kodeBaru) + 1 ;
-                $post = 'INV'.$tahun.'-'.$kodeBarulagi;
+                $post = 'PYM'.$tahun.'-'.$kodeBarulagi;
                 return response()->json([
                     'success' => true,
                     'message' => 'Detail Post!',
@@ -107,6 +108,48 @@ class nomorController extends Controller
                     'success' => true,
                     'message' => 'Post Tidak Ditemukan!',
                     'kdBayarPenjualan'    => $post,
+                    // 'panjang' => $newid
+                ], 200);
+            }
+        }
+    }
+    public function kodeBayarPembelian(){
+        
+        $count = Bayarbeli::all();
+        if($count->isEmpty()){
+            $tahun = date('Y');
+            
+            $post = 'BLI'.$tahun.'-'.'1';
+            return response()->json([
+                'success' => true,
+                'message' => 'Detail Post!',
+                'kdBayarPembelian'    => $post,
+                // 'panjang' => $newid
+            ], 200);
+        }else{
+            $no = 0 ;
+            $count = Bayarbeli::all()->last();
+            $terakhir = $count->id; ;
+            $kodeBaru = intval($terakhir) + 1  ;
+
+            $tahun = date('Y');
+            $post = 'BLI'.$tahun.'-'.$kodeBaru;
+            
+
+            if (Bayarbeli::where('noBayar', $post)->exists()) {
+                $kodeBarulagi = intval($kodeBaru) + 1 ;
+                $post = 'BLI'.$tahun.'-'.$kodeBarulagi;
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Detail Post!',
+                    'kdBayarPembelian'    => $post,
+                    // 'panjang' => $newid
+                ], 200);
+            } else {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Post Tidak Ditemukan!',
+                    'kdBayarPembelian'    => $post,
                     // 'panjang' => $newid
                 ], 200);
             }

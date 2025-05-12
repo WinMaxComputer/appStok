@@ -97,4 +97,22 @@ class pembayaranController extends Controller
          ], 400);
         }
     }
+    public function penerimaNota(Request $request)
+    {
+        
+        $noNota = $request->input('noNota');
+        $penerimaNota = $request->input('namaPenerima');
+        $penjualan = Penjualan::where('noPenjualan', $noNota)->update([
+            'penerimaNota' => $penerimaNota,
+            'ttdPenerima' => $request->input('signature'),
+            'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $penjualan,
+        ], 200);
+
+                
+    }
 }

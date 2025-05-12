@@ -17,12 +17,14 @@ const state = {
     nopelanggan: [],
     nopenjualan: [],
     nobayarpenjualan: [],
+    nobayarpembelian: [],
   };
   
 const getters = {
     NoBarang: state => state.nobarang,
     NoJasa: state => state.nojasa,
     NoPembelian: state => state.nopembelian,
+    NoBayarPembelian: state => state.nobayarpembelian,
     NoPenjualan: state => state.nopenjualan,
     NoBayarPenjualan: state => state.nobayarpenjualan,
     NoOpnum: state => state.noopnum,
@@ -67,6 +69,18 @@ const actions = {
         try {
             response = await axios.get('/api/kdbayarpenjualan')
             commit('setNoBayarPenjualan', response.data.kdBayarPenjualan)
+        } catch (ex) {
+            // Handle error
+            alert('error no bayar penjualan')
+            return
+        }
+    
+    },
+    async GetNoBayarPembelian({ commit }){
+        let response
+        try {
+            response = await axios.get('/api/kdbayarpembelian')
+            commit('setNoBayarPembelian', response.data.kdBayarPembelian)
         } catch (ex) {
             // Handle error
             alert('error no bayar penjualan')
@@ -231,6 +245,9 @@ const mutations = {
     },
     setNoBayarPenjualan(state, bayarpenjualan){
         state.nobayarpenjualan = bayarpenjualan
+    },
+    setNoBayarPembelian(state, bayarPembelian){
+        state.nobayarpembelian = bayarPembelian
     },
     setNoBarang(state, barang){
         state.nobarang = barang

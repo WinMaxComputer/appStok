@@ -124,6 +124,7 @@
                                                             <label for="Inputqty">Barcode</label>
                                                             <input type="text" ref="InputBarcode" v-model="barcode" class="form-control form-control-sm" placeholder="Barcode" @keyup.enter="addToCartB(barcode)" />
                                                         </div>
+                                                        
                                                         <div class="form-group col-md-3">
                                                             <label for="inputCity">NAMA BARANG</label>
                                                             <multiselect 

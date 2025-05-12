@@ -253,6 +253,40 @@ const actions = {
             throw 'error';
         }
     },
+    async penerimaNota({ dispatch }, detail) {
+        let response
+        try {
+            response = await axios.post('/api/add/penerima-nota', detail)
+            const toast = window.Swal.mixin({
+                toast: true,
+                position: 'top-center',
+                showConfirmButton: false,
+                timer: 3000,
+                padding: '2em',
+            });
+            toast.fire({
+                icon: 'success',
+                title: 'Pembayaran penjualan berhasil disimpan',
+                padding: '2em',
+            });
+            return response;
+        } catch (ex) {
+            const toast = window.Swal.mixin({
+                toast: true,
+                position: 'top-center',
+                showConfirmButton: false,
+                timer: 3000,
+                padding: '2em'
+            });
+            toast.fire({
+                title: 'Error!',
+                text: 'Gagal menyimpan pembayaran penjualan',
+                icon: 'error',
+                padding: '2em'
+            });
+            throw 'error';
+        }
+    },
     async CreatePenjualanKupon({dispatch}, detail) {
         let response
         try {

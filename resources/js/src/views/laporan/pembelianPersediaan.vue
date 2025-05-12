@@ -49,7 +49,7 @@
 
                         <v-client-table :data="items" :columns="columns" :options="table_pembelian">
                             <template #tglPembelian="props"> {{ moment(props.row.tglPembelian).format("D-M-YYYY") }} </template>
-                            <template #subTotal="props"> {{ Number(props.row.subTotal).toLocaleString() }} </template>
+                            <template #hutangPembelian="props"> {{ Number(props.row.hutangPembelian).toLocaleString() }} </template>
                             <template #total="props"> {{ Number(props.row.total).toLocaleString() }} </template>
                             <template #action="props">
 
@@ -148,14 +148,14 @@ import { f } from 'feather-icons';
     const store = useStore();
     const router = useRouter()
 
-    const columns = ref(['noNota', 'tglPembelian', 'nmSupplier', 'subTotal', 'disc', 'total', 'action']);
+    const columns = ref(['noNota', 'tglPembelian', 'nmSupplier', 'hutangPembelian', 'total', 'action']);
     const items = ref([]);
     const table_pembelian = ref({
         perPage: 10,
         perPageValues: [5, 10, 20, 50, 100],
         perPageSelect: true,
         filterable: true,
-        filterable: ['noNota', 'tglPembelian', 'nmSupplier', 'subTotal', 'disc', 'total'],
+        filterable: ['noNota', 'tglPembelian', 'nmSupplier', 'total'],
         skin: 'table table-hover',
         columnsClasses: { action: 'actions text-center' },
         pagination: { nav: 'scroll', chunk: 5 },

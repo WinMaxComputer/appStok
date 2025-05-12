@@ -9,4 +9,8 @@ class Penjualan extends Model
 {
     use HasFactory;
     protected $table = 'tblpenjualan';
+    protected $primaryKey = 'noPenjualan';
+    protected $fillable = [
+        'noPenjualan', 'penerimaNota'
+    ];
 }

@@ -20,6 +20,44 @@ class pembelianController extends Controller
                 // array kkey 1 = Detail
                 $tglNota = $request[0]['tglNota'];
                 $noNota = $request[0]['noNota'];
+                $subtotal = $request[0]['subtotal'];
+                $total = $request[0]['total'];
+                $type = $request[0]['term'];
+
+                if($request[2]['metodeBayar'] == 'cash'){
+                    $acc_id_k = '11110'; // $detpro[$i]['accid']; // acc id yg di debet
+                }else{
+                    $acc_id_k = '11210'; // $detpro[$i]['accid']; // acc id yg di debet
+                }
+                if($type == '1'){
+                    $hutang = $total;
+                    $startDate = $request[0]['tglNota'];
+                    $endDate = $request[0]['jthTempo'];
+                    $dateDifference = \Carbon\Carbon::parse($startDate)->diffInDays(\Carbon\Carbon::parse($endDate));
+                    $acc_id_k = '21100 ';
+                }else{
+                    $hutang = 0;
+                    $startDate = $request[0]['tglNota'];
+                    $endDate = $request[0]['jthTempo'];
+                    $dateDifference = \Carbon\Carbon::parse($startDate)->diffInDays(\Carbon\Carbon::parse($endDate));
+
+                    DB::table('tblpembayaran_pembelian')->updateOrInsert(
+                        [
+                            'noBayar' => $noNota
+                        ],
+                        [
+                            'noBeli' => $noNota,
+                            'noBayar' => isset($request[2]['noBayar']) ? $request[2]['noBayar'] : null,
+                            'tglBayar' => isset($request[2]['tglBayar']) ? $request[2]['tglBayar'] : null,
+                            'jmlBayar' => isset($request[2]['jmlBayar']) ? $request[2]['jmlBayar'] : 0,
+                            'metodeBayar' => isset($request[2]['metodeBayar']) ? $request[2]['metodeBayar'] : null,
+                            'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
+                            'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
+                        ]
+                    );
+                    
+                }
+
                 $existingRecord = DB::table('tblpembelian')->where('noNota', $noNota)->first();
                 if ($existingRecord) {
                     DB::table('tblpembelian')->where('noNota', $noNota)->update([
@@ -31,8 +69,10 @@ class pembelianController extends Controller
                         'tax'            => $request[0]['tax'],
                         'pph'            => 0,
                         'total'          => $request[0]['total'],
+                        'hutangPembelian' => $hutang,
                         'note'           => $request[0]['notes'],
-                        'term'           => $request[0]['term'],
+                        'term'           => $dateDifference,
+                        'typeBayar'     => $request[0]['term'],
                         'jthTempo'       => $request[0]['jthTempo'],
                         'updated_at'     => \Carbon\Carbon::now()->toDateTimeString()
                     ]);
@@ -56,8 +96,10 @@ class pembelianController extends Controller
                         'tax'            => $request[0]['tax'],
                         'pph'            => 0,
                         'total'          => $request[0]['total'],
+                        'hutangPembelian' => $hutang,
                         'note'           => $request[0]['notes'],
-                        'term'           => $request[0]['term'],
+                        'term'           => $dateDifference,
+                        'typeBayar'     => $request[0]['term'],
                         'jthTempo'       => $request[0]['jthTempo'],
                         'created_at'     => \Carbon\Carbon::now()->toDateTimeString(),
                         'updated_at'     => \Carbon\Carbon::now()->toDateTimeString()
@@ -103,7 +145,7 @@ class pembelianController extends Controller
 
                     //===========jurnal
                     $acc_id_d = $detpem[$i]['accid_persediaan']; // acc id yg di debet
-                    $acc_id_k = '11110'; // $request[0]['subtotal']; // acc id yg di kredit
+                    // $acc_id_k = '11110'; // $request[0]['subtotal']; // acc id yg di kredit
                     $memo = 'Pembelian-Barang'.$nmBarang;
                     $jurnal = 'JK';
                     $subtotal = $detpem[$i]['total'];
@@ -545,6 +587,7 @@ class pembelianController extends Controller
                 DB::table('tblpembelian')->where('noNota', $kd)->delete();
                 DB::table('tblpembelian_detail')->where('r_noNota', $kd)->delete();
                 DB::table('tblkartu_stok')->where('r_notrans', $kd)->delete();
+                DB::table('tblpembayaran_pembelian')->where('noBeli', $kd)->delete();
                 DB::commit();
             });
             if(is_null($exception)) {
