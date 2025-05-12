@@ -514,30 +514,31 @@
     const totjasa = ref();
     const divpajak = ref(false)
     const listPembayaran = ref({});
+    const params = ref({});
     // const oldnota = ref(headerfull.value.noPenjualan);
     // let nop = headerfull[0].noPenjualan;
-    const props = defineProps({
-        id: String,
-        startDate: String,
-        kd_trans: String,
-        term: String,
-        jthTempo: String,
-        termPenjualan: String,
-    });
+    // const props = defineProps({
+    //     id: String,
+    //     startDate: String,
+    //     kd_trans: String,
+    //     term: String,
+    //     jthTempo: String,
+    //     termPenjualan: String,
+    // });
 
-    const params = ref({
-        noNota: props.kd_trans,
-        tglNota: props.startDate,// moment(tglP).format("YYYY-MM-DD"),
-        term: props.term,
-        jthTempo: props.jthTempo,
-        notes: '',
-        subtotal: subtotal,
-        subtotaljasa: subtotaljasa,
-        tax: tax,
-        disc: disc,
-        total: total, 
-        termPenjualan: props.termPenjualan,
-    });
+    // const params = ref({
+    //     noNota: props.kd_trans,
+    //     tglNota: props.startDate,// moment(tglP).format("YYYY-MM-DD"),
+    //     term: props.term,
+    //     jthTempo: props.jthTempo,
+    //     notes: '',
+    //     subtotal: subtotal,
+    //     subtotaljasa: subtotaljasa,
+    //     tax: tax,
+    //     disc: disc,
+    //     total: total, 
+    //     termPenjualan: props.termPenjualan,
+    // });
 
     const paramsbayar = ref({
         noBayar: null,
@@ -627,6 +628,19 @@
     });
 
     onBeforeMount(() => {
+        params.value = {
+            noNota: store.getters.SetidNota[0].kd_trans,
+            tglNota: store.getters.SetidNota[0].startDate,// moment(tglP).format("YYYY-MM-DD"),
+            term: store.getters.SetidNota[0].term,
+            jthTempo: store.getters.SetidNota[0].jthTempo,
+            notes: '',
+            subtotal: subtotal,
+            subtotaljasa: subtotaljasa,
+            tax: tax,
+            disc: disc,
+            total: total, 
+            termPenjualan: store.getters.SetidNota[0].termPenjualan,
+        }
         // setTimeout(() => {
             console.log(' before onmount edit')
             // try {

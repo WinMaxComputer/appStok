@@ -134,6 +134,7 @@ const routes = [
         path: '/invoice/penjualan',
         name: 'invoice-penjualan',
         component: () => import(/* webpackChunkName: "apps-invoice-preview" */ '../views/transaksi/invoicePenjualan.vue'),
+        props: true,
     },
     
     {
@@ -436,6 +437,7 @@ router.beforeEach((to, from, next) => {
         // console.log(to)
         // if(to.matched.some(record => record.meta.requiresAuth)) {
             if (store.getters.isAuthenticated) { // jika user sudah login maka route akan diteruskan
+                
               next()
               return
             }

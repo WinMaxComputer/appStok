@@ -669,7 +669,10 @@
                 getNoPenjualan();
                 total.value = 0
                 divpajak.value = false
-                router.push({ name: 'invoice-penjualan', params: { id: response.data.data } });
+                
+                commit('setListpobbm', { id: response.data.data })
+
+                router.push({ name: 'invoice-penjualan', state: { id: response.data.data } });
             }
             console.log(response.data)
         }).catch(error => {

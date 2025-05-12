@@ -222,7 +222,7 @@
 </template>
 
 <script setup>
-    import { onMounted, ref, reactive } from 'vue';
+    import { onMounted, ref, reactive, onBeforeMount } from 'vue';
     import '@/assets/sass/apps/invoice-preview.scss';
 
     import { useMeta } from '@/composables/use-meta';
@@ -250,7 +250,7 @@
     const termPenjualan = ref('');
     const namaPenerima = ref('');
     const isVisible = ref(false);
-    const invoiceId = ref(route.params.id);
+    const invoiceId = ref('');
     const ttdPenerima = ref();
 
 
@@ -260,6 +260,11 @@
         getInvoiceDetails();
     });
 
+
+    onBeforeMount(() => {
+        // You can add logic here if needed before the component is mounted
+        invoiceId.value = store.getters.SetidNota
+    });
     const bind_data = () => {
         columns.value = [
             { key: 'kdBarang', label: 'CODE' },
@@ -358,6 +363,7 @@
             // const response = await axios.get(`/api/invoices/${invoiceId.value}`);
             // const invoiceDetails = response.data;
             // items.value = invoiceDetails.items;
+            console.log(invoiceId.value);
             await store.dispatch('GetDetailPenjualan', {noNota: invoiceId.value})
             .then((response) => {
                 items.value = store.getters.SdetailPenjualan[1];

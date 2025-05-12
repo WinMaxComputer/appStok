@@ -19,6 +19,10 @@ const state = {
     editbiaya: [],
     // pembayaran: [],
     pembayaranPiutang: [],
+
+    idnota: [],
+    editnota: [],
+    
   };
   
 const getters = {
@@ -35,6 +39,8 @@ const getters = {
     SdetailPembelian: state => state.detailpembelian,
     SeditAplusan: state => state.editaplusan,
     SeditBiaya: state => state.editbiaya,
+    SetidNota: state => state.editnota,
+
 };
 
 const actions = {
@@ -1018,6 +1024,13 @@ const mutations = {
     },
     setEditBiaya(state, b){
         state.editbiaya = b
+    },
+
+    setIdnota(state, id){
+        state.idnota = id
+    },
+    setEditNota(state, editjual){
+        state.editnota = editjual
     },
 
 };

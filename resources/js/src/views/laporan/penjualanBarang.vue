@@ -56,7 +56,8 @@
                                 {{ props.row.typeBayar === '0' ? 'Cash' : 'Kredit' }}
                             </template>
                             <template #action="props">
-                                <router-link :to="{name: 'invoice-penjualan', params: {id: props.row.noPenjualan}}">
+                                
+                                <a @click="viewnota(id= props.row.noPenjualan)">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="24"
@@ -72,7 +73,30 @@
                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                         <circle cx="12" cy="12" r="3"></circle>
                                     </svg>
-                                </router-link>
+                                </a>
+                                <a @click="editnota([{
+                                                    startDate: props.row.tglPenjualan, 
+                                                    kd_trans:props.row.noPenjualan, 
+                                                    term:props.row.typeBayar,
+                                                    jthTempo:props.row.jthTempo,
+                                                    termPenjualan:props.row.termPenjualan,
+                                                    }])">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        class="feather feather-edit-2"
+                                    >
+                                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                                    </svg>
+                                </a>
+                                    
                                 <router-link :to="{name: 'editpenjualan', params: {
                                                                                     startDate: props.row.tglPenjualan, 
                                                                                     kd_trans:props.row.noPenjualan, 
@@ -244,6 +268,15 @@
         // console.log(sum)
         // return { items }
     });
+
+    const viewnota = (id) => {
+        store.commit('setIdnota', id)
+        router.push({ path: '/invoice/penjualan' })
+    }
+    const editnota = (data) => {
+        store.commit('setEditNota', data)
+        router.push({ name: 'editpenjualan' })    
+    }
 
     const export_table = (type) => {
         let cols = columns.value.filter((d) => d != 'profile' && d != 'action');
