@@ -37,7 +37,19 @@
                                                         </div>
 
                                                         <div class="col-sm-6 text-sm-end">
-                                                            
+                                                             <QRCodeVue3
+                                                                :width="50"
+                                                                :height="50"
+                                                                value="{{ noNota }}"
+                                                                :qrOptions="{ typeNumber: 0, mode: 'Byte', errorCorrectionLevel: 'H' }"
+                                                                :imageOptions="{ hideBackgroundDots: true, imageSize: 0.4, margin: 0 }"
+                                                                :dotsOptions="{
+                                                                    type: 'square',
+                                                                    color: '#000',
+                                                                    
+                                                                }"
+                                                                :backgroundOptions="{ color: '#ffffff' }"
+                                                                />
                                                         </div>
 
                                                         <div class="col-sm-7 align-self-center">
@@ -76,7 +88,7 @@
                                                                     <td>{{ item.nmBarang }}</td>
                                                                     <td class="text-end">{{ Number(item.hrgJual).toLocaleString() }}</td>
                                                                     <td class="text-end">{{ item.qty }}</td>
-                                                                    <td class="text-end">{{ Number(item.disc).toLocaleString() }}</td>
+                                                                    <td class="text-end">{{ item.satuanBarang }}</td>
                                                                     <td class="text-end">{{ Number(item.totalJual).toLocaleString() }}</td>
                                                                 </tr>
                                                             </tbody>
@@ -114,7 +126,7 @@
                                                 <div class="inv--total-amounts">
                                                     <div class="row mt-4">
                                                         <div class="col-sm-5 col-12 order-sm-0 order-1">
-                                                            <img :src="`https://api.qrserver.com/v1/create-qr-code/?size=50x50&data=${noNota}`" alt="QR Code" />
+                                                            <p class="inv-email-address">Rek BCA : 7724022244<br> An : Ni Putu Ita Liantika Oktia Dewi</p>
                                                             <p class="inv-email-address">Invoice ini sudah di ttd secara digital oleh Swamerta Supplier<br>Terima kasih</p>
                                                         </div>
                                                         <div class="col-sm-3 col-12 order-sm-0 order-1" > 
@@ -230,6 +242,9 @@
 
     import { Modal } from 'usemodal-vue3';
     import Vue3Signature from "vue3-signature"
+    import QRCodeVue3 from "qrcode-vue3";
+
+
 
     import { useRouter, useRoute } from 'vue-router'
     import { useStore } from 'vuex';
@@ -272,7 +287,7 @@
             { key: 'nmBarang', label: 'ITEMS' },
             { key: 'hrgJual', label: 'HARGA' },
             { key: 'qty', label: 'QTY', class: 'text-end' },
-            { key: 'disc', label: 'Disc', class: 'text-end' },
+            { key: 'satuanBarang', label: 'Satuan', class: 'text-end' },
             { key: 'totalJual', label: 'AMOUNT', class: 'text-end' },
         ];
         columns_jasa.value = [
@@ -350,7 +365,7 @@
         }).then((response) => {
             
             isVisible.value = false;
-            getInvoiceDetails
+            getInvoiceDetails()
             
         }).catch((error) => {
             console.error('Error saving recipient name:', error);

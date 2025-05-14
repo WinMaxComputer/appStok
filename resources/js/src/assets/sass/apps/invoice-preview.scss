@@ -318,6 +318,7 @@
 @media print {
   body * {
     visibility: hidden;
+    margin-top: 1mm !important;
   }
 
   #ct {

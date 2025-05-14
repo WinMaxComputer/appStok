@@ -41,7 +41,7 @@
                                                     
                                                         <tr v-if="hrt.level === '1'" >
                                                             <td v-if="hrt.jenis != 'Total'" style="min-width:100px">{{ hrt.acc_id }} 
-                                                                <a href="javascript:void(0);" title="Edit"  @click="edit_acc(accid=hrt.acc_id, level=hrt.level, parent=hrt.parent, name=hrt.name, jenis=hrt.jenis)">
+                                                                <a href="javascript:void(0);" title="Edit"  @click="edit_acc(accid=hrt.acc_id, level=hrt.level, parent=hrt.parent, name=hrt.name, jenis=hrt.jenis,hrt)">
                                                                     <i class="far fa-address-book"></i>
                                                                 </a>
                                                             </td>
@@ -64,7 +64,7 @@
                                                         </tr>
                                                         <tr v-if="hrt.level === '2'">
                                                             <td v-if="hrt.jenis != 'Total'" >{{ hrt.acc_id }}
-                                                                <a href="javascript:void(0);" title="Edit" @click="edit_acc(accid=hrt.acc_id, level=hrt.level, parent=hrt.parent, name=hrt.name, jenis=hrt.jenis)">edit</a>
+                                                                <a href="javascript:void(0);" title="Edit" @click="edit_acc(accid=hrt.acc_id, level=hrt.level, parent=hrt.parent, name=hrt.name, jenis=hrt.jenis,hrt)">edit</a>
                                                             </td>
                                                             <td v-else></td>
                                                             <td v-if="hrt.jenis === 'Total' || hrt.jenis.substring(0,1) === 'H'" style="min-width: 300px;"><b>&nbsp;&nbsp;&nbsp;&nbsp;{{ hrt.name }}</b></td>
@@ -79,7 +79,7 @@
                                                         </tr>
                                                         <tr v-if="hrt.level === '3'">
                                                             <td v-if="hrt.jenis != 'Total'">{{ hrt.acc_id }}
-                                                                <a href="javascript:void(0);" title="Edit" @click="edit_acc(accid=hrt.acc_id, level=hrt.level, parent=hrt.parent, name=hrt.name, jenis=hrt.jenis)">edit</a>
+                                                                <a href="javascript:void(0);" title="Edit" @click="edit_acc(accid=hrt.acc_id, level=hrt.level, parent=hrt.parent, name=hrt.name, jenis=hrt.jenis,hrt)">edit</a>
                                                             </td>
                                                             <td v-else></td>
                                                             <td v-if="hrt.jenis === 'Total' || hrt.jenis.substring(0,1) === 'H'" style="min-width: 300px;"><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ hrt.name }}</b></td>
@@ -93,7 +93,7 @@
                                                         </tr>
                                                         <tr v-if="hrt.level === '4'">
                                                             <td>{{ hrt.acc_id }}
-                                                                <a href="javascript:void(0);" title="Edit" @click="edit_acc(accid=hrt.acc_id, level=hrt.level, parent=hrt.parent, name=hrt.name, jenis=hrt.jenis)">edit</a>
+                                                                <a href="javascript:void(0);" title="Edit" @click="edit_acc(accid=hrt.acc_id, level=hrt.level, parent=hrt.parent, name=hrt.name, jenis=hrt.jenis,hrt)">edit</a>
                                                             </td>
                                                             <td style="min-width: 300px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ hrt.name }}</td>
                                                             <td>{{ Number(amount).toLocaleString() }}</td>
@@ -112,28 +112,37 @@
                             </div>
                         </div>
                         <Modal v-model:visible="isVisible" :draggable="true" :title="edit">
-                            <input type="text" class="form-control" v-model="selected.oldid" />
+                            <input type="text" v-model="selected.oldid" class="form-control" />
                             <div class="input-group input-group-sm mb-4">
                                 <select v-model="selected.parent" class="form-control">
-                                    <option v-for="hrt in hartalist" :key="hrt.acc_id" :value="hrt.parent">Acc Parent {{ hrt.parent }}</option>
+                                    <option 
+                                        v-for="hrt in hartalist.filter(h => h.acc_id && h.acc_id.substring(0,2) === selected.parent.substring(0,2))" 
+                                        :key="hrt.acc_id" 
+                                        :value="hrt.acc_id">
+                                        Acc Parent {{ hrt.acc_id }} - {{ hrt.name }}
+                                    </option>
                                 </select>
                             </div>
                             <div class="input-group input-group-sm mb-4">
                                 <select v-model="selected.level" class="form-control">
-                                    <option v-for="hrt in hartalist" :key="hrt.acc_id" :value="hrt.level">Level {{ hrt.level }}</option>
+                                    <option 
+                                        v-for="level in [...new Set(hartalist.map(h => h.level))]" 
+                                        :key="level" 
+                                        :value="level">
+                                        Level {{ level }}
+                                    </option>
                                 </select>
                             </div>
-                            {{ selected.jenis }}
                             <div class="input-group mb-4">
                                 <select v-model="selected.jenis" class="form-control" >
-                                    <option v-for="hrt in hartalist" :key="hrt.acc_id" :value="hrt.jenis">{{ hrt.jenis }}</option>
+                                    <option 
+                                        v-for="jenis in [...new Set(hartalist.map(h => h.jenis))]" 
+                                        :key="jenis" 
+                                        :value="jenis">
+                                        Level {{ jenis }}
+                                    </option>
                                 </select>
                                 
-                            </div>
-                            <div class="input-group input-group-sm mb-4">
-                                <select v-model="selected.accid" class="form-control" disabled>
-                                    <option v-for="hrt in hartalist" :key="hrt.acc_id" :value="hrt.acc_id">{{ hrt.name }}</option>
-                                </select>
                             </div>
                             <div class="input-group input-group-sm mb-4">
                                 <input type="text" class="form-control" v-model="selected.name" />
@@ -222,13 +231,12 @@
         const harta = ref({
             group: '1'
         });
-        store.dispatch('GetHarta', harta.value);
+        store.dispatch('GetHarta', harta.value).then(() => {
+                console.log('berhasil');
+                hartalist.value = store.getters.StateHarta;
+                judulPage.value = 'Harta';
+        });
         // hartalist.value = store.getters.StateHarta;
-        setTimeout(function() { 
-            // store.dispatch('GetCoaList')
-            hartalist.value = store.getters.StateHarta;
-        }, 3000);
-       judulPage.value = 'Harta';
     });
 
     const show_harta = () => {
@@ -273,8 +281,8 @@
        judulPage.value = 'Modal';
     }
 
-    const edit_acc = (accid, level, parent, name, jenis) =>{
-        // alert('yg di edit : '+ accid + ' level : '+ level + 'parent : '+ parent);
+    const edit_acc = (accid, level, parent, name, jenis,hrt) =>{
+        console.log(hrt);
         selected.value.accid = accid ;
         selected.value.level = level ;
         selected.value.parent = parent ;
