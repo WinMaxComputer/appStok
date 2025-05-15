@@ -196,9 +196,8 @@
                                         autocomplete="off"
                                     />
                                 </div>
-                                <Vue3Signature  ref="signature1" :sigOption="state.option" :w="'1280px'" :h="'400px'"
+                                <Vue3Signature  ref="signature1" :sigOption="state.option" :w="'600px'" :h="'380px'"
                                                 :disabled="state.disabled" class="example"></Vue3Signature>
-                                <button @click="save('image/jpeg')">Save</button>
                                 <button @click="clear">Clear</button>
                                 <button @click="undo">Undo</button>
                                 <button @click="handleDisabled">disabled</button>
@@ -220,7 +219,7 @@
                                         </div>
                                         <div class="col-xl-12 col-md-3 col-sm-6">
 
-                                            <router-link :to="{ name: 'editpenjualan', params: { kd_trans: invoiceId, startDate: tglNota  } }" class="btn btn-dark btn-edit">Edit</router-link>
+                                            
                                         </div>
                                     </div>
                                 </div>

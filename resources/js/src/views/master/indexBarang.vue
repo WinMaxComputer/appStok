@@ -148,18 +148,19 @@
                         <input v-model="edit.merek" class="form-control" placeholder="Merek" />
                     </div>
                     <div class="col-sm">
+                        <label for="inputState">Barcode</label>
+                        <input v-model="edit.barcode" class="form-control" placeholder="Barcode" />
+                    </div>
+                </div>
+                <div class="row mb-2" v-if="edit.qtyMax == null">
+                    <div class="col-sm">
                         <label for="inputState">Qty Min</label>
                         <input v-model="edit.qtyMin" class="form-control" placeholder="Qty Min" @keypress="onlyNumber" />
                     </div>
+                    
                     <div class="col-sm">
                         <label for="inputState">Qty Max</label>
                         <input v-model="edit.qtyMax" class="form-control" placeholder="Qty Max" @keypress="onlyNumber" />
-                    </div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-sm">
-                        <label for="inputState">Barcode</label>
-                        <input v-model="edit.barcode" class="form-control" placeholder="Barcode" />
                     </div>
                 </div>
                 <div class="row mb-4">
@@ -238,19 +239,18 @@
                                             <input v-model="input.merek" class="form-control" placeholder="Merek" />
                                         </div>
                                         <div class="col-sm">
+                                            <label for="inputState">Barcode</label>
+                                            <input v-model="input.barcode" class="form-control" placeholder="Barcode" />
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2" v-if="input.qtyMax == null">
+                                        <div class="col-sm">
                                             <label for="inputState">Qty Min</label>
                                             <input v-model="input.qtyMin" class="form-control" placeholder="Qty Min" @keypress="onlyNumber" />
                                         </div>
                                         <div class="col-sm">
                                             <label for="inputState">Qty Max</label>
                                             <input v-model="input.qtyMax" class="form-control" placeholder="Qty Max" @keypress="onlyNumber" />
-                                        </div>
-                                        
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-sm">
-                                            <label for="inputState">Barcode</label>
-                                            <input v-model="input.barcode" class="form-control" placeholder="Barcode" />
                                         </div>
                                     </div>
 
@@ -284,7 +284,7 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn" data-dismiss="modal" data-bs-dismiss="modal"><i class="flaticon-cancel-12"></i> Discard</button>
-                                <button type="button" class="btn btn-primary" @click="simpan_barang">Save</button>
+                                <button type="button" class="btn btn-primary" @click="simpan_barang()">Save</button>
                             </div>
                         </div>
                     </div>
@@ -362,8 +362,8 @@
         hrgBeli: '',
         hrgJual: '',
         merek: '',
-        qtyMin: '',
-        qtyMax: '',
+        qtyMin: '1',
+        qtyMax: '999',
         acc_id: accs,
         acchpp: accs,
         accpersediaan: accs,
@@ -383,8 +383,13 @@
 
     
     const bind_data = () => {
-        store.dispatch('GetBarang');
-        items.value = store.getters.StateBarang;
+        store.dispatch('GetBarang').then(response => {
+            // console.log('response: ', response)
+            items.value = store.getters.StateBarang;
+        }).catch(error => {
+            // console.log('error: ', error)
+            return
+        })
     }
 
     const barangs = computed(() => {
@@ -399,14 +404,24 @@
     // })
     const accs = ref([]);
     const GetCoaHpp= async() => {
-        await store.dispatch('GetCoaList')
-        accs.value = store.getters.StateCoaList;
+        await store.dispatch('GetCoaList').then(response => {
+            // console.log('response: ', response)
+            accs.value = store.getters.StateCoaList;
+        }).catch(error => {
+            // console.log('error: ', error)
+            return
+        })
     }
 
     const ktgs = ref([]);
     const getKtg = async () => {
-        await store.dispatch('GetKategori');
-        ktgs.value = store.getters.StateKategori;
+        await store.dispatch('GetKategori').then(response => {
+            // console.log('response: ', response)
+            ktgs.value = store.getters.StateKategori;
+        }).catch(error => {
+            // console.log('error: ', error)
+            return
+        })
         // console.log(ktgs.value)
     }
     // const kdbrg = ref([])

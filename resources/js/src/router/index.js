@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import Home from '../views/index.vue';
 import store from '../store';
 
 // Vue.use(VueRouter);
@@ -337,63 +336,7 @@ const routes = [
 
     
 
-    //apps
-    {
-        path: '/apps/chat',
-        name: 'chat',
-        component: () => import(/* webpackChunkName: "apps-chat" */ '../views/apps/chat.vue'),
-    },
-    {
-        path: '/apps/mailbox',
-        name: 'mailbox',
-        component: () => import(/* webpackChunkName: "apps-mailbox" */ '../views/apps/mailbox.vue'),
-    },
-    {
-        path: '/apps/todo-list',
-        name: 'todo-list',
-        component: () => import(/* webpackChunkName: "apps-todo-list" */ '../views/apps/todo_list.vue'),
-    },
-    {
-        path: '/apps/contacts',
-        name: 'contacts',
-        component: () => import(/* webpackChunkName: "apps-contacts" */ '../views/apps/contacts.vue'),
-    },
-    {
-        path: '/apps/notes',
-        name: 'notes',
-        component: () => import(/* webpackChunkName: "apps-notes" */ '../views/apps/notes.vue'),
-    },
-    {
-        path: '/apps/scrumboard',
-        name: 'scrumboard',
-        component: () => import(/* webpackChunkName: "apps-scrumboard" */ '../views/apps/scrumboard.vue'),
-    },
-    {
-        path: '/apps/calendar',
-        name: 'calendar',
-        component: () => import(/* webpackChunkName: "apps-calendar" */ '../views/apps/calendar.vue'),
-    },
-    {
-        path: '/apps/invoice/list',
-        name: 'invoice-list',
-        component: () => import(/* webpackChunkName: "apps-invoice-list" */ '../views/apps/invoice/list.vue'),
-    },
-    {
-        path: '/apps/invoice/preview',
-        name: 'invoice-preview',
-        component: () => import(/* webpackChunkName: "apps-invoice-preview" */ '../views/apps/invoice/preview.vue'),
-    },
-    {
-        path: '/apps/invoice/add',
-        name: 'invoice-add',
-        component: () => import(/* webpackChunkName: "apps-invoice-add" */ '../views/apps/invoice/add.vue'),
-    },
-    {
-        path: '/apps/invoice/edit',
-        name: 'invoice-edit',
-        component: () => import(/* webpackChunkName: "apps-invoice-edit" */ '../views/apps/invoice/edit.vue'),
-    },
-
+    
     
 ];
 
