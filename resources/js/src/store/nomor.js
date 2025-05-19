@@ -15,6 +15,7 @@ const state = {
     nopengadaan: [],
     nopenyusutan: [],
     nopelanggan: [],
+    nosupplier: [],
     nopenjualan: [],
     nobayarpenjualan: [],
     nobayarpembelian: [],
@@ -37,6 +38,7 @@ const getters = {
     NoPengadaan: state => state.nopengadaan,
     NoPenyusutan: state => state.nopenyusutan,
     NoPelanggan: state => state.nopelanggan,
+    NoSupplier: state => state.nosupplier,
 };
 
 const actions = {  
@@ -233,6 +235,19 @@ const actions = {
             return
         }
     
+    },
+
+    async GetNoSupplier({ commit }){
+        let response
+        try {
+            response = await axios.get('/api/kdsupplier')
+            commit('setNoSupplier', response.data.kdSupplier)
+        } catch (ex) {
+            // Handle error
+            alert('error no supplier')
+            return
+        }
+    
     }
 
 };
@@ -284,6 +299,9 @@ const mutations = {
     },
     setNoPelanggan(state, plg){
         state.nopelanggan = plg
+    },
+    setNoSupplier(state, spl){
+        state.nosupplier = spl
     }
 
 };

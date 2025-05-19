@@ -55,7 +55,7 @@
                                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                                             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                                         </svg>
-                                        <input :type="pwd_type" v-model="form.password" class="form-control" placeholder="Password" />
+                                        <input :type="pwd_type" v-model="form.password" class="form-control" placeholder="Password" @keydown.enter="login()" />
                                         <svg
                                             @click="set_pwd_type"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -76,7 +76,7 @@
                                     </div>
                                     <div class="d-sm-flex justify-content-between">
                                         <div class="field-wrapper">
-                                            <a href="javascript:;" class="btn btn-primary w-100 mb-4 me-2" @click="login" >Log In</a>
+                                            <a href="javascript:;" class="btn btn-primary w-100 mb-4 me-2" @click="login()" >Log In</a>
                                             <!-- <button type="button" class="btn btn-success mb-2 me-1" @click="kompliment()">kompliment</button> -->
                                         </div>
                                     </div>

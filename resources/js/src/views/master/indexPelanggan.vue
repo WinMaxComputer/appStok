@@ -398,14 +398,14 @@
         // alert('ID: ' + item.kdBarang + ', Name: ' + item.nmBarang);
         new window.Swal({
             title: 'Anda Yahin?',
-            text: "Hapus Nama Barang !" +item.nmBarang,
+            text: "Hapus Nama Pelanggan !" +item.nmPelanggan,
             type: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Delete',
             padding: '2em'
         }).then(result => {
             if (result.value) {
-                store.dispatch('DeleteBarang', item.id)
+                store.dispatch('DeletePelanggan', item.id)
                 .then(response => {
                     bind_data();
                     new window.Swal('Deleted!', 'Your file has been deleted.', 'success');

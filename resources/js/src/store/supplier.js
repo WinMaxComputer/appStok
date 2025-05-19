@@ -9,7 +9,7 @@ const getters = {
 
 const actions = {  
     async CreateSupplier({dispatch}, pel) {
-        await axios.post('/apitambah/supplier', pel)
+        await axios.post('/api/tambah/supplier', pel)
         await dispatch('GetSupplier')
     }, 
     async GetSupplier({ commit }){

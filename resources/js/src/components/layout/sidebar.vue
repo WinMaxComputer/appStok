@@ -56,7 +56,7 @@
                     </div>
                 </li>
 
-                <li class="menu">
+                <!-- <li class="menu">
                     <div class="dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#components" aria-controls="components" aria-expanded="false">
                         <router-link to="/jasa">
                             <svg
@@ -77,9 +77,8 @@
                             </svg>
                             <span>JASA</span>
                         </router-link>
-                            <!-- <span>{{ $t('Barang') }}</span> -->
                     </div>
-                </li>
+                </li> -->
 
                 <li class="menu">
                     <a class="dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#datatables" aria-controls="datatables" aria-expanded="false">
@@ -122,9 +121,9 @@
                     </a>
 
                     <ul id="datatables" class="collapse submenu list-unstyled" data-bs-parent="#sidebar">
-                        <li>
+                        <!-- <li>
                             <router-link to="/pegawai" @click="toggleMobileMenu">PEGAWAI</router-link>
-                        </li>
+                        </li> -->
                         <li>
                             <router-link to="/supplier" @click="toggleMobileMenu">SUPPLIER</router-link>
                         </li>

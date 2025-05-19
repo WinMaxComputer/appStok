@@ -61,6 +61,12 @@ const routes = [
         // meta: { requiresAuth: true },
     },
     {
+        path: '/supplier',
+        name: 'supplier',
+        component: () => import(/* webpackChunkName: "components-tabs" */ '../views/master/indexSupplier.vue'),
+        // meta: { requiresAuth: true },
+    },
+    {
         path: '/barang',
         name: 'barang',
         component: () => import(/* webpackChunkName: "components-tabs" */ '../views/master/indexBarang.vue'),

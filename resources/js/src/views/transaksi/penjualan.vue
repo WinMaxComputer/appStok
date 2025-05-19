@@ -122,7 +122,7 @@
                                                     <div class="row">
                                                         <div class="form-group col-xs-2">
                                                             <label for="Inputqty">Barcode</label>
-                                                            <input type="text" ref="InputBarcode" v-model="barcode" class="form-control form-control-sm" placeholder="Barcode" @keyup.enter="addToCartB(barcode)" />
+                                                            <input type="text" ref="InputBarcode" v-model="barcode" class="form-control form-control-sm" placeholder="Barcode" @keydown.enter="addToCartB(barcode)" />
                                                         </div>
                                                         
                                                         <div class="form-group col-md-3">
@@ -142,11 +142,11 @@
                                                         </div>
                                                         <div class="form-group col-md-2">
                                                             <label for="inputState">HARGA</label>
-                                                            <input type="number" v-model="brg.hrgJual" ref="InputHarga" class="form-control form-control-sm" placeholder="Price" @keyup.enter="moveToQty()" @keypress="onlyNumber" />
+                                                            <input type="number" v-model="brg.hrgJual" ref="InputHarga" class="form-control form-control-sm" placeholder="Price" @keydown.enter="moveToQty()" @keypress="onlyNumber" />
                                                         </div>
                                                         <div class="form-group col-sm-1">
                                                             <label for="inputZip">QTY</label>
-                                                            <input type="number" v-model="qty" ref="Inputqty" class="form-control form-control-sm" placeholder="Quantity" @keyup.enter="addToCart(brg)" @keypress="onlyNumber" />
+                                                            <input type="number" v-model="qty" ref="Inputqty" class="form-control form-control-sm" placeholder="Quantity" @keydown.enter="addToCart(brg)" @keypress="onlyNumber" />
                                                         </div>
                                                         <div class="form-group col-sm-1">
                                                             <label for="inputZip">Disc</label>
