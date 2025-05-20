@@ -805,7 +805,7 @@
                 // console.log(response.data);
                 const brg = response.data.data;
                 if (brg.stokPersediaan < 1) {
-                    if (!window.confirm('Stok barang kurang dari 1. Jika dilanjukan akan mempengaruhi perhitungan laba rugi?')) {
+                    if (!window.confirm('Stok barang kurang dari 1. Jika dilanjukan akan mempengaruhi perhitungan laba rugi.')) {
                         return;
                     }
                     // alert('Barang kurang dari 1')
