@@ -662,7 +662,7 @@
                     confirmButtonText: 'Delete',
                     padding: '2em'
                 }).then(result => {
-                    if (result.value) {
+                    if (result.isConfirmed) {
                         store.dispatch('DeleteBarang', item.id)
                         .then(response => {
                             bind_data();
