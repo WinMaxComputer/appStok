@@ -52,8 +52,11 @@
                                                         <label for="company-address" class="col-sm-3 col-form-label col-form-label-sm">Term</label>
                                                         <div class="col-sm-9">
                                                             <select id="inputState" v-model="params.term" class="form-select">
-                                                                <option value="0" selected>Cash</option>
-                                                                <option value="1">Kredit</option>
+                                                                <option v-for="option in [{ value: '0', label: 'Cash' }, { value: '1', label: 'Kredit' }]" 
+                                                                    :key="option.value" 
+                                                                    :value="option.value">
+                                                                    {{ option.label }}
+                                                                </option>
                                                             </select>
                                                         </div>
                                                     </div>
@@ -208,7 +211,8 @@
                                                                 <a href="javascript:;" @click="addPayment" class="btn btn-dark btn-preview" data-bs-toggle="modal" data-bs-target="#modalPayment">Pembayaran</a>
                                                             </div> -->
                                                             <div class="col-sm-4">
-                                                                <a href="javascript:;" @click="simpanPembelian" class="btn btn-success btn-download">Save</a>
+                                                                <!-- <a href="javascript:;" @click="simpanPembelian" class="btn btn-success btn-download">Save</a> -->
+                                                                <a href="javascript:;" @click="openModal()" class="btn btn-success btn-download">Save</a>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -285,6 +289,51 @@
                                         </div>
                                     </div>
 
+                                    <Modal 
+                                        v-model:visible="isVisible" 
+                                        :draggable="true" 
+                                        :title="'PEMBAYARAN NOTA'"
+                                        :showCancelButton="false" 
+                                        :cancelButton="{text: 'cancel', onclick: () => {isVisible = false}, loading: false}"
+                                        :okButton="{text: 'SAVE', onclick: () => {simpanPembelian()}, loading: false}"
+                                        width="60%">
+
+                                            <div class="col-md-12">
+                                                <div class="totals-row">
+                                                    <div class="invoice-totals-row ">
+                                                        <div style="font-size: 20px;">
+                                                            <div v-if="params.term === 0">Cash</div>
+                                                            <div v-else-if="params.term === 1">Kredit</div>
+                                                        </div>
+                                                        <!-- <div class="invoice-summary-label"></div> -->
+                                                        <div class="invoice-summary-value">
+                                                            <div class="balance-due-amount">
+                                                                <span style="font-size: 30px;">{{ new Intl.NumberFormat().format(Math.floor(total)) }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12" v-if="params.term === '0'">
+                                                <div class="totals-row">
+                                                    <div class="invoice-totals-row ">
+                                                        <div style="font-size: 20px;">Method</div>
+                                                        <!-- <div class="invoice-summary-label"></div> -->
+                                                        <div class="invoice-summary-value">
+                                                            <div class="balance-due-amount">
+                                                                <select v-model="paramsbayar.metodeBayar" >
+                                                                    <option value="cash" selected>Cash</option>
+                                                                    <option value="credit_card">Credit Card</option>
+                                                                    <option value="bank_transfer">Bank Transfer</option>
+                                                                    <option value="ewallet">E-Wallet</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    </Modal>
+
                                     <div class="invoice-detail-note">
                                         <div class="row">
                                             <div class="col-md-12 align-self-center">
@@ -328,8 +377,9 @@
     import '@suadelabs/vue3-multiselect/dist/vue3-multiselect.css';
 
     import moment from "moment";
+    import { Modal } from 'usemodal-vue3';
 
-    import { computed, ref, onMounted, watch } from 'vue';
+    import { computed, ref, onMounted, onBeforeMount } from 'vue';
     import { useStore } from 'vuex';
     import { useRouter, useRoute } from 'vue-router'
 
@@ -340,7 +390,7 @@
     const router = useRouter();
     const route = useRoute();
 
-    // const items = ref([]);
+    const items = ref([]);
     const cartItemsP = ref([])
     const brg = ref([]);
     const nopembelian = ref([]);
@@ -352,24 +402,9 @@
     const tax = ref();
     const selected_file = ref(null);
     const payment = ref([]);
+    const isVisible = ref(false);
 
-    const props = defineProps({
-        id: String,
-        tglNota: String,
-        noNota: String,
-        regu: String,
-    });
-    const params = ref({
-        noNota: props.noNota,
-        tglNota: props.tglNota, // moment().format("YYYY-MM-DD"),
-        term: 0,
-        jthTempo: moment().format("YYYY-MM-DD"),
-        notes: '',
-        subtotal: subtotal,
-        tax: 11,
-        disc: disc,
-        total: total,
-    });
+    const params = ref({});
     const paramssupplier = ref({
     });
     const paramsacc = ref({
@@ -378,6 +413,12 @@
         nilai: '',
         // tlpSupplier: '',
 
+    });
+    const paramsbayar = ref({
+        noBayar: null,
+        tglBayar: params.value.jthTempo,
+        jmlBayar: total,
+        metodeBayar: 'cash',
     });
     const cartItems = ref([])
     const divpajak = ref(false)
@@ -406,6 +447,18 @@
     // const getAcc=() => {
     //     store.dispatch('GetAcc')
     // }
+    const openModal = () => {
+        getNoPembayaran()
+        // Logic to open the modal
+        console.log('Modal opened');
+        isVisible.value = true;
+        
+    };
+    const getNoPembayaran = async () => {
+        await store.dispatch('GetNoBayarPembelian').then(() => {
+            paramsbayar.value.noBayar = store.getters.NoBayarPembelian;
+        });
+    };
 
 
     const getTotal=() =>{
@@ -459,18 +512,19 @@
     const simpanPembelian=() => {
         const header =params.value
         const headers =paramssupplier.value
-            const headerfull = Object.assign(header, headers)
-            const detail =cartItems.value
-            store.dispatch('CreatePembelian', [headerfull,detail] )
-            .then(response => {
-                // console.log('result: ', response)
-                getCart()
-                getNoPembelian();
-            })
-            .catch(error => {
-                // console.log('error: ', error)
-                return
-            })
+        const headerfull = Object.assign(header, headers)
+        const detail =cartItems.value
+        const bayar = paramsbayar.value
+        store.dispatch('CreatePembelian', [headerfull,detail,bayar] )
+        .then(response => {
+            // console.log('result: ', response)
+            getCart()
+            getNoPembelian();
+        })
+        .catch(error => {
+            // console.log('error: ', error)
+            return
+        })
     }
 
     onMounted( async () => {
@@ -515,6 +569,22 @@
         getCart();
         // getNoPembelian();
     });
+
+    onBeforeMount(() => {
+        params.value = {
+
+            noNota: store.getters.SetEditNotaBeli[0].noNota,
+            tglNota: store.getters.SetEditNotaBeli[0].tglNota, // moment().format("YYYY-MM-DD"),
+            term: store.getters.SetEditNotaBeli[0].termPembelian,
+            jthTempo: store.getters.SetEditNotaBeli[0].jthTempo,
+            notes: store.getters.SetEditNotaBeli[0].notes,
+            subtotal: store.getters.SetEditNotaBeli[0].subTotal,
+            tax: store.getters.SetEditNotaBeli[0].tax,
+            disc: store.getters.SetEditNotaBeli[0].disc,
+            total: store.getters.SetEditNotaBeli[0].total,
+            termPembelian: store.getters.SetEditNotaBeli[0].termPembelian,
+            }
+    })
 
     const reset_form = () => {
 

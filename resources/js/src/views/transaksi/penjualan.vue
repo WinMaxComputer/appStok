@@ -144,11 +144,11 @@
                                                             <label for="inputState">HARGA</label>
                                                             <input type="number" v-model="brg.hrgJual" ref="InputHarga" class="form-control form-control-sm" placeholder="Price" @keydown.enter="moveToQty()" @keypress="onlyNumber" />
                                                         </div>
-                                                        <div class="form-group col-sm-1">
+                                                        <div class="form-group col-md-1">
                                                             <label for="inputZip">QTY</label>
                                                             <input type="number" v-model="qty" ref="Inputqty" class="form-control form-control-sm" placeholder="Quantity" @keydown.enter="addToCart(brg)" @keypress="onlyNumber" />
                                                         </div>
-                                                        <div class="form-group col-sm-1">
+                                                        <div class="form-group col-md-1">
                                                             <label for="inputZip">Disc</label>
                                                             <input type="number" v-model="disc" class="form-control form-control-sm" placeholder="Diskon" @keypress="onlyNumber" />
                                                         </div>
@@ -161,7 +161,7 @@
                                                             <!-- {{ new Intl.NumberFormat().format(brg.hrgJual * qty) }} -->
                                                             <input type="text" v-model="tot" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
                                                         </div>
-                                                        <div class="form-group col-md-1">
+                                                        <div class="form-group col-sm-1">
                                                             <label for="aksi">Aksi</label>
                                                             <button @click="addToCart(brg)" class="btn btn-xs btn-primary">
                                                                 + 

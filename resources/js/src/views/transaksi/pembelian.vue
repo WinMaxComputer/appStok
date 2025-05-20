@@ -128,19 +128,19 @@
                                                     select-label="" >
                                                 </multiselect>
                                             </div>
-                                            <div class="form-group col-sm-2">
+                                            <div class="form-group col-md-2">
                                                 <label for="InputHarga">HARGA</label>
                                                 <input type="text" ref="InputHarga" v-model="brg.lastPrice" class="form-control form-control-sm" placeholder="Price" @keyup.enter="moveToQty()" @keypress="onlyNumber" />
                                             </div>
-                                            <div class="form-group col-sm-1">
+                                            <div class="form-group col-md-1">
                                                 <label for="Inputqty">QTY</label>
                                                 <input type="text" ref="Inputqty" v-model="qty" class="form-control form-control-sm" placeholder="Quantity" @keyup.enter="addToCart(brg)" @keypress="onlyNumber" />
                                             </div>
-                                            <div class="form-group col-sm-2">
+                                            <div class="form-group col-md-2">
                                                 <label for="satuan">SATUAN</label>
                                                 <input type="text" v-model="brg.satuanPersediaan" class="form-control form-control-sm"  />
                                             </div>
-                                            <div class="form-group col-sm-2">
+                                            <div class="form-group col-md-2">
                                                 <label for="inputZip">TOTAL</label><br>
                                                 <!-- {{ new Intl.NumberFormat().format(brg.lastPrice * qty) }} -->
                                                 <input type="text" v-model="tot" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
@@ -477,9 +477,11 @@
     const getSupplier=() => {
         store.dispatch('GetSupplier')
     }
-    const getNoPembelian=() => {
-        store.dispatch('GetNoPembelian');
-        nopembelian.value = store.getters.NoPembelian;
+    const getNoPembelian = async () => {
+        await store.dispatch('GetNoPembelian').then(() => {
+            nopembelian.value = store.getters.NoPembelian;
+        });
+
     }
     const getNoPembayaran = async () => {
         await store.dispatch('GetNoBayarPembelian').then(() => {

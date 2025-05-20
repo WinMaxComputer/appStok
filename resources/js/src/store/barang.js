@@ -35,6 +35,11 @@ const actions = {
             throw err;
         }
     },
+    async CheckBarangPernahJual({ commit }, id) {
+        const response = await axios.post('/api/check/barang-pernah-jual', id);
+        return response; // Assuming the API returns a boolean field 'exists'
+       
+    },
     async CreateBarang({dispatch}, post) {
         try{
             await axios.post('/api/store/barang', post)
@@ -112,36 +117,11 @@ const actions = {
         let response
         try {
             response = await axios.delete(`/api/hapus/barang/${id}`)
-            await dispatch('GetBarang')
-            const toast = window.Swal.mixin({
-                toast: true,
-                position: 'top-center',
-                showConfirmButton: false,
-                timer: 3000,
-                padding: '2em',
-            });
-            toast.fire({
-                icon: 'success',
-                title: 'Barang berhasil terhapus',
-                padding: '2em',
-            });
+           
             return response ;
         } catch (ex) {
             // Handle error
-            const toast =  window.Swal.mixin({
-                toast: true,
-                position: 'top-center',
-                showConfirmButton: false,
-                timer: 3000,
-                padding: '2em'
-            });
-            toast.fire({
-                title: 'Error!',
-                text: 'Barang Gagal Dihapus',
-                icon: 'error',
-                // confirmButtonText: 'Cool',
-                padding: '2em'
-            });
+            
             throw 'error' ;
         }
     },

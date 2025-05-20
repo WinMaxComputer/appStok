@@ -35,6 +35,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/update/barang', [App\Http\Controllers\barangController::class, 'update']);
     Route::delete('/hapus/barang/{id}', [App\Http\Controllers\barangController::class, 'destroy']);
     Route::post('/check/barang', [App\Http\Controllers\barangController::class, 'checkBarangExist']);
+    Route::post('/check/barang-pernah-jual', [App\Http\Controllers\barangController::class, 'checkBarangPernahJual']);
 
         //=====JASA============
     Route::get('/jasa', [App\Http\Controllers\jasaController::class, 'index']);

@@ -241,43 +241,6 @@ const actions = {
         await dispatch('GetBarang')
         // await commit('setUser', detUser.data.user)
     },
-    async DeleteBarang({dispatch}, id) {
-        let response
-        try {
-            response = await axios.delete(`/api/hapus/barang/${id}`)
-            await dispatch('GetBarang')
-            const toast = window.Swal.mixin({
-                toast: true,
-                position: 'top-center',
-                showConfirmButton: false,
-                timer: 3000,
-                padding: '2em',
-            });
-            toast.fire({
-                icon: 'success',
-                title: 'Barang berhasil terhapus',
-                padding: '2em',
-            });
-            return response ;
-        } catch (ex) {
-            // Handle error
-            const toast =  window.Swal.mixin({
-                toast: true,
-                position: 'top-center',
-                showConfirmButton: false,
-                timer: 3000,
-                padding: '2em'
-            });
-            toast.fire({
-                title: 'Error!',
-                text: 'Barang Gagal Dihapus',
-                icon: 'error',
-                // confirmButtonText: 'Cool',
-                padding: '2em'
-            });
-            throw 'error' ;
-        }
-    },
     // async editAplus({commit}, da) {
     //     commit('setAplusan', da)
     //     // await commit('setUser', detUser.data.user)

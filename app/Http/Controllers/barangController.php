@@ -50,6 +50,26 @@ class barangController extends Controller
         }
     }
 
+    public function checkBarangPernahJual(Request $request)
+    {
+        $kdBarang = $request->input('kdBarang');
+        $barang = DB::table('tblpenjualan_detail')->where('r_kdBarang', $kdBarang)->first();
+        if ($barang) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Barang pernah dijual',
+                'data' => $barang,
+                'exist' => true
+            ], 200);
+        } else {
+            return response()->json([
+                'success' => true,
+                'message' => 'Barang tidak ditemukan',
+                'exist' => false,
+            ], 200);
+        }
+    }
+
     public function indexPersediaan()
     {
         $posts = Persediaan::join('tblkategori', 'tblpersediaan.ktgPersediaan', '=', 'tblkategori.kodeKtg')
@@ -150,6 +170,7 @@ class barangController extends Controller
     public function destroy($id)
     {
         $post = Barang::findOrFail($id);
+        Persediaan::where('kdPersediaan', $post->kdBarang)->delete();
         // $kodebarang = $post->kdBarang;
         
         $post->delete();

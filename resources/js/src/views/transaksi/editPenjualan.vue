@@ -147,11 +147,11 @@
                                                             <label for="inputState">HARGA</label>
                                                             <input type="text" v-model="brg.hrgJual" class="form-control form-control-sm" placeholder="Price" @keypress="onlyNumber" />
                                                         </div>
-                                                        <div class="form-group col-sm-1">
+                                                        <div class="form-group col-md-1">
                                                             <label for="inputZip">QTY</label>
                                                             <input type="text" v-model="qty" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
                                                         </div>
-                                                        <div class="form-group col-sm-1">
+                                                        <div class="form-group col-md-1">
                                                             <label for="inputZip">Disc</label>
                                                             <input type="text" v-model="disc" class="form-control form-control-sm" placeholder="Diskon" @keypress="onlyNumber" />
                                                         </div>
@@ -164,7 +164,7 @@
                                                             <!-- {{ new Intl.NumberFormat().format(brg.hrgJual * qty) }} -->
                                                             <input type="text" v-model="tot" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
                                                         </div>
-                                                        <div class="form-group col-md-1">
+                                                        <div class="form-group col-sm-1">
                                                             <label for="aksi">Aksi</label>
                                                             <button @click="addToCart(brg)" class="btn btn-xs btn-primary">
                                                                 + 
@@ -194,7 +194,7 @@
                                                             <label for="inputState">HARGA</label>
                                                             <input type="text" v-model="jsa.biayaJasa" class="form-control form-control-sm" placeholder="Price" @keypress="onlyNumber" />
                                                         </div>
-                                                        <div class="form-group col-sm-1">
+                                                        <div class="form-group col-md-1">
                                                             <label for="inputZip">QTY</label>
                                                             <input type="text" v-model="qtyjasa" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
                                                         </div>
@@ -204,7 +204,7 @@
                                                             <!-- {{ new Intl.NumberFormat().format(brg.hrgJual * qty) }} -->
                                                             <input type="text" v-model="totjasa" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
                                                         </div>
-                                                        <div class="form-group col-md-1">
+                                                        <div class="form-group col-sm-1">
                                                             <label for="aksi">Aksi</label>
                                                             <button @click="addToCartJasa(jsa)" class="btn btn-xs btn-primary">
                                                                 + 
@@ -643,16 +643,6 @@
             total: total, 
             termPenjualan: store.getters.SetEditNota[0].termPenjualan,
         }
-        // setTimeout(() => {
-            console.log(' before onmount edit')
-            // try {
-            //     store.dispatch('GetBarang')
-            //     cartItemsPen.value = JSON.parse(localStorage.getItem('cartItemsPen'))
-            //     params.value = JSON.parse(localStorage.getItem('headerEditPen'))
-            // } catch(e) {
-            //     cartItemsPen.value = []
-            // }
-        // }, 100) // 1 seems to work better for me than 0
     })
 
     onUnmounted(() => {

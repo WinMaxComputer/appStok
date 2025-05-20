@@ -184,9 +184,10 @@
   }
 
   .inv--product-table-section {
-    padding: 3px 0;
-
-    table {
+    padding: 9px 15px 25px;
+    width: 100%;
+    font-size: 11px;
+    .tablen {
       margin-bottom: 0;
       font-size: 9px;
     }
@@ -195,7 +196,7 @@
       border: none;
     }
 
-    th {
+    .th {
       padding: 9px 22px;
       font-size: 11px !important;
       border: none;

@@ -621,26 +621,66 @@
     const delete_row = (item) => {
         modalinput.value = true
         // alert('ID: ' + item.kdBarang + ', Name: ' + item.nmBarang);
-        new window.Swal({
-            title: 'Anda Yahin?',
-            text: "Hapus Nama Barang !" +item.nmBarang,
-            type: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Delete',
-            padding: '2em'
-        }).then(result => {
-            if (result.value) {
-                store.dispatch('DeleteBarang', item.id)
-                .then(response => {
-                    bind_data();
-                    new window.Swal('Deleted!', 'Your file has been deleted.', 'success');
-                }).catch(error => {
-                    // console.log('error: ', error)
-                    return
-                })
+        store.dispatch('CheckBarangPernahJual', {kdBarang: item.kdBarang}).then(response => {
+            // console.log(response)
+            // items.value = store.getters.StateBarang;
+            if (response.data.exist == true) {
 
+                new window.Swal({
+                    title: 'Anda Yahin?',
+                    text: "Nama Barang !" +item.nmBarang+" sudah pernah terjual apakah anda yakin ingin menghapusnya ? karena akan menghapus data transaksi penjualannya juga",
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Delete',
+                    padding: '2em'
+                }).then(result => {
+                    // console.log(result)
+                    if (result.isConfirmed) {
+                        store.dispatch('DeleteBarang', item.id)
+                        .then(response => {
+                            bind_data();
+                            new window.Swal('Deleted!', 'Your file has been deleted.', 'success');
+                        }).catch(error => {
+                            // console.log('error: ', error)
+                            return
+                        })
+
+                    } else if (result.dismiss === window.Swal.DismissReason.cancel) {
+                        // console.log('cancel')
+                    } else if (result.isDenied) {
+                        // console.log('cancel')
+                    }
+                    
+                });
+
+            } else {
+                new window.Swal({
+                    title: 'Anda Yahin?',
+                    text: "Hapus Nama Barang !" +item.nmBarang,
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Delete',
+                    padding: '2em'
+                }).then(result => {
+                    if (result.value) {
+                        store.dispatch('DeleteBarang', item.id)
+                        .then(response => {
+                            bind_data();
+                            new window.Swal('Deleted!', 'Your file has been deleted.', 'success');
+                        }).catch(error => {
+                            // console.log('error: ', error)
+                            return
+                        })
+
+                    }
+                });
             }
-        });
+
+        }).catch(error => {
+            // console.log('error: ', error)
+            return
+        })
+        
     };
 
     function onlyNumber ($event) {

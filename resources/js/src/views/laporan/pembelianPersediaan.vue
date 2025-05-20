@@ -53,7 +53,18 @@
                             <template #total="props"> {{ Number(props.row.total).toLocaleString() }} </template>
                             <template #action="props">
 
-                                <router-link :to="{name: 'editpembelian', params: {noNota:props.row.noNota, tglNota: props.row.tglPembelian }}" >
+                                <a href="javascript:void(0);" @click="editnotabeli([{
+                                                    noNota:props.row.noNota, 
+                                                    tglNota: props.row.tglPembelian,
+                                                    term: props.row.term,
+                                                    jthTempo: props.row.jthTempo,
+                                                    notes: props.row.notes,
+                                                    subTotal: props.row.subTotal,
+                                                    tax: props.row.tax,
+                                                    disc: props.row.disc,
+                                                    total: props.row.total,
+                                                    termPembelian: props.row.typeBayar,
+                                                    }])">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="24"
@@ -68,7 +79,7 @@
                                     >
                                         <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
                                     </svg>
-                                </router-link>
+                                </a>
                                 <a href="javascript:void(0);" @click="delete_row(props.row)" >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -142,7 +153,7 @@
     import moment from "moment";
 
     import { useMeta } from '@/composables/use-meta';
-import { f } from 'feather-icons';
+import tax from '@/store/tax';
     useMeta({ title: 'Data Laporan Pembelian BBM' });
 
     const store = useStore();
@@ -187,7 +198,12 @@ import { f } from 'feather-icons';
     onBeforeMount(() => {
         // console.log(' before onmount')
         
-    })
+    });
+    const editnotabeli = (data) => {
+        store.commit('SetEditNotaBeli', data);
+        router.push({ name: 'editpembelian' })    
+        
+    }
 
     
     const bind_data = () => {

@@ -30,10 +30,10 @@
                                             <div class="content-section">
 
 
-                                                <div class="inv--head-section">
+                                                <div class="inv--product-table-section">
                                                     <div class="row">
 
-                                                        <div class="col-sm-4 col-12 me-auto">
+                                                        <div class="col-sm-4 me-auto">
                                                             <div class="d-flex">
                                                                 <img class="company-logo" src="@/assets/images/wm.png" alt="company" />
                                                                 <!-- <h3 class="in-heading align-self-center">Cork Inc.</h3> -->
@@ -68,7 +68,10 @@
                                                             <div class="inv-created-date"><span class="inv-title">Invoice Date : </span> <span class="inv-date">{{ new Date(tglNota).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}</span></div>
                                                             <div class="inv-created-date"><span class="inv-title">
                                                                 Kpd : </span> <span class="inv-date">{{ nmPelanggan }}</span>
-                                                                {{ alamatPelanggan }}
+                                                            </div>
+                                                            <div class="inv-created-date"><span class="inv-title">
+                                                                Alamat : </span> <span class="inv-date">{{ alamatPelanggan }}</span>
+                                                                
                                                             </div>
                                                             <!-- <p class="inv-due-date"><span class="inv-title">Alamat : </span> <span class="inv-date">Jln Kaswari no 77</span></p> -->
                                                         </div>
@@ -81,15 +84,15 @@
 
                                                 <div class="inv--product-table-section" v-if="items.length > 0">
                                                     <div class="table-responsive">
-                                                        <table class="table">
+                                                        <table style="font-size: 11px;width: 100%;">
                                                             <thead>
                                                                 <tr>
-                                                                    <th v-for="item in columns" :key="item.key" :class="[item.class]">
+                                                                    <th v-for="item in columns" :key="item.key" :class="[item.class]" style="padding: 9px 22px;font-size: 11px !important;border: none;border-top: 1px solid #000;border-bottom: 1px solid #000;">
                                                                         {{ item.label }}
                                                                     </th>
                                                                 </tr>
                                                             </thead>
-                                                            <tbody>
+                                                            <tbody style="color: #000;font-size: 11px !important;font-weight: 300;border: none;padding: 10px 25px;vertical-align: top !important;">
                                                                 <tr v-for="item in items" :key="item.id">
                                                                     <td>{{ item.kdBarang }}</td>
                                                                     <td>{{ item.nmBarang }}</td>
@@ -99,6 +102,12 @@
                                                                     <td class="text-end">{{ Number(item.totalJual).toLocaleString() }}</td>
                                                                 </tr>
                                                             </tbody>
+                                                            <thead>
+                                                                <tr>
+                                                                    <th v-for="item in columns" :key="item.key" :class="[item.class]" style="padding: 9px 22px;font-size: 11px !important;border: none;border-top: 1px solid #000;border-bottom: 1px solid #000;">
+                                                                    </th>
+                                                                </tr>
+                                                            </thead>
                                                         </table>
                                                     </div>
                                                 </div>
@@ -332,7 +341,7 @@
             { key: 'nmBarang', label: 'ITEMS' },
             { key: 'hrgJual', label: 'HARGA' },
             { key: 'qty', label: 'QTY', class: 'text-end' },
-            { key: 'satuanBarang', label: 'Satuan', class: 'text-end' },
+            { key: 'satuanBarang', label: 'SATUAN', class: 'text-end' },
             { key: 'totalJual', label: 'AMOUNT', class: 'text-end' },
         ];
         columns_jasa.value = [
