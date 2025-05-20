@@ -804,7 +804,15 @@
             .then((response) => {
                 // console.log(response.data);
                 const brg = response.data.data;
-                if (!response.data.exist === true) {
+                if (brg.stokPersediaan < 1) {
+                    if (!window.confirm('Stok barang kurang dari 1. Jika dilanjukan akan mempengaruhi perhitungan laba rugi?')) {
+                        return;
+                    }
+                    // alert('Barang kurang dari 1')
+                    
+                    
+                }else{
+                    // alert('Barang ada')
                     const toast = window.Swal.mixin({
                         toast: true,
                         position: 'top-center',
@@ -813,11 +821,10 @@
                         padding: '2em',
                     });
                     toast.fire({
-                        icon: 'error',
-                        title: 'Barang tidak ditemukan di database',
+                        icon: 'success',
+                        title: ' Stok barang mencukupi',
                         padding: '2em',
                     });
-                    return;
                 }
                 // console.log(brg)
                 if (localStorage.getItem('cartItemsPen')===null){
@@ -902,7 +909,7 @@
                 });
                 toast.fire({
                     icon: 'error',
-                    title: 'Terjadi kesalahan saat memeriksa barang',
+                    title: 'Barang tidak ditemukan di database',
                     padding: '2em',
                 });
             });
