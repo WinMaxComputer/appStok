@@ -32,7 +32,7 @@
                 
 
                 <li class="menu">
-                    <div class="dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#components" aria-controls="components" aria-expanded="false">
+                    <div class="dropdown-toggle" data-bs-target="#components" aria-controls="components" aria-expanded="false">
                         <router-link to="/barang">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"

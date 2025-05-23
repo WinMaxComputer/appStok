@@ -83,6 +83,49 @@ class laporanController extends Controller
         }
     }
 
+    public function laporanBayarPembelian(Request $request){
+        $noBeli = $request->input('noBeli');
+        if($noBeli == null){
+            $startDate = date("Y-m-d", strtotime($request->input('startDate')));
+            $endDate = date("Y-m-d", strtotime($request->input('endDate')));
+            
+            $lap = DB::table('tblpembayaran_pembelian')
+                    ->join('tblpembelian', 'tblpembayaran_pembelian.noBeli', 'tblpembelian.noNota')
+                    ->join('tblsupplier', 'tblpembelian.r_supplier', 'tblsupplier.kdSupplier')
+                    ->select(
+                        'tblpembayaran_pembelian.*',
+                        'tblpembelian.tglPembelian',
+                        'tblsupplier.nmSupplier'
+                    )
+                    ->whereBetween('tblpembayaran_pembelian.tglBayar', [$startDate, $endDate])
+                    ->orderBy('tblpembayaran_pembelian.id', 'desc')
+                    ->get();
+            return response()->json([
+                'success' => true,
+                'message' => 'Laporan Pembayaran Pembelian',
+                'data' => $lap
+            ], 200);
+        }else{
+            $lap = DB::table('tblpembayaran_pembelian')
+                ->join('tblpembelian', 'tblpembayaran_pembelian.noBeli', 'tblpembelian.noNota')
+                ->join('tblsupplier', 'tblpembelian.r_supplier', 'tblsupplier.kdSupplier')
+                ->select(
+                    'tblpembayaran_pembelian.*',
+                    'tblpembelian.tglPembelian',
+                    'tblsupplier.nmSupplier'
+                )
+                ->where('tblpembayaran_pembelian.noBeli', $noBeli)
+                ->orderBy('tblpembayaran_pembelian.id', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Laporan Pembayaran Pembelian',
+                'data' => $lap
+            ], 200);
+        }
+    }
+
     public function pembelianBrg(Request $request){
         $startDate = date("Y-m-d", strtotime($request->input('startDate')));
         $endDate = date("Y-m-d", strtotime($request->input('endDate')));

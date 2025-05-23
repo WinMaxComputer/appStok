@@ -19,6 +19,7 @@ const state = {
     generalledger: [],
     detailbiaya: [],
     listbayarpenjualan: [],
+    listbayarpembelian: [],
   };
   
 const getters = {
@@ -39,6 +40,7 @@ const getters = {
     StateGL: state => state.generalledger,
     StateBiayaDetail: state => state.detailbiaya,
     SlistBayarPenjualan: state => state.listbayarpenjualan,
+    SlistBayarPembelian: state => state.listbayarpembelian,
 };
 
 const actions = {  
@@ -103,6 +105,19 @@ const actions = {
         }   
 
     },
+    async GetListBayarPembelian({ commit }, bayar){
+        let response
+        try {   
+            response = await axios.post('/api/list-bayarpembelian', bayar)
+            commit('setListBayarPembelian', response.data.data)
+        } catch (ex) {
+            // Handle error
+            alert('error load laporan list bayar pembelian')
+            return
+        }   
+
+    },
+
     async GetListPenjualanKupon({ commit }, opnum){
         let response
         try {
@@ -257,6 +272,9 @@ const mutations = {
     },
     setListBayarPenjualan(state, bayar){
         state.listbayarpenjualan = bayar
+    },
+    setListBayarPembelian(state, bayar){
+        state.listbayarpembelian = bayar
     },
     setLaporanPembelian(state, belibarang){
         state.pembelianpersediaan = belibarang

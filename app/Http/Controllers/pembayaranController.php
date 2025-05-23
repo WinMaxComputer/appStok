@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Bayarjual;
 use App\Models\Penjualan;
+use App\Models\BayarBeli;
+use App\Models\Pembelian;
 
 class pembayaranController extends Controller
 {
@@ -97,6 +99,96 @@ class pembayaranController extends Controller
          ], 400);
         }
     }
+
+    public function bayarPembelian(Request $request)
+    {
+       try{
+            $exception = DB::transaction(function() use ($request){ 
+                
+                $noNota = $request->input('noBeli');
+                $nobayar = $request->input('noBayar');
+                $tglbayar = $request->input('tglBayar');
+                $jmlbayar = $request->input('jmlBayar');
+                $metodebayar =  $request->input('metodeBayar');
+                $sisahutang = $request->input('sisaHutang');
+                $nsisa = (int)$sisahutang - (int)$jmlbayar ;
+
+                Pembelian::where('noNota', $noNota)->update([
+                    'hutangPembelian' => $nsisa,
+                    'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
+                ]);
+               
+                $bayar = new BayarBeli();
+                $bayar->noBayar = $nobayar;
+                $bayar->noBeli = $noNota;
+                $bayar->tglBayar = $tglbayar;
+                $bayar->jmlBayar = $jmlbayar;
+                $bayar->metodeBayar = $metodebayar;
+                $bayar->created_at = \Carbon\Carbon::now()->toDateTimeString();
+                $bayar->updated_at = \Carbon\Carbon::now()->toDateTimeString();
+                $bayar->save();
+
+                //===========jurnal
+                if($metodebayar == 'cash'){
+                    $accid = '11110'; // $detpro[$i]['accid']; // acc id yg di debet
+                }else{
+                    $accid = '11210'; // $detpro[$i]['accid']; // acc id yg di debet
+                }
+                $accid_k = '21100'; // $detpro[$i]['accid']; // acc id yg di debet
+                // $acc_id_d = '11110'; // $request[0]['subtotal']; // acc id yg di kredit
+                $memo = 'Pembayaran Pembelian No. '.$noNota;
+                $jurnal = 'JK';
+                $t = $jmlbayar;
+                insert_gl($noNota,$tglbayar,$t,$memo,$jurnal);
+                $rgl = DB::table('general_ledger')->get()->last()->notrans;
+                $ac = [
+                    [
+                        'rgl' => $rgl,
+                        'acc_id' => $accid_k,
+                        'debet' => $t,
+                        'kredit' => 0,
+                        'trans_detail' => 'Pembayaran Pembelian No. '.$noNota,
+                        'void_flag' => 0,
+                    ],
+                    [
+                        'rgl' => $rgl,
+                        'acc_id' => $accid,
+                        'debet' => 0,
+                        'kredit' => $t,
+                        'trans_detail' => 'Pembayaran Pembelian No. '.$noNota,
+                        'void_flag' => 0,
+                    ],
+                    
+                ];
+                insert_gl_detail($ac);
+                    //===========end jurnal
+                
+                DB::commit();
+            });
+            if(is_null($exception)) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Post Berhasil di insert!',
+                    // 'data' => $detail
+                ], 200);
+            } else {
+                DB::rollback();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Post Gagal Diupdate!',
+                ], 500);
+            }
+        } catch (\Exception $e) {
+            //DB::rollback();
+            // something went wrong
+            return response()->json([
+             'success' => false,
+             'message' => 'exception'.$e,
+         ], 400);
+        }
+    }
+
+
     public function penerimaNota(Request $request)
     {
         

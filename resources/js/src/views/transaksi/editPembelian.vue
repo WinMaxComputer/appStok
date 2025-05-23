@@ -343,7 +343,6 @@
                                                         <textarea
                                                             v-model="params.notes"
                                                             rows="3"
-                                                            id="invoice-detail-notes"
                                                             class="form-control"
                                                             placeholder='Notes - For example, "Thank you for doing business with us"'
                                                         ></textarea>
@@ -520,6 +519,7 @@
             // console.log('result: ', response)
             getCart()
             getNoPembelian();
+            router.push({ name: 'pembelian-persediaan' });
         })
         .catch(error => {
             // console.log('error: ', error)
@@ -577,7 +577,7 @@
             tglNota: store.getters.SetEditNotaBeli[0].tglNota, // moment().format("YYYY-MM-DD"),
             term: store.getters.SetEditNotaBeli[0].termPembelian,
             jthTempo: store.getters.SetEditNotaBeli[0].jthTempo,
-            notes: store.getters.SetEditNotaBeli[0].notes,
+            notes: store.getters.SetEditNotaBeli[0].note,
             subtotal: store.getters.SetEditNotaBeli[0].subTotal,
             tax: store.getters.SetEditNotaBeli[0].tax,
             disc: store.getters.SetEditNotaBeli[0].disc,

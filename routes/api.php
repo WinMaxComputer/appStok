@@ -73,6 +73,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/list-jurnalumum', [App\Http\Controllers\laporanController::class, 'daftarGJ']);
     Route::post('/laporan-barang', [App\Http\Controllers\laporanController::class, 'laporanBrg']);
     Route::post('/list-bayarpenjualan', [App\Http\Controllers\laporanController::class, 'laporanBayarPenjualan']);
+    Route::post('/list-bayarpembelian', [App\Http\Controllers\laporanController::class, 'laporanBayarPembelian']);
     Route::post('/laporan-opnum', [App\Http\Controllers\laporanController::class, 'laporanOpnum']);
     Route::post('/laporan-penyusutan', [App\Http\Controllers\laporanController::class, 'laporanPenyusutan']);
     Route::post('/listpenjualan-kupon', [App\Http\Controllers\laporanController::class, 'listKupon']);
@@ -156,6 +157,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/linkacc', [App\Http\Controllers\pembelianController::class, 'linkAccount']);
     Route::post('/delete/pembelian', [App\Http\Controllers\pembelianController::class, 'deletePembelian']);
     Route::post('/getdetail-pembelian', [App\Http\Controllers\pembelianController::class, 'getDetailPembelian']);
+    Route::post('/store/pembayaran-pembelian', [App\Http\Controllers\pembayaranController::class, 'bayarPembelian']);
 
     // Penjualan
     Route::post('/store/penjualan', [App\Http\Controllers\penjualanController::class, 'simpanPenjualan']);

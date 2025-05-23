@@ -316,7 +316,11 @@
     color: $m-color_6;
   }
 }
-
+@media (min-width: 360px) {
+    .div {
+      flex-direction: row;
+    }
+  }
 @media print {
   body * {
     visibility: hidden;

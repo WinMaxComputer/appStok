@@ -25,7 +25,7 @@
                         <div class="d-flex flex-wrap justify-content-center justify-content-sm-start px-3 pt-3 pb-0">
                             <!-- <button variant="primary" class="btn m-1 btn-primary" @click="export_table('print')">Print</button> -->
                             <!-- <button variant="primary" class="btn m-1 btn-primary" @click="export_table('pdf')">PDF</button> -->
-                            <h5>Daftar Pembelian</h5>
+                            <h5>Daftar Hutang Pembelian</h5>
 <span>{{ bbm }}</span>
                         </div>
                         <div class="panel-body">
@@ -47,13 +47,15 @@
                             </div>
                         </div>
 
-                        <v-client-table :data="items" :columns="columns" :options="table_pembelian">
+                        <v-client-table :data="items.filter(item => Number(item.hutangPembelian) !== 0)" :columns="columns" :options="table_pembelian">
                             <template #tglPembelian="props"> {{ moment(props.row.tglPembelian).format("D-M-YYYY") }} </template>
-                            <template #subTotal="props"> {{ Number(props.row.subTotal).toLocaleString() }} </template>
+                            <template #hutangPembelian="props"> {{ Number(props.row.hutangPembelian).toLocaleString() }} </template>
                             <template #total="props"> {{ Number(props.row.total).toLocaleString() }} </template>
+                            <template #typeBayar="props">
+                                {{ props.row.typeBayar === '0' ? 'Cash' : 'Kredit' }}
+                            </template>
                             <template #action="props">
-
-                                <router-link :to="{name: 'editpembelian', params: {noNota:props.row.noNota, tglNota: props.row.tglPembelian }}" >
+                                <button class="btn btn-primary" @click="openModal(id = props.row.noNota, sisa = props.row.hutangPembelian)" >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="24"
@@ -64,32 +66,14 @@
                                         stroke-width="2"
                                         stroke-linecap="round"
                                         stroke-linejoin="round"
-                                        class="feather feather-edit-2"
+                                        class="feather feather-eye"
                                     >
-                                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
                                     </svg>
-                                </router-link>
-                                <a href="javascript:void(0);" @click="delete_row(props.row)" >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        class="feather feather-trash-2"
-                                    >
-                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                                    </svg>
-                                </a>
-
+                                </button>
                                 
+
                             </template>
                             <table class="custom-footer">
                             <tfoot>
@@ -104,6 +88,90 @@
 
                         </v-client-table>
 
+                        <Modal 
+                            v-model:visible="isVisible" 
+                            :draggable="true" 
+                            :title="'PEMBAYARAN NOTA'"
+                            :showCancelButton="false" 
+                            :cancelButton="{text: 'cancel', onclick: () => {isVisible = false}, loading: false}"
+                            :okButton="{text: 'SAVE', onclick: () => {simpanPembayaran()}, loading: false}"
+                            width="60%">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">Riwayat Pembayaran</label>
+                                    <table class="table table-bordered table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>No Bayar</th>
+                                                <th>Tanggal</th>
+                                                <th>Jumlah</th>
+                                                <th>Metode</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="bayar in listPembayaran" :key="bayar.noBayar">
+                                                <td>{{ bayar.noBayar }}</td>
+                                                <td>{{ bayar.tglBayar }}</td>
+                                                <td>{{ new Intl.NumberFormat().format(bayar.jmlBayar) }}</td>
+                                                <td>{{ bayar.metodeBayar }}</td>
+                                            </tr>
+                                            <tr v-if="!listPembayaran || listPembayaran.length === 0">
+                                                <td colspan="4" class="text-center">Belum ada pembayaran</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="totals-row">
+                                        <div class="invoice-totals-row ">
+                                            <div style="font-size: 20px;">
+                                                Sisa
+                                            </div>
+                                            <!-- <div class="invoice-summary-label"></div> -->
+                                            <div class="invoice-summary-value">
+                                                <div class="balance-due-amount">
+                                                    <span style="font-size: 30px;">{{ new Intl.NumberFormat().format(Math.floor(sisaHutang)) }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="totals-row">
+                                        <div class="invoice-totals-row ">
+                                            <div style="font-size: 20px;">Method</div>
+                                            <!-- <div class="invoice-summary-label"></div> -->
+                                            <div class="invoice-summary-value">
+                                                <div class="balance-due-amount">
+                                                    <select v-model="paramsbayar.metodeBayar" >
+                                                        <option value="cash" selected>Cash</option>
+                                                        <option value="credit_card">Credit Card</option>
+                                                        <option value="bank_transfer">Bank Transfer</option>
+                                                        <option value="ewallet">E-Wallet</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="totals-row">
+                                        <div class="invoice-totals-row">
+                                            <div style="font-size: 20px;">Jumlah Bayar</div>
+                                            <div class="invoice-summary-value">
+                                                <div class="balance-due-amount">
+                                                    <input
+                                                        type="number"
+                                                        v-model="paramsbayar.jmlBayar"
+                                                        class="form-control"
+                                                        placeholder="Masukkan jumlah bayar"
+                                                        min="0"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                        </Modal>
                         
                         
                     </div>
@@ -139,23 +207,24 @@
     import { useStore } from 'vuex';
     import { useRouter, useRoute } from 'vue-router'
 
+    import { Modal } from 'usemodal-vue3';
     import moment from "moment";
 
     import { useMeta } from '@/composables/use-meta';
-import { f } from 'feather-icons';
-    useMeta({ title: 'Data Laporan Pembelian BBM' });
+
+    useMeta({ title: 'Data Laporan Hutang Pembelian Barang' });
 
     const store = useStore();
     const router = useRouter()
 
-    const columns = ref(['noNota', 'tglPembelian', 'nmSupplier', 'subTotal', 'disc', 'total', 'action']);
+    const columns = ref(['noNota', 'tglPembelian', 'nmSupplier', 'typeBayar', 'hutangPembelian', 'total', 'action']);
     const items = ref([]);
     const table_pembelian = ref({
         perPage: 10,
         perPageValues: [5, 10, 20, 50, 100],
         perPageSelect: true,
         filterable: true,
-        filterable: ['noNota', 'tglPembelian', 'nmSupplier', 'subTotal', 'disc', 'total'],
+        filterable: ['noNota', 'tglPembelian', 'nmSupplier', 'typeBayar', 'hutangPembelian', 'total'],
         skin: 'table table-hover',
         columnsClasses: { action: 'actions text-center' },
         pagination: { nav: 'scroll', chunk: 5 },
@@ -178,7 +247,16 @@ import { f } from 'feather-icons';
         endDate: moment().format("D-M-YYYY")
     });
 
-    
+    const isVisible = ref(false);
+    const listPembayaran = ref([]);
+    const sisaHutang = ref(0);
+    const paramsbayar = ref({
+        noBeli: '',
+        noBayar: null,
+        tglBayar: moment().format("YYYY-MM-DD"),
+        jmlBayar: '',
+        metodeBayar: 'cash',
+    });
 
     onMounted(() => {
         bind_data();
@@ -312,6 +390,52 @@ import { f } from 'feather-icons';
                 },
             });
             doc.save(filename + '.pdf');
+        }
+    };
+
+    const getNoPembayaran = async () => {
+        await store.dispatch('GetNoBayarPembelian').then(() => {
+            paramsbayar.value.noBayar = store.getters.NoBayarPembelian;
+        });
+    };
+
+    const openModal = (id, sisa) => {
+        getNoPembayaran()
+        // Logic to open the modal
+        sisaHutang.value = sisa;
+        paramsbayar.value.noBeli = id;
+        isVisible.value = true;
+        store.dispatch('GetListBayarPembelian', { noBeli: id }).then(() => {
+            listPembayaran.value = store.getters.SlistBayarPembelian;
+        });
+        
+    };
+
+    const simpanPembayaran = async () => {
+
+        paramsbayar.value.jmlBayar = parseInt(paramsbayar.value.jmlBayar);
+
+        if (!paramsbayar.value.noBayar || !paramsbayar.value.tglBayar || !paramsbayar.value.jmlBayar || !paramsbayar.value.metodeBayar) {
+            alert('Lengkapi data pembayaran!');
+            return;
+        }
+        if (Number(paramsbayar.value.jmlBayar) > Number(sisaHutang.value)) {
+            alert('Jumlah bayar melebihi sisa hutang!');
+            return;
+        }
+        try {
+            await store.dispatch('SimpanPembayaranPembelian', {
+                ...paramsbayar.value,
+                sisaHutang: sisaHutang.value
+            });
+            // Refresh payment list
+            store.dispatch('GetListBayarPembelian', { noBeli: paramsbayar.value.noBeli }).then(() => {
+                listPembayaran.value = store.getters.SlistBayarPembelian;
+            });
+            isVisible.value = false;
+            bind_data();
+        } catch (e) {
+            alert('Gagal menyimpan pembayaran!');
         }
     };
 

@@ -109,80 +109,80 @@
                 :showCancelButton="false" 
                 :cancelButton="{text: 'cancel', onclick: () => {isVisible = false}, loading: false}"
                 :okButton="{text: 'SAVE', onclick: () => {edit_barang()}, loading: false}"
-                width="60%">
-                <div class="row mb-4">
-                    <div class="col-sm-4">
+                width="80%">
+                <div class="row">
+                    <div class="col-md">
                         <label for="inputState">Kode</label>
                         <input v-model="edit.kdB" class="form-control" placeholder="Kode" disabled />
                     </div>
-                    <div class="col-sm">
+                    <div class="col-md">
                         <label for="inputState">Nama</label>
                         <input v-model="edit.nmB" class="form-control" placeholder="Nama Barang" />
                     </div>
-                    <div class="col-sm">
+                    <div class="col-md">
                         <label for="inputState">Satuan</label>
                         <input v-model="edit.satuanB" class="form-control" placeholder="Satuan" />
                     </div>
                     
                 </div>
-                <div class="row mb-4">
-                    <div class="col-sm-4">
+                <div class="row">
+                    <div class="col-md">
                         <label for="inputState">Kategori</label>
                         <select class="form-select" v-model="edit.kdktg">
                             <option v-for="ktg in ktgs" :value="ktg.kodeKtg" :key="ktg.id">{{ ktg.namaKtg }}</option>
                         </select>
                     </div>
-                    <div class="col-sm">
+                    <div class="col-md">
                         <label for="inputState">Harga Beli</label>
                         <input v-model="edit.hrgBeli" class="form-control" placeholder="Harga Beli" @keypress="onlyNumber" />
                     </div>
-                    <div class="col-sm">
+                    <div class="col-md">
                         <label for="inputState">Harga Jual</label>
                         <input v-model="edit.hrgJual" class="form-control" placeholder="Harga Jual" @keypress="onlyNumber" />
                     </div>
                     
                 </div>
-                <div class="row mb-4">
-                    <div class="col-sm-4">
+                <div class="row">
+                    <div class="col-md">
                         <label for="inputState">Merek</label>
                         <input v-model="edit.merek" class="form-control" placeholder="Merek" />
                     </div>
-                    <div class="col-sm">
+                    <div class="col-md">
                         <label for="inputState">Barcode</label>
                         <input v-model="edit.barcode" class="form-control" placeholder="Barcode" />
                     </div>
                 </div>
-                <div class="row mb-2" v-if="edit.qtyMax == null">
-                    <div class="col-sm">
+                <div class="row" v-if="edit.qtyMax == null">
+                    <div class="col-md">
                         <label for="inputState">Qty Min</label>
                         <input v-model="edit.qtyMin" class="form-control" placeholder="Qty Min" @keypress="onlyNumber" />
                     </div>
                     
-                    <div class="col-sm">
+                    <div class="col-md">
                         <label for="inputState">Qty Max</label>
                         <input v-model="edit.qtyMax" class="form-control" placeholder="Qty Max" @keypress="onlyNumber" />
                     </div>
                 </div>
-                <div class="row mb-4">
-                    <div class="col-sm">
+                <div class="row">
+                    <div class="col-md">
                         <label for="inputState">Akun Penjualan</label>
                         <select id="inputState" v-model="edit.acc_id" class="form-select">
                             <option  v-for="ac in accs.filter(ac => ac.acc_id.toString().startsWith('41'))" :value="ac.acc_id" :key="ac.acc_id">{{ ac.name }}</option>
                         </select>
                     </div>
-                    <div class="col-sm">
+                    <div class="col-md">
                         <label for="inputState">Akun Hpp</label>
                         <select id="inputState" v-model="edit.acchpp" class="form-select">
                             <option :value="ac.acc_id" v-for="ac in accs.filter(ac => ac.acc_id.toString().startsWith('51'))" :key="ac.acc_id">{{ ac.name }}</option>
                         </select>
                     </div>
-                    <div class="col-sm">
+                    <div class="col-md">
                         <label for="inputState">Akun Persediaan</label>
                         <select id="inputState" v-model="edit.accpersediaan" class="form-select">
                             <option :value="ac.acc_id" v-for="ac in accs.filter(ac => ac.acc_id.toString().startsWith('116'))" :key="ac.acc_id" selected>{{ ac.name }}</option>
                         </select>
                     </div>
-                    <div class="col-sm">
+                    <div class="col-md">
                         <label for="inputState">Akun Tekor</label>
                         <select id="inputState" v-model="edit.accbiaya" class="form-select">
                             <option :value="ac.acc_id" v-for="ac in accs.filter(ac => ac.acc_id.toString().startsWith('52'))" :key="ac.acc_id" selected>{{ ac.name }}</option>
@@ -201,79 +201,79 @@
                             </div>
                             <div class="modal-body">
                                 <form>
-                                    <div class="row mb-4">
-                                        <div class="col-sm">
+                                    <div class="row">
+                                        <div class="col-md">
                                             <label for="inputState">Kode</label>
                                             <input v-model="input.kdB" class="form-control" placeholder="Kode" disabled />
                                         </div>
-                                        <div class="col-sm">
+                                        <div class="col-md">
                                             <label for="inputState">Nama</label>
                                             <input v-model="input.nmB" class="form-control" placeholder="Nama Barang" />
                                         </div>
-                                        <div class="col-sm">
+                                        <div class="col-md">
                                             <label for="inputState">Satuan</label>
                                             <input v-model="input.satuanB" class="form-control" placeholder="Satuan" />
                                         </div>
                                         
                                     </div>
-                                    <div class="row mb-4">
-                                        <div class="col-sm">
+                                    <div class="row">
+                                        <div class="col-md">
                                             <label for="inputState">Kategori</label>
                                             <select class="form-select" v-model="input.kdktg">
                                                 <option v-for="ktg in ktgs" :value="ktg.kodeKtg" :key="ktg.id">{{ ktg.namaKtg }}</option>
                                             </select>
                                         </div>
-                                        <div class="col-sm">
+                                        <div class="col-md">
                                             <label for="inputState">Harga Beli</label>
                                             <input v-model="input.hrgBeli" class="form-control" placeholder="Harga Beli" @keypress="onlyNumber" />
                                         </div>
-                                        <div class="col-sm">
+                                        <div class="col-md">
                                             <label for="inputState">Harga Jual</label>
                                             <input v-model="input.hrgJual" class="form-control" placeholder="Harga Jual" @keypress="onlyNumber" />
                                         </div>
                                         
                                     </div>
-                                    <div class="row mb-4">
-                                        <div class="col-sm">
+                                    <div class="row">
+                                        <div class="col-md">
                                             <label for="inputState">Merek</label>
                                             <input v-model="input.merek" class="form-control" placeholder="Merek" />
                                         </div>
-                                        <div class="col-sm">
+                                        <div class="col-md">
                                             <label for="inputState">Barcode</label>
                                             <input v-model="input.barcode" class="form-control" placeholder="Barcode" />
                                         </div>
                                     </div>
-                                    <div class="row mb-2" v-if="input.qtyMax == null">
-                                        <div class="col-sm">
+                                    <div class="row" v-if="input.qtyMax == null">
+                                        <div class="col-md">
                                             <label for="inputState">Qty Min</label>
                                             <input v-model="input.qtyMin" class="form-control" placeholder="Qty Min" @keypress="onlyNumber" />
                                         </div>
-                                        <div class="col-sm">
+                                        <div class="col-md">
                                             <label for="inputState">Qty Max</label>
                                             <input v-model="input.qtyMax" class="form-control" placeholder="Qty Max" @keypress="onlyNumber" />
                                         </div>
                                     </div>
 
-                                    <div class="row mb-4">
-                                        <div class="col-sm">
+                                    <div class="row">
+                                        <div class="col-md">
                                             <label for="inputState">Akun Penjualan</label>
                                             <select id="inputState" v-model="input.acc_id" class="form-select">
                                                 <option :value="ac.acc_id" v-for="ac in accs.filter(ac => ac.acc_id.toString().startsWith('41'))" :key="ac.acc_id" selected>{{ ac.name }}</option>
                                             </select>
                                         </div>
-                                        <div class="col-sm">
+                                        <div class="col-md">
                                             <label for="inputState">Akun Hpp</label>
                                             <select id="inputState" v-model="input.acchpp" class="form-select">
                                                 <option :value="ac.acc_id" v-for="ac in accs.filter(ac => ac.acc_id.toString().startsWith('51'))" :key="ac.acc_id" selected>{{ ac.name }}</option>
                                             </select>
                                         </div>
-                                        <div class="col-sm">
+                                        <div class="col-md">
                                             <label for="inputState">Akun Persediaan</label>
                                             <select id="inputState" v-model="input.accpersediaan" class="form-select">
                                                 <option :value="ac.acc_id" v-for="ac in accs.filter(ac => ac.acc_id.toString().startsWith('116'))" :key="ac.acc_id" selected>{{ ac.name }}</option>
                                             </select>
                                         </div>
-                                        <div class="col-sm">
+                                        <div class="col-md">
                                             <label for="inputState">Akun Tekor</label>
                                             <select id="inputState" v-model="input.accbiaya" class="form-select">
                                                 <option :value="ac.acc_id" v-for="ac in accs.filter(ac => ac.acc_id.toString().startsWith('52'))" :key="ac.acc_id" selected>{{ ac.name }}</option>
