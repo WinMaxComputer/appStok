@@ -104,7 +104,7 @@
                                                             </tbody>
                                                             <thead>
                                                                 <tr>
-                                                                    <th v-for="item in columns" :key="item.key" :class="[item.class]" style="padding: 9px 22px;font-size: 11px !important;border: none;border-top: 1px solid #000;border-bottom: 1px solid #000;">
+                                                                    <th v-for="item in columns" :key="item.key" :class="[item.class]" style="padding: 9px 2px;font-size: 11px !important;border: none;border-top: 1px solid #000;">
                                                                     </th>
                                                                 </tr>
                                                             </thead>
@@ -135,7 +135,7 @@
                                                             </tbody>
                                                             <thead>
                                                                 <tr>
-                                                                    <th v-for="item in columns_jasa" :key="item.key" :class="[item.class]" style="padding: 9px 22px;font-size: 11px !important;border: none;border-top: 1px solid #000;border-bottom: 1px solid #000;">
+                                                                    <th v-for="item in columns_jasa" :key="item.key" :class="[item.class]" style="padding: 9px 22px;font-size: 11px !important;border: none;border-top: 1px solid #000;">
                                                                     </th>
                                                                 </tr>
                                                             </thead>
@@ -167,13 +167,11 @@
                                                                         <div class="text-end">{{ items.reduce((sum, item) => sum + Number(item.totalJual), 0).toLocaleString() }}</div>
                                                                     </div>
 
-                                                                    <div v-if="items_jasa.length > 0">
-                                                                        <div class="col-sm-8 col-7" >
-                                                                            <div class="discount-rate">Jasa</div>
-                                                                        </div>
-                                                                        <div class="col-sm-4 col-5">
-                                                                            <div class="text-end">{{ items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0).toLocaleString() }}</div>
-                                                                        </div>
+                                                                    <div class="col-sm-8 col-7" v-if="items_jasa.length > 0">
+                                                                        <div class="text-end">Jasa</div>
+                                                                    </div>
+                                                                    <div class="col-sm-4 col-5" v-if="items_jasa.length > 0">
+                                                                        <div class="text-end">{{ items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0).toLocaleString() }}</div>
                                                                     </div>
                                                                     
 
