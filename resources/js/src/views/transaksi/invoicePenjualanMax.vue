@@ -169,7 +169,7 @@
 
                                                                     <div v-if="items_jasa.length > 0">
                                                                         <div class="col-sm-8 col-7" >
-                                                                            <div class="discount-rate">Sub Total Jasa</div>
+                                                                            <div class="discount-rate">Jasa</div>
                                                                         </div>
                                                                         <div class="col-sm-4 col-5">
                                                                             <div class="text-end">{{ items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0).toLocaleString() }}</div>
