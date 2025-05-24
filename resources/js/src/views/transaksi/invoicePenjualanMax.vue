@@ -113,10 +113,10 @@
                                                 </div>
                                                 <div class="inv--product-table-section" v-if="items_jasa.length > 0">
                                                     <div class="table-responsive">
-                                                        <table class="table table-hover">
+                                                        <table style="font-size: 11px;width: 100%;">
                                                             <thead>
                                                                 <tr>
-                                                                    <th v-for="item in columns_jasa" :key="item.key" :class="[item.class]">
+                                                                    <th v-for="item in columns_jasa" :key="item.key" :class="[item.class]" style="padding: 9px 22px;font-size: 11px !important;border: none;border-top: 1px solid #000;border-bottom: 1px solid #000;">
                                                                         {{ item.label }}
                                                                     </th>
                                                                 </tr>
@@ -133,6 +133,12 @@
                                                                     <td class="text-end">{{ Number(item.totalJasa).toLocaleString() }}</td>
                                                                 </tr>
                                                             </tbody>
+                                                            <thead>
+                                                                <tr>
+                                                                    <th v-for="item in columns_jasa" :key="item.key" :class="[item.class]" style="padding: 9px 22px;font-size: 11px !important;border: none;border-top: 1px solid #000;border-bottom: 1px solid #000;">
+                                                                    </th>
+                                                                </tr>
+                                                            </thead>
                                                         </table>
                                                     </div>
                                                 </div>
