@@ -35,7 +35,7 @@
 
                                                         <div class="col-sm-41 me-auto">
                                                             <div class="d-flex">
-                                                                <img class="company-logo" src="@/assets/images/wm.png" alt="company" />
+                                                                <img class="company-logo" src="@/assets/images/wmax.png" alt="company" />
                                                                 <!-- <h3 class="in-heading align-self-center">Cork Inc.</h3> -->
                                                             </div>
                                                         </div>
@@ -57,9 +57,9 @@
                                                         </div>
 
                                                         <div class="col-sm-41 align-self-left">
-                                                            <div class="inv-street-addr">Jln Raya Kutuh No.8 Tabanan - Bali</div>
-                                                            <div class="inv-email-address">info@the-swand.com</div>
-                                                            <div class="inv-email-address">+6285 9361 00511</div>
+                                                            <div class="inv-street-addr">Jln Jepun Bali No.10X Lukluk, Mengwi - Bali</div>
+                                                            <div class="inv-email-address">info@winmaxbali</div>
+                                                            <div class="inv-email-address">+6281 8688 114</div>
                                                             <div class="inv-email-address">Term: {{ typeBayar === '0' ? 'Cash' : 'Kredit' }} <span v-if="typeBayar === '1'">Tempo {{ new Date(jthTempo).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}</span></div>
                                                         </div>
                                                         <div class="col-sm-41 text-sm-end"></div>
@@ -142,8 +142,8 @@
                                                 <div class="inv--total-amounts">
                                                     <div class="row">
                                                         <div class="col-sm-51">
-                                                            <div class="inv-email-address">Rek BCA : 7724022244<br> An : Ni Putu Ita Liantika Oktia Dewi</div>
-                                                            <div class="inv-email-address">Invoice ini sudah di ttd secara digital oleh Swamerta Supplier<br>Terima kasih</div>
+                                                            <div class="inv-email-address">Rek BCA : 2360315331<br> An : I Nyoman Rihan Adi</div>
+                                                            <div class="inv-email-address">Invoice ini sudah di ttd secara digital oleh WinMax Bali<br>Terima kasih</div>
                                                         </div>
                                                         <div class="col-sm-21" > 
                                                             <div v-if="ttdPenerima">Penerima,</div>

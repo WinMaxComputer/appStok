@@ -250,7 +250,15 @@
 
     const viewnota = (id) => {
         store.commit('setIdnota', id)
-        router.push({ name: 'invoice-penjualan' })
+        // If user is root, allow access
+        const user = store.state.auth.user;
+        if (user === 'root') {
+            // Root user logic here if needed
+            router.push({ name: 'invoice-penjualan-max' })
+        }else{
+            router.push({ name: 'invoice-penjualan' })
+        }
+        
     }
     const editnota = (data) => {
         store.commit('setEditNota', data)

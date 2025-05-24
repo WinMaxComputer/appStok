@@ -141,6 +141,12 @@ const routes = [
         component: () => import(/* webpackChunkName: "apps-invoice-preview" */ '../views/transaksi/invoicePenjualan.vue'),
         props: true,
     },
+    {
+        path: '/invoice/penjualan/max',
+        name: 'invoice-penjualan-max',
+        component: () => import(/* webpackChunkName: "apps-invoice-preview" */ '../views/transaksi/invoicePenjualanMax.vue'),
+        props: true,
+    },
     
     {
         path: '/editpenjualan',
