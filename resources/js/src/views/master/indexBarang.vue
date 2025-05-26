@@ -628,22 +628,22 @@
 
                 new window.Swal({
                     title: 'Anda Yahin?',
-                    text: "Nama Barang !" +item.nmBarang+" sudah pernah terjual apakah anda yakin ingin menghapusnya ? karena akan menghapus data transaksi penjualannya juga",
+                    text: "Nama Barang !" +item.nmBarang+" sudah pernah tertransaksikan. harap hapus dulu transaksi yang ada.",
                     type: 'warning',
                     showCancelButton: true,
-                    confirmButtonText: 'Delete',
+                    // confirmButtonText: 'Delete',
                     padding: '2em'
                 }).then(result => {
                     // console.log(result)
                     if (result.isConfirmed) {
-                        store.dispatch('DeleteBarang', item.id)
-                        .then(response => {
-                            bind_data();
-                            new window.Swal('Deleted!', 'Your file has been deleted.', 'success');
-                        }).catch(error => {
-                            // console.log('error: ', error)
-                            return
-                        })
+                        // store.dispatch('DeleteBarang', item.id)
+                        // .then(response => {
+                        //     bind_data();
+                        //     new window.Swal('Deleted!', 'Your file has been deleted.', 'success');
+                        // }).catch(error => {
+                        //     // console.log('error: ', error)
+                        //     return
+                        // })
 
                     } else if (result.dismiss === window.Swal.DismissReason.cancel) {
                         // console.log('cancel')

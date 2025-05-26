@@ -158,6 +158,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/delete/pembelian', [App\Http\Controllers\pembelianController::class, 'deletePembelian']);
     Route::post('/getdetail-pembelian', [App\Http\Controllers\pembelianController::class, 'getDetailPembelian']);
     Route::post('/store/pembayaran-pembelian', [App\Http\Controllers\pembayaranController::class, 'bayarPembelian']);
+    Route::post('/delete/pembayaran-pembelian', [App\Http\Controllers\pembayaranController::class, 'deletebayarPembelian']);
 
     // Penjualan
     Route::post('/store/penjualan', [App\Http\Controllers\penjualanController::class, 'simpanPenjualan']);
@@ -165,6 +166,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/getdetail-penjualan', [App\Http\Controllers\penjualanController::class, 'getDetailPenjualan']);
 
     Route::post('/store/pembayaran-penjualan', [App\Http\Controllers\pembayaranController::class, 'bayarPenjualan']);
+    Route::post('/delete/pembayaran-penjualan', [App\Http\Controllers\pembayaranController::class, 'deleteBayarPenjualan']);
     Route::post('/add/penerima-nota', [App\Http\Controllers\pembayaranController::class, 'penerimaNota']);
     
 

@@ -263,6 +263,45 @@ const actions = {
             throw 'error';
         }
     },
+    async DeletePembayaranPiutang({dispatch}, kd) {
+        let response
+        try {
+            response = await axios.post('/api/delete/pembayaran-penjualan', kd)
+            // console.log(response.data.data)
+            const toast = window.Swal.mixin({
+                toast: true,
+                position: 'top-center',
+                showConfirmButton: false,
+                timer: 3000,
+                padding: '2em',
+            });
+            toast.fire({
+                icon: 'success',
+                title: 'Pembayaran Piutang berhasil terhapus',
+                padding: '2em',
+            });
+            return response ;
+        } catch (ex) {
+            // Handle error
+            console.log(ex.response.data.message)
+            const toast =  window.Swal.mixin({
+                toast: true,
+                position: 'top-center',
+                showConfirmButton: false,
+                timer: 3000,
+                padding: '2em'
+            });
+            toast.fire({
+                title: 'Error!',
+                text: ex.response.data.message,
+                icon: 'error',
+                // confirmButtonText: 'Cool',
+                padding: '2em'
+            });
+            throw 'error bro';
+        }
+        // await dispatch('GetPembelian')
+    },
     async SimpanPembayaranPembelian({ dispatch }, detail) {
         let response
         try {
@@ -296,6 +335,45 @@ const actions = {
             });
             throw 'error';
         }
+    },
+    async DeletePembayaranHutang({dispatch}, kd) {
+        let response
+        try {
+            response = await axios.post('/api/delete/pembayaran-pembelian', kd)
+            // console.log(response.data.data)
+            const toast = window.Swal.mixin({
+                toast: true,
+                position: 'top-center',
+                showConfirmButton: false,
+                timer: 3000,
+                padding: '2em',
+            });
+            toast.fire({
+                icon: 'success',
+                title: 'Pembayaran Piutang berhasil terhapus',
+                padding: '2em',
+            });
+            return response ;
+        } catch (ex) {
+            // Handle error
+            console.log(ex.response.data.message)
+            const toast =  window.Swal.mixin({
+                toast: true,
+                position: 'top-center',
+                showConfirmButton: false,
+                timer: 3000,
+                padding: '2em'
+            });
+            toast.fire({
+                title: 'Error!',
+                text: ex.response.data.message,
+                icon: 'error',
+                // confirmButtonText: 'Cool',
+                padding: '2em'
+            });
+            throw 'error bro';
+        }
+        // await dispatch('GetPembelian')
     },
     async penerimaNota({ dispatch }, detail) {
         let response

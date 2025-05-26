@@ -58,7 +58,7 @@
 
                                                         <div class="col-sm-41 align-self-left">
                                                             <div class="inv-street-addr">Jln Raya Kutuh No.8 Tabanan - Bali</div>
-                                                            <div class="inv-email-address">info@the-swand.com</div>
+                                                            <div class="inv-email-address">theswamerta@gmail.com</div>
                                                             <div class="inv-email-address">+6285 9361 00511</div>
                                                             <div class="inv-email-address">Term: {{ typeBayar === '0' ? 'Cash' : 'Kredit' }} <span v-if="typeBayar === '1'">Tempo {{ new Date(jthTempo).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}</span></div>
                                                         </div>
@@ -104,7 +104,7 @@
                                                             </tbody>
                                                             <thead>
                                                                 <tr>
-                                                                    <th v-for="item in columns" :key="item.key" :class="[item.class]" style="padding: 9px 22px;font-size: 11px !important;border: none;border-top: 1px solid #000;border-bottom: 1px solid #000;">
+                                                                    <th v-for="item in columns" :key="item.key" :class="[item.class]" style="padding: 9px 22px;font-size: 11px !important;border: none;border-top: 1px solid #000;">
                                                                     </th>
                                                                 </tr>
                                                             </thead>
@@ -160,17 +160,12 @@
                                                                     <div class="col-sm-4 col-5">
                                                                         <div class="text-end">{{ items.reduce((sum, item) => sum + Number(item.totalJual), 0).toLocaleString() }}</div>
                                                                     </div>
-
-                                                                    <div v-if="items_jasa.length > 0">
-                                                                        <div class="col-sm-8 col-7" >
-                                                                            <div class="discount-rate">Sub Total Jasa</div>
-                                                                        </div>
-                                                                        <div class="col-sm-4 col-5">
-                                                                            <div class="text-end">{{ items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0).toLocaleString() }}</div>
-                                                                        </div>
+                                                                    <div class="col-sm-8 col-7" v-if="items_jasa.length > 0">
+                                                                        <div class="text-end">Sub Total Jasa</div>
                                                                     </div>
-                                                                    
-
+                                                                    <div class="col-sm-4 col-5" v-if="items_jasa.length > 0">
+                                                                        <div class="text-end">{{ items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0).toLocaleString() }}</div>
+                                                                    </div>
                                                                     <div class="col-sm-8 col-7">
                                                                         <div class="text-end">Grand Total :</div>
                                                                     </div>

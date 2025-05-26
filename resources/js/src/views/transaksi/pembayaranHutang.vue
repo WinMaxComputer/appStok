@@ -22,156 +22,210 @@
                 <div class="panel br-6">
                     <div class="custom-table panel-body p-0">
 
-                        <div class="d-flex flex-wrap justify-content-center justify-content-sm-start px-3 pt-3 pb-0">
-                            <!-- <button variant="primary" class="btn m-1 btn-primary" @click="export_table('print')">Print</button> -->
-                            <!-- <button variant="primary" class="btn m-1 btn-primary" @click="export_table('pdf')">PDF</button> -->
-                            <h5>Daftar Hutang Pembelian</h5>
-<span>{{ bbm }}</span>
-                        </div>
-                        <div class="panel-body">
-                            <div class="row">
-                                <div class="col-md-7">
-                                    <div class="input-group mb-4">
-                                        <flat-pickr v-model="sorting.startDate"
-                                            :config="{dateFormat: 'd-m-Y'}" 
-                                            class="form-control form-control-sm">
-                                        </flat-pickr>
-                                        <flat-pickr v-model="sorting.endDate" 
-                                            :config="{dateFormat: 'd-m-Y'}"
-                                            class="form-control form-control-sm">
-                                        </flat-pickr>
-                                        <button variant="primary" class="btn m-1 btn-primary" @click="bind_data()" >CARI</button>
-                                        <button variant="primary" class="btn m-1 btn-primary" @click="export_table('print')">Print</button>
+                        <ul class="nav nav-tabs mb-3 mt-3" id="simpletab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Daftar Hutang</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Daftar Pembayaran Hutang</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="simpletabContent">
+                            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-sm-3">
+                                            <div class="input-group sm-4">
+                                                <flat-pickr v-model="sorting.startDate"
+                                                :config="{dateFormat: 'd-m-Y'}" 
+                                                    class="form-control form-control-sm">
+                                                </flat-pickr>
+                                                
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <div class="input-group sm-4">
+                                                <flat-pickr v-model="sorting.endDate"
+                                                :config="{dateFormat: 'd-m-Y'}" 
+                                                    class="form-control form-control-sm">
+                                                </flat-pickr>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <div class="input-group sm-4">
+                                                <label>Total Hutang :</label>
+                                                <label>{{ Number(totalHutang).toLocaleString() }}</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <!-- <div class="input-group mb-4"> -->
+                                                <button variant="primary" class="btn m-1 btn-primary" @click="bind_data()" >CARI</button>
+                                                <button variant="primary" class="btn m-1 btn-primary" @click="export_table('print')">Print</button>
+                                            <!-- </div> -->
+                                        </div>
                                     </div>
                                 </div>
+                                <v-client-table :data="items.filter(item => Number(item.hutangPembelian) !== 0)" :columns="columns" :options="table_pembelian">
+                                    <template #tglPembelian="props"> {{ moment(props.row.tglPembelian).format("D-M-YYYY") }} </template>
+                                    <template #hutangPembelian="props"> {{ Number(props.row.hutangPembelian).toLocaleString() }} </template>
+                                    <template #total="props"> {{ Number(props.row.total).toLocaleString() }} </template>
+                                    <template #typeBayar="props">
+                                        {{ props.row.typeBayar === '0' ? 'Cash' : 'Kredit' }}
+                                    </template>
+                                    <template #action="props">
+                                        <a @click="openModal(id = props.row.noNota, sisa = props.row.hutangPembelian)" >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                class="feather feather-eye"
+                                            >
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                            </svg>
+                                        </a>
+                                        
+
+                                    </template>
+                                    <table class="custom-footer">
+                                    <tfoot>
+                                        <tr>
+                                        <td>Total</td>
+                                        <td>34235</td>
+                                        </tr>
+                                    </tfoot>
+                                    </table>
+
+
+
+                                </v-client-table>
+
+                                <Modal 
+                                    v-model:visible="isVisible" 
+                                    :draggable="true" 
+                                    :title="'PEMBAYARAN NOTA'"
+                                    :showCancelButton="false" 
+                                    :cancelButton="{text: 'cancel', onclick: () => {isVisible = false}, loading: false}"
+                                    :okButton="{text: 'SAVE', onclick: () => {simpanPembayaran()}, loading: false}"
+                                    width="60%">
+                                        <div class="col-md-12 mb-3">
+                                            <label class="form-label">Riwayat Pembayaran</label>
+                                            <table class="table table-bordered table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>No Bayar</th>
+                                                        <th>Tanggal</th>
+                                                        <th>Jumlah</th>
+                                                        <th>Metode</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-for="bayar in listPembayaran" :key="bayar.noBayar">
+                                                        <td>{{ bayar.noBayar }}</td>
+                                                        <td>{{ bayar.tglBayar }}</td>
+                                                        <td>{{ new Intl.NumberFormat().format(bayar.jmlBayar) }}</td>
+                                                        <td>{{ bayar.metodeBayar }}</td>
+                                                    </tr>
+                                                    <tr v-if="!listPembayaran || listPembayaran.length === 0">
+                                                        <td colspan="4" class="text-center">Belum ada pembayaran</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="totals-row">
+                                                <div class="invoice-totals-row ">
+                                                    <div style="font-size: 20px;">
+                                                        Sisa
+                                                    </div>
+                                                    <!-- <div class="invoice-summary-label"></div> -->
+                                                    <div class="invoice-summary-value">
+                                                        <div class="balance-due-amount">
+                                                            <span style="font-size: 30px;">{{ new Intl.NumberFormat().format(Math.floor(sisaHutang)) }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="totals-row">
+                                                <div class="invoice-totals-row ">
+                                                    <div style="font-size: 20px;">Method</div>
+                                                    <!-- <div class="invoice-summary-label"></div> -->
+                                                    <div class="invoice-summary-value">
+                                                        <div class="balance-due-amount">
+                                                            <select v-model="paramsbayar.metodeBayar" >
+                                                                <option value="cash" selected>Cash</option>
+                                                                <option value="credit_card">Credit Card</option>
+                                                                <option value="bank_transfer">Bank Transfer</option>
+                                                                <option value="ewallet">E-Wallet</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="totals-row">
+                                                <div class="invoice-totals-row">
+                                                    <div style="font-size: 20px;">Jumlah Bayar</div>
+                                                    <div class="invoice-summary-value">
+                                                        <div class="balance-due-amount">
+                                                            <input
+                                                                type="number"
+                                                                v-model="paramsbayar.jmlBayar"
+                                                                class="form-control"
+                                                                placeholder="Masukkan jumlah bayar"
+                                                                min="0"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                </Modal>
+                                
+                            </div>
+                            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                                
+                                <div class="col-md-12 mb-3">
+                                    <v-client-table :data="listPembayaran" :columns="columns_bayar" :options="table_optionb">
+                                        <template #tglBayar="props"> {{ moment(props.row.tglBayar).format("DD-MM-YYYY") }} </template>
+                                        <template #jmlBayar="props"> {{ Number(props.row.jmlBayar).toLocaleString() }} </template>
+                                        <template #action="props">
+                                            <a href="javascript:void(0);" @click="delete_row(props.row)" >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="24"
+                                                    height="24"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    class="feather feather-trash-2"
+                                                >
+                                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                </svg>
+                                            </a>
+                                        </template>
+                                    </v-client-table>
+                                    
+                                </div>
+
                             </div>
                         </div>
-
-                        <v-client-table :data="items.filter(item => Number(item.hutangPembelian) !== 0)" :columns="columns" :options="table_pembelian">
-                            <template #tglPembelian="props"> {{ moment(props.row.tglPembelian).format("D-M-YYYY") }} </template>
-                            <template #hutangPembelian="props"> {{ Number(props.row.hutangPembelian).toLocaleString() }} </template>
-                            <template #total="props"> {{ Number(props.row.total).toLocaleString() }} </template>
-                            <template #typeBayar="props">
-                                {{ props.row.typeBayar === '0' ? 'Cash' : 'Kredit' }}
-                            </template>
-                            <template #action="props">
-                                <button class="btn btn-primary" @click="openModal(id = props.row.noNota, sisa = props.row.hutangPembelian)" >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        class="feather feather-eye"
-                                    >
-                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                        <circle cx="12" cy="12" r="3"></circle>
-                                    </svg>
-                                </button>
-                                
-
-                            </template>
-                            <table class="custom-footer">
-                            <tfoot>
-                                <tr>
-                                <td>Total</td>
-                                <td>34235</td>
-                                </tr>
-                            </tfoot>
-                            </table>
-
-
-
-                        </v-client-table>
-
-                        <Modal 
-                            v-model:visible="isVisible" 
-                            :draggable="true" 
-                            :title="'PEMBAYARAN NOTA'"
-                            :showCancelButton="false" 
-                            :cancelButton="{text: 'cancel', onclick: () => {isVisible = false}, loading: false}"
-                            :okButton="{text: 'SAVE', onclick: () => {simpanPembayaran()}, loading: false}"
-                            width="60%">
-                                <div class="col-md-12 mb-3">
-                                    <label class="form-label">Riwayat Pembayaran</label>
-                                    <table class="table table-bordered table-sm">
-                                        <thead>
-                                            <tr>
-                                                <th>No Bayar</th>
-                                                <th>Tanggal</th>
-                                                <th>Jumlah</th>
-                                                <th>Metode</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr v-for="bayar in listPembayaran" :key="bayar.noBayar">
-                                                <td>{{ bayar.noBayar }}</td>
-                                                <td>{{ bayar.tglBayar }}</td>
-                                                <td>{{ new Intl.NumberFormat().format(bayar.jmlBayar) }}</td>
-                                                <td>{{ bayar.metodeBayar }}</td>
-                                            </tr>
-                                            <tr v-if="!listPembayaran || listPembayaran.length === 0">
-                                                <td colspan="4" class="text-center">Belum ada pembayaran</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="col-md-12">
-                                    <div class="totals-row">
-                                        <div class="invoice-totals-row ">
-                                            <div style="font-size: 20px;">
-                                                Sisa
-                                            </div>
-                                            <!-- <div class="invoice-summary-label"></div> -->
-                                            <div class="invoice-summary-value">
-                                                <div class="balance-due-amount">
-                                                    <span style="font-size: 30px;">{{ new Intl.NumberFormat().format(Math.floor(sisaHutang)) }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-12">
-                                    <div class="totals-row">
-                                        <div class="invoice-totals-row ">
-                                            <div style="font-size: 20px;">Method</div>
-                                            <!-- <div class="invoice-summary-label"></div> -->
-                                            <div class="invoice-summary-value">
-                                                <div class="balance-due-amount">
-                                                    <select v-model="paramsbayar.metodeBayar" >
-                                                        <option value="cash" selected>Cash</option>
-                                                        <option value="credit_card">Credit Card</option>
-                                                        <option value="bank_transfer">Bank Transfer</option>
-                                                        <option value="ewallet">E-Wallet</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-12">
-                                    <div class="totals-row">
-                                        <div class="invoice-totals-row">
-                                            <div style="font-size: 20px;">Jumlah Bayar</div>
-                                            <div class="invoice-summary-value">
-                                                <div class="balance-due-amount">
-                                                    <input
-                                                        type="number"
-                                                        v-model="paramsbayar.jmlBayar"
-                                                        class="form-control"
-                                                        placeholder="Masukkan jumlah bayar"
-                                                        min="0"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                        </Modal>
+                       
                         
                         
                     </div>
@@ -248,8 +302,33 @@
     });
 
     const isVisible = ref(false);
+    const columns_bayar = ref(['noBayar', 'tglBayar', 'jmlBayar', 'metodeBayar', 'action']);
+    const table_optionb = ref({
+        perPage: 10,
+        perPageValues: [5, 10, 20, 50, 100],
+        perPageSelect: true,
+        filterable: true,
+        filterable: ['noBayar', 'tglBayar', 'jmlBayar', 'metodeBayar'],
+        skin: 'table table-hover',
+        columnsClasses: { action: 'actions text-center' },
+        pagination: { nav: 'scroll', chunk: 5 },
+        texts: {
+            count: 'Showing {from} to {to} of {count}',
+            filter: '',
+            filterPlaceholder: 'Search...',
+            limit: 'Results:',
+        },
+        sortable: ['noBayar', 'tglBayar', 'jmlBayar', 'metodeBayar'],
+        sortIcon: {
+            base: 'sort-icon-none',
+            up: 'sort-icon-asc',
+            down: 'sort-icon-desc',
+        },
+        resizableColumns: true,
+    });
     const listPembayaran = ref([]);
     const sisaHutang = ref(0);
+    const totalHutang = ref(0);
     const paramsbayar = ref({
         noBeli: '',
         noBayar: null,
@@ -269,8 +348,14 @@
 
     
     const bind_data = () => {
-        store.dispatch('GetLaporanPembelian', sorting.value);
+        store.dispatch('GetLaporanPembelian', sorting.value).then(() => {
+            // console.log('get laporan pembelian')
+            items.value = store.getters.SlaporanPembelian;
+        });
         // items.value = store.getters.SlaporanPembelian;
+        store.dispatch('GetListBayarPembelian', sorting.value).then(() => {
+            listPembayaran.value = store.getters.SlistBayarPembelian;
+        });
     }
 
     const bbm = computed(() => {
@@ -467,17 +552,17 @@
     //     // router.push({ path: '/editpenjualan' })
     //     // alert('ID: '+ item.noPenjualan);
     // };
-    const delete_row = (item) => {
+    const delete_row = (data) => {
         new window.Swal({
             title: 'Anda Yakin?',
-            text: "Hapus Pembelian !" +item.noNota,
+            text: "Hapus Pembayaran !" +data.noBayar,
             type: 'warning',
             showCancelButton: true,
             confirmButtonText: 'Delete',
             padding: '2em'
         }).then(result => {
-            if (result.value) {
-                store.dispatch('DeletePembelian', {id : item.noNota})
+            if (result.isConfirmed) {
+                store.dispatch('DeletePembayaranHutang', { id:data.noBayar})
                 .then(response => {
                     bind_data();
                     new window.Swal('Deleted!', 'Your file has been deleted.', 'success');
@@ -485,7 +570,6 @@
                     // console.log('error: ', error)
                     return
                 })
-
             }
         });
     }

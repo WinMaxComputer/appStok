@@ -48,10 +48,10 @@ class pembayaranController extends Controller
                 }
                 $accid_k = '11501'; // $detpro[$i]['accid']; // acc id yg di debet
                 // $acc_id_d = '11110'; // $request[0]['subtotal']; // acc id yg di kredit
-                $memo = 'Pembayaran Penjualan No. '.$noNota;
+                $memo = 'Pembayaran Penjualan No. '.$nobayar;
                 $jurnal = 'JK';
                 $t = $jmlbayar;
-                insert_gl($noNota,$tglbayar,$t,$memo,$jurnal);
+                insert_gl($nobayar,$tglbayar,$t,$memo,$jurnal);
                 $rgl = DB::table('general_ledger')->get()->last()->notrans;
                 $ac = [
                     [
@@ -59,7 +59,7 @@ class pembayaranController extends Controller
                         'acc_id' => $accid_k,
                         'debet' => 0,
                         'kredit' => $t,
-                        'trans_detail' => 'Pembayaran Penjualan No. '.$noNota,
+                        'trans_detail' => 'Pembayaran Penjualan No. '.$nobayar,
                         'void_flag' => 0,
                     ],
                     [
@@ -67,7 +67,7 @@ class pembayaranController extends Controller
                         'acc_id' => $accid,
                         'debet' => $t,
                         'kredit' => 0,
-                        'trans_detail' => 'Pembayaran Penjualan No. '.$noNota,
+                        'trans_detail' => 'Pembayaran Penjualan No. '.$nobayar,
                         'void_flag' => 0,
                     ],
                     
@@ -97,6 +97,77 @@ class pembayaranController extends Controller
              'success' => false,
              'message' => 'exception'.$e,
          ], 400);
+        }
+    }
+    
+    function deleteBayarPenjualan(Request $request)
+    {
+        $noBayar = $request->input('id');
+        $bayar = Bayarjual::where('noBayar', $noBayar)->first();
+        if($bayar){
+            // $noNota = $bayar->noJual;
+            $noJual = $bayar->noJual;
+            $jmlBayar = $bayar->jmlBayar;
+            $metodeBayar = $bayar->metodeBayar;
+            
+            Penjualan::where('noPenjualan', $noJual)->increment('piutangPenjualan', $jmlBayar);
+
+            //========jurnal
+            $gl = DB::table('general_ledger')->where('order_no', $noBayar)->get();
+            for($i=0;$i< count($gl);$i++){
+                DB::table('general_ledger')->where('notrans', $gl[$i]->notrans)->delete();
+                DB::table('gl_detail')->where('rgl', $gl[$i]->notrans)->delete();
+            };
+            //=========endjurnal
+
+            Bayarjual::where('noBayar', $noBayar)->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Berhasil Dihapus',
+                // 'data' => $detail
+            ], 200);
+        }else{
+            return response()->json([
+                'success' => false,
+                'message' => 'Data Tidak Ditemukan',
+                // 'data' => null
+            ], 404);
+        }
+    }
+
+    function deleteBayarPembelian(Request $request){
+        $noBayar = $request->input('id');
+        $bayar = Bayarbeli::where('noBayar', $noBayar)->first();
+        if($bayar){
+            // $noNota = $bayar->noJual;
+            $noBeli = $bayar->noBeli;
+            $jmlBayar = $bayar->jmlBayar;
+            $metodeBayar = $bayar->metodeBayar;
+            
+            Pembelian::where('noNota', $noBeli)->increment('hutangPembelian', $jmlBayar);
+
+            //========jurnal
+            $gl = DB::table('general_ledger')->where('order_no', $noBayar)->get();
+            for($i=0;$i< count($gl);$i++){
+                DB::table('general_ledger')->where('notrans', $gl[$i]->notrans)->delete();
+                DB::table('gl_detail')->where('rgl', $gl[$i]->notrans)->delete();
+            };
+            //=========endjurnal
+
+            Bayarbeli::where('noBayar', $noBayar)->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Data Berhasil Dihapus',
+                // 'data' => $detail
+            ], 200);
+        }else{
+            return response()->json([
+                'success' => false,
+                'message' => 'Data Tidak Ditemukan',
+                // 'data' => null
+            ], 404);
         }
     }
 
@@ -139,7 +210,7 @@ class pembayaranController extends Controller
                 $memo = 'Pembayaran Pembelian No. '.$noNota;
                 $jurnal = 'JK';
                 $t = $jmlbayar;
-                insert_gl($noNota,$tglbayar,$t,$memo,$jurnal);
+                insert_gl($nobayar,$tglbayar,$t,$memo,$jurnal);
                 $rgl = DB::table('general_ledger')->get()->last()->notrans;
                 $ac = [
                     [
@@ -207,4 +278,5 @@ class pembayaranController extends Controller
 
                 
     }
+
 }

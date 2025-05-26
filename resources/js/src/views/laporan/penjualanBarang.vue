@@ -22,29 +22,50 @@
                 <div class="panel br-6">
                     <div class="custom-table panel-body p-0">
 
+                        
+
                         <div class="d-flex flex-wrap justify-content-center justify-content-sm-start px-3 pt-3 pb-0">
                             <!-- <button variant="primary" class="btn m-1 btn-primary" @click="export_table('print')">Print</button> -->
                             <!-- <button variant="primary" class="btn m-1 btn-primary" @click="export_table('pdf')">PDF</button> -->
                             <h5>Daftar Penjualan</h5>
-<span>{{ bbm }}</span>
                         </div>
+                        
                         <div class="panel-body">
                             <div class="row">
-                                <div class="col-md-7">
-                                    <div class="input-group mb-4">
+                                <div class="col-sm-3">
                                         <flat-pickr v-model="sorting.startDate"
                                         :config="{dateFormat: 'd-m-Y'}" 
                                             class="form-control form-control-sm">
                                         </flat-pickr>
+                                        
+                                </div>
+                                <div class="col-sm-3">
                                         <flat-pickr v-model="sorting.endDate"
                                         :config="{dateFormat: 'd-m-Y'}" 
                                             class="form-control form-control-sm">
                                         </flat-pickr>
-                                        <button variant="primary" class="btn m-1 btn-primary" @click="bind_data()" >CARI</button>
-                                        <button variant="primary" class="btn m-1 btn-primary" @click="export_table('print')">Print</button>
+                                </div>
+                                
+                                <div class="col-sm-3">
+                                    <div class="input-group sm-4">
+                                        <label>Total Penjualan :</label>
+                                        <label>{{ Number(totalPenjualan).toLocaleString() }}</label>
                                     </div>
                                 </div>
+                                <div class="col-sm-3">
+                                    <div class="input-group sm-4">
+                                        <label>Total Piutang :</label>
+                                        <label>{{ Number(totalPiutang).toLocaleString() }}</label>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <!-- <div class="input-group mb-4"> -->
+                                        <button variant="primary" class="btn m-1 btn-primary" @click="bind_data()" >CARI</button>
+                                        <button variant="primary" class="btn m-1 btn-primary" @click="export_table('print')">Print</button>
+                                    <!-- </div> -->
+                                </div>
                             </div>
+                            
                         </div>
 
                         <v-client-table :data="items" :columns="columns" :options="table_option">
@@ -216,7 +237,8 @@
         startDate: moment().subtract(30,'d').format("D-M-YYYY"),
         endDate: moment().format("D-M-YYYY")
     });
-
+    const totalPenjualan = ref(0);
+    const totalPiutang = ref(0);
     
 
     onMounted(() => {
@@ -230,8 +252,21 @@
 
     
     const bind_data = () => {
-        store.dispatch('GetLaporanBarang', sorting.value);
-        // items.value = store.getters.SlaporanBbm;
+        store.dispatch('GetLaporanBarang', sorting.value).then(response => {
+            // console.log('response: ', response)
+            items.value = store.getters.SlaporanBarang;
+            let sum = 0;
+            let sumPiutang = 0;
+            items.value.forEach(element => {
+                sum +=  parseInt(element.totalPenjualan);
+                sumPiutang +=  parseInt(element.piutangPenjualan);
+            });
+            totalPenjualan.value = sum;
+            totalPiutang.value = sumPiutang;
+        }).catch(error => {
+            console.log('error: ', error)
+        })
+        
     }
 
     const bbm = computed(() => {
@@ -239,12 +274,9 @@
 
         let sum = 0;
         items.value.forEach(element => {
-        sum +=  parseInt(element.total);
+            sum +=  parseInt(element.totalPenjualan);
         });
-
-        
-
-        // console.log(sum)
+        console.log(sum)
         // return { items }
     });
 
