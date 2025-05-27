@@ -655,7 +655,7 @@
 
             } else {
                 new window.Swal({
-                    title: 'Anda Yahin?',
+                    title: 'Anda Yakin?',
                     text: "Hapus Nama Barang !" +item.nmBarang,
                     type: 'warning',
                     showCancelButton: true,

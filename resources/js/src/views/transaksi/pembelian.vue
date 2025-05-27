@@ -172,14 +172,31 @@
                                                         <tr v-for="item in cartItems" :key="item.kdBarang">
                                                             <td class="description">{{ item.nmBarang }}</td>
                                                             <td class="rate">{{ new Intl.NumberFormat().format(item.hrgPokok) }}</td>
-                                                            <td class="qty">{{ item.qty }}</td>
+                                                            <td class="description">
+                                                                <input type="number" v-model="item.qty" style="min-width: 50px;" @keypress="onlyNumber" @keyup="updateItemQty(item.kdBarang, item.qty)" />
+                                                            </td>
                                                             <td class="qty">{{ item.satuan }}</td>
                                                             <td class="amount">{{ new Intl.NumberFormat().format(item.total) }}</td>
                                                             <td class="tax">
-                                                                <button type="button" class="btn btn-secondary additem btn-sm" @click="removeItem(id=item.kdBarang)">Hapus</button>
-                                                                <!-- <div class="icon-container">
-                                                                    <i data-feather="trash"></i><span class="icon-name"> trash</span>
-                                                                </div> -->
+                                                                <a href="javascript:;" @click="removeItem(id=item.kdBarang)">
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        width="24"
+                                                                        height="24"
+                                                                        viewBox="0 0 24 24"
+                                                                        fill="none"
+                                                                        stroke="currentColor"
+                                                                        stroke-width="2"
+                                                                        stroke-linecap="round"
+                                                                        stroke-linejoin="round"
+                                                                        class="feather feather-trash-2"
+                                                                    >
+                                                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                                    </svg>
+                                                                </a>
                                                             </td>
                                                         </tr>
                                                     </tbody>
@@ -790,6 +807,19 @@
     // this.isicart = JSON.parse(localStorage.getItem('cartItemsP')).length;
         }
 
+    }
+
+    function updateItemQty (barcode, qty) {
+        const cartItems = JSON.parse(localStorage.getItem('cartItemsP'));
+        const objIndex = cartItems.findIndex((e => e.kdBarang === barcode));
+        const newQty = parseInt(qty) ;
+        cartItems[objIndex].qty = parseInt(newQty);
+        cartItems[objIndex].total = parseInt(newQty * cartItems[objIndex].hrgPokok);
+        localStorage.setItem('cartItemsP',JSON.stringify(cartItems));
+        //alert('Quantity Update')
+        getCart();
+        getTotal();
+        // this.isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
     }
 
     const addPayment = () => {

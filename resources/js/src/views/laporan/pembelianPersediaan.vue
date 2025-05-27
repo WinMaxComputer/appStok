@@ -26,23 +26,40 @@
                             <!-- <button variant="primary" class="btn m-1 btn-primary" @click="export_table('print')">Print</button> -->
                             <!-- <button variant="primary" class="btn m-1 btn-primary" @click="export_table('pdf')">PDF</button> -->
                             <h5>Daftar Pembelian</h5>
-<span>{{ bbm }}</span>
                         </div>
                         <div class="panel-body">
                             <div class="row">
-                                <div class="col-md-7">
-                                    <div class="input-group mb-4">
+                                <div class="col-sm-3">
                                         <flat-pickr v-model="sorting.startDate"
-                                            :config="{dateFormat: 'd-m-Y'}" 
+                                        :config="{dateFormat: 'd-m-Y'}" 
                                             class="form-control form-control-sm">
                                         </flat-pickr>
-                                        <flat-pickr v-model="sorting.endDate" 
-                                            :config="{dateFormat: 'd-m-Y'}"
+                                        
+                                </div>
+                                <div class="col-sm-3">
+                                        <flat-pickr v-model="sorting.endDate"
+                                        :config="{dateFormat: 'd-m-Y'}" 
                                             class="form-control form-control-sm">
                                         </flat-pickr>
+                                </div>
+                                
+                                <div class="col-sm-3">
+                                    <div class="input-group sm-4">
+                                        <label>Total Pembelian :</label>
+                                        <label>{{ Number(totalPembelian).toLocaleString() }}</label>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <div class="input-group sm-4">
+                                        <label>Total Hutang :</label>
+                                        <label>{{ Number(totalHutang).toLocaleString() }}</label>
+                                    </div>
+                                </div>
+                                <div class="col-sm-3">
+                                    <!-- <div class="input-group mb-4"> -->
                                         <button variant="primary" class="btn m-1 btn-primary" @click="bind_data()" >CARI</button>
                                         <button variant="primary" class="btn m-1 btn-primary" @click="export_table('print')">Print</button>
-                                    </div>
+                                    <!-- </div> -->
                                 </div>
                             </div>
                         </div>
@@ -153,7 +170,6 @@
     import moment from "moment";
 
     import { useMeta } from '@/composables/use-meta';
-import tax from '@/store/tax';
     useMeta({ title: 'Data Laporan Pembelian BBM' });
 
     const store = useStore();
@@ -188,8 +204,8 @@ import tax from '@/store/tax';
         startDate: moment().subtract(30,'d').format("D-M-YYYY"),
         endDate: moment().format("D-M-YYYY")
     });
-
-    
+    const totalPembelian = ref(0);
+    const totalHutang = ref(0);
 
     onMounted(() => {
         bind_data();
@@ -207,7 +223,26 @@ import tax from '@/store/tax';
 
     
     const bind_data = () => {
-        store.dispatch('GetLaporanPembelian', sorting.value);
+        store.dispatch('GetLaporanPembelian', sorting.value).then(response => {
+            // console.log('response: ', response)
+            items.value = store.getters.SlaporanPembelian;
+            // console.log('items: ', items.value)
+            let sum = 0;
+            items.value.forEach(element => {
+            sum +=  parseInt(element.total);
+            });
+            totalPembelian.value = sum;
+
+            let sumhutang = 0;
+            items.value.forEach(element => {
+            sumhutang +=  parseInt(element.hutangPembelian);
+            });
+            totalHutang.value = sumhutang;
+
+        }).catch(error => {
+            // console.log('error: ', error)
+            return
+        })
         // items.value = store.getters.SlaporanPembelian;
     }
 

@@ -170,13 +170,31 @@
                                                         <tr v-for="item in cartItems" :key="item.kdBarang">
                                                             <td class="description">{{ item.nmBarang }}</td>
                                                             <td class="rate">{{ new Intl.NumberFormat().format(item.hrgPokok) }}</td>
-                                                            <td class="qty">
-                                                                <input type="text" v-model="item.qty" class="form-control form-control-sm" @keypress="onlyNumber" @change="updateItemQty(item.kdBarang, item.qty)" />
+                                                            <td class="description">
+                                                                <input type="number" v-model="item.qty" style="min-width: 50px;" @keypress="onlyNumber" @keyup="updateItemQty(item.kdBarang, item.qty)" />
                                                             </td>
-                                                            <td class="qty">{{ item.satuan }}</td>
+                                                            <td class="rate">{{ item.satuan }}</td>
                                                             <td class="amount">{{ new Intl.NumberFormat().format(item.total) }}</td>
                                                             <td class="tax">
-                                                                <button type="button" class="btn btn-secondary additem btn-sm" @click="removeItem(id=item.kdBarang)">Hapus</button>
+                                                                <a href="javascript:;" @click="removeItem(id=item.kdBarang)">
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        width="24"
+                                                                        height="24"
+                                                                        viewBox="0 0 24 24"
+                                                                        fill="none"
+                                                                        stroke="currentColor"
+                                                                        stroke-width="2"
+                                                                        stroke-linecap="round"
+                                                                        stroke-linejoin="round"
+                                                                        class="feather feather-trash-2"
+                                                                    >
+                                                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                                    </svg>
+                                                                </a>
                                                                 <!-- <div class="icon-container">
                                                                     <i data-feather="trash"></i><span class="icon-name"> trash</span>
                                                                 </div> -->
@@ -212,7 +230,7 @@
                                                             </div> -->
                                                             <div class="col-sm-4">
                                                                 <!-- <a href="javascript:;" @click="simpanPembelian" class="btn btn-success btn-download">Save</a> -->
-                                                                <a href="javascript:;" @click="openModal()" class="btn btn-success btn-download">Save</a>
+                                                                <a href="javascript:;" @click="openModal()" class="btn btn-success btn-download">PAYMENT</a>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -257,14 +275,14 @@
                                                             <div class="subtotal-amount"><span class="currency"></span><span class="amount">{{new Intl.NumberFormat().format(subtotal)}}</span></div>
                                                         </div>
                                                     </div>
-                                                    <div class="invoice-totals-row invoice-summary-total">
+                                                    <!-- <div class="invoice-totals-row invoice-summary-total">
                                                          <div class="invoice-summary-label">Disc</div>
                                                         <input type="text" v-model="params.disc" class="form-control form-control-sm" >%
                                                         <div class="invoice-summary-label"></div>
                                                         <div class="invoice-summary-value">
                                                             <div class="total-amount"><span class="currency"></span><span>{{ new Intl.NumberFormat().format(Math.floor(subtotal * disc / 100)) }}</span></div>
                                                         </div>
-                                                    </div>
+                                                    </div> -->
                                                     <div v-show="divpajak">
                                                         <div class="invoice-totals-row invoice-summary-tax">
                                                             <div class="invoice-summary-label">Pajak</div>
@@ -278,6 +296,9 @@
                                                     <div class="invoice-totals-row invoice-summary-balance-due">
                                                         <div class="invoice-summary-label">Total</div>
                                                          <div class="invoice-summary-label"></div>
+                                                         <input type="hidden" v-model="params.subtotal" />
+                                                         <input type="hidden" v-model="params.tax" />
+                                                        <input type="hidden" v-model="params.disc" />
                                                         <div class="invoice-summary-value">
                                                             <!-- <div class="balance-due-amount"> -->
                                                                 <span>{{ new Intl.NumberFormat().format(Math.floor(total)) }}</span>
@@ -378,7 +399,7 @@
     import moment from "moment";
     import { Modal } from 'usemodal-vue3';
 
-    import { computed, ref, onMounted, onBeforeMount } from 'vue';
+    import { computed, ref, onMounted, onBeforeMount, onUnmounted } from 'vue';
     import { useStore } from 'vuex';
     import { useRouter, useRoute } from 'vue-router'
 
@@ -465,16 +486,17 @@
         const temptotal = subtotal.value - (subtotal.value * disc.value / 100)
         total.value = (subtotal.value - (subtotal.value * disc.value / 100))
         tax.value = temptotal * pajak /100
-        
-        console.log('total tanpa pajak :'+tax.value)
-        // return { tot }
+
+        params.value.total = total.value
+        console.log('total :'+total.value)
+        // return { total, tax}
     }
     const getTotalWtax=() =>{
         const pajak = store.state.pajak;
         const temptotal = subtotal.value - (subtotal.value * disc.value / 100)
         tax.value = temptotal * pajak /100
         total.value = (subtotal.value - (subtotal.value * disc.value / 100)) + tax.value
-        
+        params.value.total = total.value
         
         console.log('total dengan pajak:'+tax.value)
         // return { tot }
@@ -531,11 +553,6 @@
         //set default data
         await store.dispatch('GetDetailPembelian', params.value)
         .then(response => {
-            // console.log('result: ', response)
-            // paramssupplier.value.kdPelanggan = arr[0][0].kdPelanggan;
-            // paramssupplier.value.nmPelanggan = arr[0][0].nmPelanggan;
-            // paramssupplier.value.noHpPelanggan = arr[0][0].noHpPelanggan;
-            // paramssupplier.value.almtPelanggan = arr[0][0].almtPelanggan;
             const arr = store.getters.SdetailPembelian;
             const brgArr = arr[1];
             for(let i = 0; i < brgArr.length; i++){
@@ -546,44 +563,56 @@
                     accid_persediaan:brgArr[i].accid_persediaan,
                     hrgPokok:brgArr[i].hrgBeli,
                     qty:brgArr[i].qty,
-                    satuan:brgArr[i].satuan,
+                    satuan:brgArr[i].satuanBarang,
                     total:brgArr[i].total,
                     is_tax: false 
                 });
             };
             localStorage.setItem('cartItemsP', JSON.stringify(cartItemsP.value));
+            paramssupplier.value.kdSupplier = store.getters.SdetailPembelian[0][0].kdSupplier;
+            paramssupplier.value.nmSupplier = store.getters.SdetailPembelian[0][0].nmSupplier;
+            paramssupplier.value.almtSupplier = store.getters.SdetailPembelian[0][0].almtSupplier;
+            paramssupplier.value.tlpSupplier = store.getters.SdetailPembelian[0][0].tlpSupplier;        
+        
+            getBarang();
+            // getAcc();
+            getSupplier();
+            getCart();
+            // getNoPembelian();
         })
         .catch(error => {
             // console.log('error: ', error)
-            return
+            
+            // return
         })
 
-        paramssupplier.value.kdSupplier = store.getters.SdetailPembelian[0][0].kdSupplier;
-        paramssupplier.value.nmSupplier = store.getters.SdetailPembelian[0][0].nmSupplier;
-        paramssupplier.value.almtSupplier = store.getters.SdetailPembelian[0][0].almtSupplier;
-        paramssupplier.value.tlpSupplier = store.getters.SdetailPembelian[0][0].tlpSupplier;        
-       
-        getBarang();
-        // getAcc();
-        getSupplier();
-        getCart();
-        // getNoPembelian();
+        
     });
 
     onBeforeMount(() => {
-        params.value = {
-
-            noNota: store.getters.SetEditNotaBeli[0].noNota,
-            tglNota: store.getters.SetEditNotaBeli[0].tglNota, // moment().format("YYYY-MM-DD"),
-            term: store.getters.SetEditNotaBeli[0].termPembelian,
-            jthTempo: store.getters.SetEditNotaBeli[0].jthTempo,
-            notes: store.getters.SetEditNotaBeli[0].note,
-            subtotal: store.getters.SetEditNotaBeli[0].subTotal,
-            tax: store.getters.SetEditNotaBeli[0].tax,
-            disc: store.getters.SetEditNotaBeli[0].disc,
-            total: store.getters.SetEditNotaBeli[0].total,
-            termPembelian: store.getters.SetEditNotaBeli[0].termPembelian,
+        if (store.getters.SetEditNotaBeli[0] === undefined) {
+            router.push({ name: 'pembelian-persediaan' });
+        } else {
+            params.value = {
+                noNota: store.getters.SetEditNotaBeli[0].noNota,
+                tglNota: store.getters.SetEditNotaBeli[0].tglNota, // moment().format("YYYY-MM-DD"),
+                term: store.getters.SetEditNotaBeli[0].termPembelian,
+                jthTempo: store.getters.SetEditNotaBeli[0].jthTempo,
+                notes: store.getters.SetEditNotaBeli[0].note,
+                subtotal: store.getters.SetEditNotaBeli[0].subTotal,
+                tax: store.getters.SetEditNotaBeli[0].tax,
+                disc: store.getters.SetEditNotaBeli[0].disc,
+                total: store.getters.SetEditNotaBeli[0].total,
+                termPembelian: store.getters.SetEditNotaBeli[0].termPembelian,
             }
+        }
+        
+    })
+
+    onUnmounted(() => {
+        // window.onbeforeunload = null
+        // alert('kal tutup')
+        localStorage.setItem('cartItemsP', '[]');
     })
 
     const reset_form = () => {
@@ -643,7 +672,7 @@
                 localStorage.setItem('cartItemsP',JSON.stringify(cartItems.value));
                 // alert(oldName+' Quantity Update')
                 getCart();
-                reset_form();
+                getTotal();
                 // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
                 const toast = window.Swal.mixin({
                     toast: true,
@@ -658,10 +687,18 @@
                     padding: '2em',
                 });
             }else{
-                cartItems.value.push({kdBarang:brg.kdPersediaan, nmBarang:brg.nmPersediaan,accid_persediaan:brg.accid_persediaan,hrgPokok:brg.lastPrice,qty:qty.value,satuan:brg.satuanPersediaan,total:qty.value * brg.lastPrice});	
+                cartItems.value.push({
+                    kdBarang:brg.kdPersediaan, 
+                    nmBarang:brg.nmPersediaan,
+                    accid_persediaan:brg.accid_persediaan,
+                    hrgPokok:brg.lastPrice,
+                    qty:qty.value,
+                    satuan:brg.satuanPersediaan,
+                    total:qty.value * brg.lastPrice
+                });	
                 localStorage.setItem('cartItemsP',JSON.stringify(cartItems.value));
                 getCart();
-                reset_form();
+                getTotal();
                 // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
                 // alert(brg.nmPersediaan+ " berhasil disimpan")
                 const toast = window.Swal.mixin({
@@ -687,6 +724,7 @@
         localStorage.setItem('cartItemsP',JSON.stringify(cartItems));
         //alert('Quantity Update')
         getCart();
+        getTotal();
         // this.isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
     }
 
@@ -701,16 +739,6 @@
         // console.log(filtered)
         // alert(filtered.nmBarang)
     }
-    // function updateItem(barcode, index) {
-    //     const cartItems = JSON.parse(localStorage.getItem('cartItemsP'));
-    //     const objIndex = cartItems.findIndex((e => e.barcode === barcode));
-    //     const newQty = parseInt(this.crt[index].qty) ;
-    //     cartItems[objIndex].qty = parseInt(newQty);
-    //     localStorage.setItem('cartItemsP',JSON.stringify(cartItems));
-    //     //alert('Quantity Update')
-    //     this.getCart();
-    //     this.isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
-    // }
 
     function getCart() {
         // subtotal.value = []

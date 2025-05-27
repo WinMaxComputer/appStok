@@ -116,7 +116,7 @@
                                             <li class="nav-item">
                                                 <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">BARANG</a>
                                             </li>
-                                            <li class="nav-item">
+                                            <li class="nav-item" v-if="store.state.auth.user === 'root'">
                                                 <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">JASA</a>
                                             </li>
                                         </ul>
@@ -240,15 +240,32 @@
                                                         <tr v-for="item in cartItemsPen" :key="item.kdBarang">
                                                             <td class="description">{{ item.nmBarang }}</td>
                                                             <td class="rate">{{ new Intl.NumberFormat().format(item.hrgJual) }}</td>
-                                                            <td class="qty">{{ item.qty }}</td>
+                                                            <td class="description">
+                                                                <input type="number" v-model="item.qty" style="min-width: 50px;" @keypress="onlyNumber" @keyup="updateItemQty(item.kdBarang, item.qty)" />  
+                                                            </td>
                                                             <td class="qty">{{ item.satuan }}</td>
                                                             <td class="amount">{{ new Intl.NumberFormat().format(item.disc) }}</td>
                                                             <td class="amount">{{ new Intl.NumberFormat().format(item.total) }}</td>
                                                             <td class="tax">
-                                                                <button type="button" class="btn btn-secondary additem btn-sm" @click="removeItem(id=item.kdBarang)">Hapus</button>
-                                                                <!-- <div class="icon-container">
-                                                                    <i data-feather="trash"></i><span class="icon-name"> trash</span>
-                                                                </div> -->
+                                                                <a href="javascript:;" @click="removeItem(id=item.kdBarang)">
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        width="24"
+                                                                        height="24"
+                                                                        viewBox="0 0 24 24"
+                                                                        fill="none"
+                                                                        stroke="currentColor"
+                                                                        stroke-width="2"
+                                                                        stroke-linecap="round"
+                                                                        stroke-linejoin="round"
+                                                                        class="feather feather-trash-2"
+                                                                    >
+                                                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                                                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                                                                    </svg>
+                                                                </a>
                                                             </td>
                                                         </tr>
                                                     </tbody>
@@ -315,14 +332,14 @@
                                                 <div class="invoice-actions-btn">
                                                     <div class="invoice-action-btn">
                                                         <div class="row">
-                                                            <div class="col-sm-4">
+                                                            <!-- <div class="col-sm-4">
                                                                 <div v-if="divpajak">
                                                                     <a href="javascript:;" class="btn btn-primary btn-send" @click="taxRemove" >- pajak</a>
                                                                 </div>
                                                                 <div v-if="!divpajak">
                                                                     <a href="javascript:;" class="btn btn-primary btn-send" @click="taxSelected" >+ pajak</a>
                                                                 </div>
-                                                            </div>
+                                                            </div> -->
                                                             <div class="col-sm-4">
                                                                 <button @click="openModal()" class="btn btn-success btn-download">PAYMENT</button>
                                                             </div>
@@ -342,7 +359,7 @@
                                                             <div class="subtotal-amount"><span class="currency"></span><span class="amount">{{new Intl.NumberFormat().format(subtotal)}}</span></div>
                                                         </div>
                                                     </div>
-                                                    <div class="invoice-totals-row invoice-summary-subtotal" >
+                                                    <div v-if="cartItemsPenJasa" class="invoice-totals-row invoice-summary-subtotal" >
                                                         <div class="invoice-summary-label">Total Jasa</div>
                                                          <div class="invoice-summary-label"></div>
                                                         <div class="invoice-summary-value">
@@ -630,18 +647,22 @@
     });
 
     onBeforeMount(() => {
-        params.value = {
-            noNota: store.getters.SetEditNota[0].kd_trans,
-            tglNota: store.getters.SetEditNota[0].startDate,// moment(tglP).format("YYYY-MM-DD"),
-            term: store.getters.SetEditNota[0].term,
-            jthTempo: store.getters.SetEditNota[0].jthTempo,
-            notes: '',
-            subtotal: subtotal,
-            subtotaljasa: subtotaljasa,
-            tax: tax,
-            disc: disc,
-            total: total, 
-            termPenjualan: store.getters.SetEditNota[0].termPenjualan,
+        if (store.getters.SetEditNota[0] === undefined) {
+            router.push({ name: 'penjualan-barang' });
+        } else {
+            params.value = {
+                noNota: store.getters.SetEditNota[0].kd_trans,
+                tglNota: store.getters.SetEditNota[0].startDate,// moment(tglP).format("YYYY-MM-DD"),
+                term: store.getters.SetEditNota[0].term,
+                jthTempo: store.getters.SetEditNota[0].jthTempo,
+                notes: '',
+                subtotal: subtotal,
+                subtotaljasa: subtotaljasa,
+                tax: tax,
+                disc: disc,
+                total: total, 
+                termPenjualan: store.getters.SetEditNota[0].termPenjualan,
+            }
         }
     })
 
@@ -985,6 +1006,22 @@
                 // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
                 alert(jsa.nmJasa+ " berhasil disimpan")
             }
+    }
+
+    function updateItemQty (barcode, qty) {
+        // console.log(barcode, qty)
+        const cartItems = JSON.parse(localStorage.getItem('cartItemsPen'));
+        const objIndex = cartItems.findIndex((e => e.kdBarang === barcode));
+        const newQty = parseInt(qty) ;
+        const hpp1 = cartItems[objIndex].totalhpp / cartItems[objIndex].qty ;
+        cartItems[objIndex].qty = parseInt(newQty);
+        cartItems[objIndex].total = parseInt(newQty * cartItems[objIndex].hrgJual);
+        cartItems[objIndex].totalhpp = parseInt(newQty * hpp1);
+        localStorage.setItem('cartItemsPen',JSON.stringify(cartItems));
+        //alert('Quantity Update')
+        getCart();
+        getTotal();
+        // this.isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
     }
 
     function removeItem(id) {
