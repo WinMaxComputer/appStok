@@ -134,7 +134,12 @@ class pembelianController extends Controller
                         'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                     ];
 
-                    
+                    //===========insert fifo
+                    $harga = $detpem[$i]['hrgPokok'];
+                    $total = $qty * $harga ;
+                    $keterangan = $noNota;
+                    insert_fifo($tglNota,$kdBarang,$keterangan,$qty,$harga,$total);
+                    //============end insert fifo
 
                     //========insert kartu stok
                     $total_beli = $detpem[$i]['total'];
@@ -588,6 +593,7 @@ class pembelianController extends Controller
                 DB::table('tblpembelian_detail')->where('r_noNota', $kd)->delete();
                 DB::table('tblkartu_stok')->where('r_notrans', $kd)->delete();
                 DB::table('tblpembayaran_pembelian')->where('noBeli', $kd)->delete();
+                DB::table('tblstok_fifo')->where('keterangan', $kd)->delete();
                 DB::commit();
             });
             if(is_null($exception)) {

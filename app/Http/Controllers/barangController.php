@@ -233,8 +233,10 @@ class barangController extends Controller
                         $total_hpp = 0;
                         $sisa = $selisih;
                         $total_liter = $selisih;
-                        
-                        while($sisa > 0){
+                        if ($id_fifo) {
+                            // Jika tidak ada stok FIFO yang tersedia, keluar dari loop
+                            // break;
+                            while($sisa > 0){
                             $idn_fifo = DB::table('tblstok_fifo')->select('*')->where('kd_barang','=',$kdb)->where('stok', '!=', '0')->min('id');
                             $stokn_fifo = DB::table('tblstok_fifo')->where('id', $idn_fifo)->first();
                             // $hargan_fifo = DB::table('tblstok_fifo')->where('id', $idn_fifo)->first()->harga;
@@ -281,6 +283,8 @@ class barangController extends Controller
                                 // echo $sisa ;
                             };
                         }
+                        }
+                        
                         
                         //============== end hpp fifo
                         

@@ -81,7 +81,7 @@
                         </div>
                         <div class="panel-body">
                             <div class="table-responsive">
-                                <table role="table" aria-busy="false" aria-colcount="5" class="table table-hover table-bordered" id="__BVID__415">
+                                <table role="table" aria-busy="false" aria-colcount="5" class="table table-hover table-bordered" >
                                     <thead role="rowgroup">
                                         <tr role="row">
                                             <th role="columnheader" scope="col" aria-colindex="1"><div>Kode</div></th>
@@ -101,6 +101,7 @@
                                                     <option value="0">Tidak</option>
                                                     <option value="1">Ya</option>
                                                 </select>
+                                                
                                                 {{ item.kdBarang }}
                                             </td>
                                             <td aria-colindex="2" role="cell">{{ item.nmBarang }}</td>
@@ -175,7 +176,8 @@
     const store = useStore();
     const table_1 = ref([]);
     const item_now = ref({});
-    const posting = ref([0,0,0,0]);
+    const posting = ref({});
+    // Set default value for posting to 0 for each item in table_1
     const keterangan = ref({});
     const noopnum = ref([]);
     const total = ref([]);
@@ -196,6 +198,7 @@
     onMounted(() => {
         bind_data();
         getNoOpnum();
+        
     });
 
     const getNoOpnum= async() => {
@@ -204,8 +207,15 @@
     }
 
     const bind_data = async () => {
-        await store.dispatch('GetBarang');
-        table_1.value = store.getters.StateBarang;
+        await store.dispatch('GetBarang').then(() => {
+            // console.log(store.getters.StateBarang);
+            table_1.value = store.getters.StateBarang;
+            table_1.value.forEach((item, idx) => {
+                // item_now.value[idx] = item.stokPersediaan;
+                // keterangan.value[idx] = 'tes';
+                posting.value[idx] = '0';
+            });
+        });
         
     }
 

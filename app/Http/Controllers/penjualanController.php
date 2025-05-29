@@ -121,6 +121,60 @@ class penjualanController extends Controller
                             'hrgJual' => $hrg,
                         ]);
 
+                        $totalStok = DB::table('tblstok_fifo')->where('kd_barang', $kdBarang)->sum('stok');
+                        if($qty > $totalStok){
+                            throw new \Exception("Stok Kurang");
+                        }
+                        //========cek harga per liter sesuai stok fifo
+                        
+                        // $harga_fifo = DB::table('tblstok_fifo')->select('harga')->where('id', $id_fifo)->first();
+                        // print_r( $stok_fifo );
+                        $total_hpp = 0;
+                        $sisa = $qty;
+                        // $qty = $total_liter;
+                        while ($sisa > 0 ) {
+                            $data_tr = DB::select(" SELECT * FROM tblstok_fifo WHERE kd_barang = '$kdBarang' AND stok > 0 ORDER by tgl ASC");
+                            foreach ($data_tr as $tr) {
+                                $id = $tr->id;
+                                $stok = $tr->stok;
+                                $harga = $tr->harga;
+                                $tgl_stok = $tr->tgl;
+
+                                if ($stok <= 0) {
+                                    continue;
+                                }
+
+                                if ($sisa >= $stok) {
+                                    $qty_pakai = $stok;
+                                } else {
+                                    $qty_pakai = $sisa;
+                                }
+
+                                $total_hpp += $qty_pakai * $harga;
+                                insert_trans_stok($noNota, $id, $qty_pakai, $harga);
+
+                                $stok_update = $stok - $qty_pakai;
+                                DB::statement("UPDATE tblstok_fifo SET stok = $stok_update WHERE id = '$id' AND tgl = '$tgl_stok'");
+
+                                $sisa -= $qty_pakai;
+
+                                if ($sisa <= 0) {
+                                    break;
+                                }
+                            }
+                            // Refresh data_tr in case stok has changed
+                            if ($sisa > 0) {
+                                $data_tr = DB::select("SELECT * FROM tblstok_fifo WHERE kd_barang = '$kdBarang' AND stok > 0 ORDER by tgl ASC");
+                                if (empty($data_tr)) {
+                                    throw new \Exception("Stok Kurang");
+                                }
+                            }
+                        }
+                        
+                        
+                        
+                        //============== end hpp fifo
+
                         $detail[] = [
                             'r_noPenjualan' => $noNota,
                             'r_kdBarang' => $kdBarang,
@@ -130,7 +184,7 @@ class penjualanController extends Controller
                             'hrgJual' => $detpem[$i]['hrgJual'],
                             'satuanJual' => $detpem[$i]['satuan'],
                             'qty' => $qty,
-                            'totalHpp' => $detpem[$i]['totalhpp'],
+                            'totalHpp' => $total_hpp, // $detpem[$i]['totalhpp'],
                             'disc' => ($detpem[$i]['hrgJual'] * $qty) * $detpem[$i]['disc'] / 100,
                             'totalJual' => $detpem[$i]['total'],
                             'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
@@ -155,7 +209,7 @@ class penjualanController extends Controller
                         $memo = 'Penjualan-'.$nmBarang;
                         $jurnal = 'JK';
                         $subtotal = $detpem[$i]['total'];
-                        $subtotal_hpp = $detpem[$i]['totalhpp'];
+                        $subtotal_hpp = $total_hpp; // $detpem[$i]['totalhpp'];
                         //===jumlah pph
                         $bati = $subtotal - $subtotal_hpp ;
                         $pph22_dibayar = $bati * $pph22 / 100 ;

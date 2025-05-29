@@ -52,22 +52,7 @@
                             <template #selisihOpnum="props"> {{ Number(props.row.selisihOpnum).toLocaleString() }} </template>
                             <template #nilaiOpnum="props"> {{ Number(props.row.nilaiOpnum).toLocaleString() }} </template>
                             <template #action="props">
-                                <router-link :to="{name: 'rekapan', params: {startDate: props.row.tgl_trans, kd_trans:props.row.kd_trans, regu:props.row.r_regu }}" >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        class="feather feather-edit-2"
-                                    >
-                                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                                    </svg>
-                                </router-link>
+                                
                                 <a href="javascript:void(0);" @click="delete_row(props.row)" >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -90,18 +75,6 @@
                             </template>
                         </v-client-table>
 
-                        <div class="table-condensed table-responsive">
-                            <table role="table" aria-busy="false" aria-colcount="4" class="table b-table table-hover table-bordered" id="__BVID__354">
-                                <thead role="rowgroup" class="">
-                                    <tr role="row" class="">
-                                        <th role="columnheader" scope="col" aria-colindex="1" class=""><div>PERTAMAX : {{ Number(total_px).toLocaleString() }}</div></th>
-                                        <th role="columnheader" scope="col" aria-colindex="2" class=""><div>PERTALITE : {{ Number(total_pl).toLocaleString() }}</div></th>
-                                        <th role="columnheader" scope="col" aria-colindex="3" class=""><div>DEXLITE : {{ Number(total_dx).toLocaleString() }}</div></th>
-                                    </tr>
-                                </thead>
-                            </table>
-                        </div>
-                        
                         
                     </div>
                 </div>
@@ -176,29 +149,35 @@
 
     
     const bind_data = () => {
-        store.dispatch('GetLaporanOpnum', sorting.value);
+        store.dispatch('GetLaporanOpnum', sorting.value).then(response => {
+            // console.log('response: ', response)
+            items.value = store.getters.SlaporanOpnum;
+        }).catch(error => {
+            // console.log('error: ', error)
+            return
+        })
         // items.value = store.getters.SlaporanBbm;
     }
 
-    const total_px = ref();
-    const total_pl = ref();
-    const total_dx = ref();
+    // const total_px = ref();
+    // const total_pl = ref();
+    // const total_dx = ref();
 
-    const bbm = computed(() => {
-        items.value = store.getters.SlaporanOpnum;
+    // const bbm = computed(() => {
+    //     items.value = store.getters.SlaporanOpnum;
 
-        total_px.value = items.value .filter(i => i.r_kdPersediaan === 'BRG0001').reduce((a, b) => Number(a) + Number(b.selisihOpnum), 0);
-        total_pl.value = items.value .filter(i => i.r_kdPersediaan === 'BRG0002').reduce((a, b) => Number(a) + Number(b.selisihOpnum), 0);
-        total_dx.value = items.value .filter(i => i.r_kdPersediaan === 'BRG0003').reduce((a, b) => Number(a) + Number(b.selisihOpnum), 0);
+    //     total_px.value = items.value .filter(i => i.r_kdPersediaan === 'BRG0001').reduce((a, b) => Number(a) + Number(b.selisihOpnum), 0);
+    //     total_pl.value = items.value .filter(i => i.r_kdPersediaan === 'BRG0002').reduce((a, b) => Number(a) + Number(b.selisihOpnum), 0);
+    //     total_dx.value = items.value .filter(i => i.r_kdPersediaan === 'BRG0003').reduce((a, b) => Number(a) + Number(b.selisihOpnum), 0);
 
-        let sum = 0;
-        items.value.forEach(element => {
-        sum +=  parseInt(element.total);
-        });
+    //     let sum = 0;
+    //     items.value.forEach(element => {
+    //     sum +=  parseInt(element.total);
+    //     });
 
-        // console.log(sum)
-        // return { items }
-    });
+    //     // console.log(sum)
+    //     // return { items }
+    // });
 
     const export_table = (type) => {
         let cols = columns.value.filter((d) => d != 'profile' && d != 'action');

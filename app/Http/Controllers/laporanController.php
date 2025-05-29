@@ -649,10 +649,18 @@ class laporanController extends Controller
                         'stokPersediaan' => $oldStok->stokPersediaan + $dtl[$i]->qty,
                     ]);
                 };
+                $stokfifo = DB::table('tbltransaksi_stok')->where('r_trans', $kd)->get();
+                for($i=0;$i< count($stokfifo);$i++){
+                    $oldStok = DB::table('tblstok_fifo')->where('id', $stokfifo[$i]->r_fifo)->first();
+                    DB::table('tblstok_fifo')->where('id', $stokfifo[$i]->r_fifo)->update([
+                        'stok' => $oldStok->stok + $stokfifo[$i]->stok_trans,
+                    ]);
+                };
                 DB::table('tblpenjualan_detail')->where('r_noPenjualan', $kd)->delete();
                 DB::table('tblpenjualan_detail_jasa')->where('r_noPenjualan', $kd)->delete();
                 DB::table('tblkartu_stok')->where('r_notrans', $kd)->delete();
                 DB::table('tblpembayaran_penjualan')->where('noJual', $kd)->delete();
+                DB::table('tbltransaksi_stok')->where('r_trans', $kd)->delete();
                 DB::commit();
             });
             if(is_null($exception)) {

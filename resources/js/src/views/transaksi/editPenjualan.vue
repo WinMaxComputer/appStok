@@ -359,7 +359,7 @@
                                                             <div class="subtotal-amount"><span class="currency"></span><span class="amount">{{new Intl.NumberFormat().format(subtotal)}}</span></div>
                                                         </div>
                                                     </div>
-                                                    <div v-if="cartItemsPenJasa" class="invoice-totals-row invoice-summary-subtotal" >
+                                                    <div v-if="cartItemsPenJasa != null" class="invoice-totals-row invoice-summary-subtotal" >
                                                         <div class="invoice-summary-label">Total Jasa</div>
                                                          <div class="invoice-summary-label"></div>
                                                         <div class="invoice-summary-value">
@@ -782,77 +782,108 @@
 
     function addToCart(brg) {
         // console.log(brg)
-        if (localStorage.getItem('cartItemsPen')===null){
-            cartItemsPen.value = [];
-            // console.log(cartItems.value)
-        }else{
-            cartItemsPen.value = JSON.parse(localStorage.getItem('cartItemsPen'));
-        }
-            const oldItems = JSON.parse(localStorage.getItem('cartItemsPen')) || [];
-            // console.log(oldItems)
-            const existingItem = oldItems.find(({ kdBarang }) => kdBarang === brg.kdBarang);
-            if (existingItem) {
-                const objIndex = cartItemsPen.value.findIndex((e => e.kdBarang === brg.kdBarang));
-                const oldName = cartItemsPen.value[objIndex].nmBarang;
-                const oldQty = cartItemsPen.value[objIndex].qty;
-                const oldTotal = cartItemsPen.value[objIndex].total;
-                const oldTotalHpp = cartItemsPen.value[objIndex].totalhpp;
-                const newQty = parseInt(oldQty) + parseInt(qty.value) ;
-                const newTotal = parseInt(oldTotal) + parseInt(qty.value * brg.hrgJual) ;
-                const newTotalHpp = parseInt(oldTotalHpp) + parseInt(qty.value * brg.hrgPokok) ;
-                cartItemsPen.value[objIndex].qty = parseInt(newQty);
-                cartItemsPen.value[objIndex].total = parseInt(newTotal);
-                cartItemsPen.value[objIndex].totalhpp = parseInt(newTotalHpp);
-                localStorage.setItem('cartItemsPen',JSON.stringify(cartItemsPen.value));
-                const toast = window.Swal.mixin({
-                    toast: true,
-                    position: 'top-center',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    padding: '2em',
-                });
-                toast.fire({
-                    icon: 'success',
-                    title: oldName + ' Quantity Update',
-                    padding: '2em',
-                });
-                getCart();
-                getTotal()
-                // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
-            }else{
-                cartItemsPen.value.push({
-                kdBarang:brg.kdBarang, 
-                nmBarang:brg.nmBarang,
-                accid:brg.accid,
-                accid_persediaan:brg.accid_persediaan,
-                accid_hpp:brg.accid_hpp,
-                hrgJual:brg.hrgJual,
-                accid:brg.accid,
-                accid_persediaan:brg.accid_persediaan,
-                qty:qty.value,
-                satuan:brg.satuanBarang,
-                total:(qty.value * brg.hrgJual) - (qty.value * brg.hrgJual * disc.value / 100),
-                disc:disc.value,
-                totalhpp:qty.value * brg.hrgPokok, 
-                kategori:brg.ktgBarang
-            });
-            localStorage.setItem('cartItemsPen',JSON.stringify(cartItemsPen.value));
-            getCart();
-            getTotal()
-            // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
-            const toast = window.Swal.mixin({
-                toast: true,
-                position: 'top-center',
-                showConfirmButton: false,
-                timer: 3000,
-                padding: '2em',
-            });
-            toast.fire({
-                icon: 'success',
-                title: brg.nmBarang + " berhasil disimpan",
-                padding: '2em',
-            });
+        store.dispatch('CheckBarangExist', {kdBarang: brg.kdBarang})
+            .then((response) => {
+                // console.log(response.data);
+                const brgasli = response.data.data;
+                
+                if (brgasli.stokPersediaan < qty.value) {
+                    if (!window.confirm('Stok barang kurang')) {
+                        return;
+                    }
+                    // alert('Barang kurang dari 1')
+                }else{
+                    if (localStorage.getItem('cartItemsPen')===null){
+                        cartItemsPen.value = [];
+                        // console.log(cartItems.value)
+                    }else{
+                        cartItemsPen.value = JSON.parse(localStorage.getItem('cartItemsPen'));
+                    }
+                    const oldItems = JSON.parse(localStorage.getItem('cartItemsPen')) || [];
+                    // console.log(oldItems)
+                    const existingItem = oldItems.find(({ kdBarang }) => kdBarang === brg.kdBarang);
+                    if (existingItem) {
+                        
+                        const objIndex = cartItemsPen.value.findIndex((e => e.kdBarang === brg.kdBarang));
+                        const oldName = cartItemsPen.value[objIndex].nmBarang;
+                        const oldQty = cartItemsPen.value[objIndex].qty;
+                        const oldTotal = cartItemsPen.value[objIndex].total;
+                        const oldTotalHpp = cartItemsPen.value[objIndex].totalhpp;
+                        const newQty = parseInt(oldQty) + parseInt(qty.value) ;
+                        if (newQty > brgasli.stokPersediaan) {
+                            const toast = window.Swal.mixin({
+                                toast: true,
+                                position: 'top-center',
+                                showConfirmButton: false,
+                                timer: 3000,
+                                padding: '2em',
+                            });
+                            toast.fire({
+                                icon: 'error',
+                                title: 'Quantity dijual melebihi stok persediaan',
+                                padding: '2em',
+                            });
+                            return;
+                        }
+                        const newTotal = parseInt(oldTotal) + parseInt(qty.value * brg.hrgJual) ;
+                        const newTotalHpp = parseInt(oldTotalHpp) + parseInt(qty.value * brg.hrgPokok) ;
+                        cartItemsPen.value[objIndex].qty = parseInt(newQty);
+                        cartItemsPen.value[objIndex].total = parseInt(newTotal);
+                        cartItemsPen.value[objIndex].totalhpp = parseInt(newTotalHpp);
+                        localStorage.setItem('cartItemsPen',JSON.stringify(cartItemsPen.value));
+                        const toast = window.Swal.mixin({
+                            toast: true,
+                            position: 'top-center',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            padding: '2em',
+                        });
+                        toast.fire({
+                            icon: 'success',
+                            title: oldName + ' Quantity Update',
+                            padding: '2em',
+                        });
+                        getCart();
+                        getTotal()
+                        // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
+                    }else{
+                        cartItemsPen.value.push({
+                            kdBarang:brg.kdBarang, 
+                            nmBarang:brg.nmBarang,
+                            accid:brg.accid,
+                            accid_persediaan:brg.accid_persediaan,
+                            accid_hpp:brg.accid_hpp,
+                            hrgJual:brg.hrgJual,
+                            accid:brg.accid,
+                            accid_persediaan:brg.accid_persediaan,
+                            qty:qty.value,
+                            satuan:brg.satuanBarang,
+                            total:(qty.value * brg.hrgJual) - (qty.value * brg.hrgJual * disc.value / 100),
+                            disc:disc.value,
+                            totalhpp:qty.value * brg.hrgPokok, 
+                            kategori:brg.ktgBarang
+                        });	
+                        localStorage.setItem('cartItemsPen',JSON.stringify(cartItemsPen.value));
+                        getCart();
+                        getTotal()
+                        // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
+                        const toast = window.Swal.mixin({
+                            toast: true,
+                            position: 'top-center',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            padding: '2em',
+                        });
+                        toast.fire({
+                            icon: 'success',
+                            title: brg.nmBarang + " berhasil disimpan",
+                            padding: '2em',
+                        });
+                    }
+                }
+
             }
+        )
     }
 
     function addToCartB(barcode) {
@@ -860,7 +891,15 @@
             .then((response) => {
                 // console.log(response.data);
                 const brg = response.data.data;
-                if (!response.data.exist === true) {
+                if (brg.stokPersediaan < 1) {
+                    if (!window.confirm('Stok barang kurang dari 1. Jika dilanjukan akan mempengaruhi perhitungan laba rugi.')) {
+                        return;
+                    }
+                    // alert('Barang kurang dari 1')
+                    
+                    
+                }else{
+                    // alert('Barang ada')
                     const toast = window.Swal.mixin({
                         toast: true,
                         position: 'top-center',
@@ -869,11 +908,10 @@
                         padding: '2em',
                     });
                     toast.fire({
-                        icon: 'error',
-                        title: 'Barang tidak ditemukan di database',
+                        icon: 'success',
+                        title: ' Stok barang mencukupi',
                         padding: '2em',
                     });
-                    return;
                 }
                 // console.log(brg)
                 if (localStorage.getItem('cartItemsPen')===null){
@@ -892,6 +930,21 @@
                         const oldTotal = cartItemsPen.value[objIndex].total;
                         const oldTotalHpp = cartItemsPen.value[objIndex].totalhpp;
                         const newQty = parseInt(oldQty) + parseInt(qty.value) ;
+                        if (newQty > brg.stokPersediaan) {
+                            const toast = window.Swal.mixin({
+                                toast: true,
+                                position: 'top-center',
+                                showConfirmButton: false,
+                                timer: 3000,
+                                padding: '2em',
+                            });
+                            toast.fire({
+                                icon: 'error',
+                                title: 'Quantity dijual melebihi stok persediaan',
+                                padding: '2em',
+                            });
+                            return;
+                        }
                         const newTotal = parseInt(oldTotal) + parseInt(qty.value * brg.hrgJual) ;
                         const newTotalHpp = parseInt(oldTotalHpp) + parseInt(qty.value * brg.hrgPokok) ;
                         cartItemsPen.value[objIndex].qty = parseInt(newQty);
@@ -958,7 +1011,7 @@
                 });
                 toast.fire({
                     icon: 'error',
-                    title: 'Terjadi kesalahan saat memeriksa barang',
+                    title: 'Barang tidak ditemukan di database',
                     padding: '2em',
                 });
             });

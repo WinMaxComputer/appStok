@@ -220,48 +220,12 @@
                         </div>
                     </a>
                     <ul id="apps" class="collapse submenu list-unstyled" data-bs-parent="#sidebar">
-                        <li>
-                            <router-link to="/penjualan" @click="toggleMobileMenu">PENJUALAN BARANG</router-link>
-                        </li>
-                        <li>
-                            <router-link to="/pembelian" @click="toggleMobileMenu">PEMBELIAN BARANG</router-link>
-                        </li>
-                        <li>
-                            <router-link to="/pembelian-inventaris" @click="toggleMobileMenu">PEMBELIAN INVENTARIS</router-link>
-                        </li>
-                        <li>
-                            <router-link to="/pembayaran-penjualan" @click="toggleMobileMenu">PEMBAYARAN PIUTANG</router-link>
-                        </li>
-                        <li>
-                            <router-link to="/pembayaran-pembelian" @click="toggleMobileMenu">PEMBAYARAN HUTANG</router-link>
-                        </li>
-                        <li class="menu">
-                            <a class="dropdown-toggle" data-bs-toggle="collapse" data-bs-target="#opnum" aria-controls="opnum" aria-expanded="false">
-                                <div class="">
-                                <span>OPNUM</span> 
-                                    <!-- {{ $t('Master') }}</span> -->
-                                </div>
-                                <div>
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        class="feather feather-chevron-right"
-                                    >
-                                        <polyline points="9 18 15 12 9 6"></polyline>
-                                    </svg>
-                                </div>
-                            </a>
-                            <ul id="opnum" class="collapse submenu list-unstyled" data-bs-parent="#apps">
-                                <li><router-link to="/opnum-barang" @click="toggleMobileMenu">OPNUM BARANG</router-link></li>
-                            </ul>
-                        </li>
+                        <li><router-link to="/penjualan" @click="toggleMobileMenu">PENJUALAN BARANG</router-link></li>
+                        <li><router-link to="/pembelian" @click="toggleMobileMenu">PEMBELIAN BARANG</router-link></li>
+                        <li><router-link to="/pembelian-inventaris" @click="toggleMobileMenu">PEMBELIAN INVENTARIS</router-link></li>
+                        <li><router-link to="/pembayaran-penjualan" @click="toggleMobileMenu">PEMBAYARAN PIUTANG</router-link></li>
+                        <li><router-link to="/pembayaran-pembelian" @click="toggleMobileMenu">PEMBAYARAN HUTANG</router-link></li>
+                        <li><router-link to="/opnum-barang" @click="toggleMobileMenu">OPNUM BARANG</router-link></li>
                         <li><router-link to="/biaya" @click="toggleMobileMenu">BIAYA</router-link></li>
                         <li><router-link to="/jurnal-umum" @click="toggleMobileMenu">JURNAL UMUM</router-link></li>
                     </ul>

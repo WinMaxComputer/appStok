@@ -228,7 +228,7 @@
                                                                 <a href="javascript:;" @click="addPayment" class="btn btn-dark btn-preview" data-bs-toggle="modal" data-bs-target="#modalPayment">Pembayaran</a>
                                                             </div> -->
                                                             <div class="col-sm-4">
-                                                                <a href="javascript:;" @click="openModal()" class="btn btn-success btn-download">Save</a>
+                                                                <a href="javascript:;" @click="openModal()" class="btn btn-success btn-download">PAYMENT</a>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -597,20 +597,15 @@
     });
 
     const reset_form = () => {
-        items.value.push({ id: 1, title: '', description: '', rate: 0, quantity: 0, amount: 100, is_tax: false });
+        qty.value = 1;
+        barcode.value = '';
+        // brg.value = [];
+        // items.value.push({ id: 1, title: '', description: '', rate: 0, quantity: 0, amount: 100, is_tax: false });
 
-        let dt = new Date();
-        params.value.invoice_date = JSON.parse(JSON.stringify(dt));
-        dt.setDate(dt.getDate() + 5);
-        params.value.due_date = dt;
-
-        // console.log(paramssupplier.value)
-        
-        getBarang();
-        // getAcc();
-        getSupplier();
-        getCart();
-        getNoPembelian();
+        // let dt = new Date();
+        // params.value.invoice_date = JSON.parse(JSON.stringify(dt));
+        // dt.setDate(dt.getDate() + 5);
+        // params.value.due_date = dt;
     }
 
     const change_file = (event) => {
