@@ -446,18 +446,18 @@
             getkd()
             input.value = {
                 kdB: kdbrg,
-                kdktg: ktgs,
+                kdktg: '',
                 nmB: '',
                 satuanB: '',
                 hrgBeli: '',
                 hrgJual: '',
                 merek: '',
-                qtyMin: '',
-                qtyMax: '',
-                acc_id: accs,
-                acchpp: accs,
-                accpersediaan: accs,
-                accbiaya: accs
+                qtyMin: '1',
+                qtyMax: '999',
+                acc_id: '',
+                acchpp: '',
+                accpersediaan: '',
+                accbiaya: ''
             }
         }).catch(error => {
             // console.log('error: ', error)
