@@ -339,8 +339,6 @@ class transaksiNoselController extends Controller
                         throw new \Exception("Stok Kurang");
                     }
                     
-
-
                     //========cek harga per liter sesuai stok fifo
                     $data_tr = DB::select(" SELECT * FROM tblstok_fifo WHERE kd_barang = '$kdb' AND stok > 0 ORDER by tgl ASC");
                     // $harga_fifo = DB::table('tblstok_fifo')->select('harga')->where('id', $id_fifo)->first();

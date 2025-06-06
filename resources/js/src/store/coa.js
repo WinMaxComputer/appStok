@@ -25,7 +25,7 @@ const actions = {
             // Handle error
             return res ;
         }
-    }, 
+    },  
     async GetHarta({ commit }, group){
         let response = await axios.post('/api/get/acc-data', group)
         commit('setHarta', response.data.data)

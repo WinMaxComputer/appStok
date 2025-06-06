@@ -27,7 +27,6 @@
                             <button class="btn btn-primary mb-2 me-2" @click="export_table('pdf')">PDF</button>
 <span>{{ barangs }}</span>
                         </div>
-
                         <v-client-table :data="items" :columns="columns" :options="table_option">
                             <template #hrgJual="props"> {{ Number(props.row.hrgJual).toLocaleString() }} </template>
                             <template #hrgPokok="props"> {{ Number(props.row.hrgPokok).toLocaleString() }} </template>
@@ -371,13 +370,17 @@
     })
 
 
-    
+   
 
     onMounted(() => {
         bind_data();
         GetCoaHpp();
         getKtg();
         getkd();
+        window.history.pushState(null, '', window.location.href);
+        window.addEventListener('popstate', function (event) {
+            window.history.pushState(null, '', window.location.href);
+        });
         // setTimeout(function() { accs.value = store.getters.StateCoaList; }, 1000);
     });
 

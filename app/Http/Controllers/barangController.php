@@ -264,6 +264,7 @@ class barangController extends Controller
                                 $total_hpp = $stoknew_fifo['stok'] * $stoknew_fifo['harga'] ;
                                 insert_trans_stok($kdtrans,$idnew_fifo,$stoknew_fifo['stok'],$stoknew_fifo['harga']);
                                 $sisa = $total_liter - $stoknew_fifo['stok']; 
+
                                 if($sisa > 0){
                                     $idnew1_fifo = DB::table('tblstok_fifo')->select('*')->where('kd_barang','=',$kdb)->where('stok', '!=', '0')->min('id');
                                     $stoknew1_fifo = DB::table('tblstok_fifo')->where('id', $idnew1_fifo)->first();
@@ -280,6 +281,7 @@ class barangController extends Controller
                                     $sisa = 0;
 
                                 }
+                                
                                 // echo $sisa ;
                             };
                         }
