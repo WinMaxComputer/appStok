@@ -277,7 +277,7 @@
                                     </div>
                                             
 
-                                    <div v-if="cartItemsPenJasa" class="invoice-detail-items" >
+                                    <div v-if="$store.state.auth.user === 'root'" class="invoice-detail-items" >
                                         <div class="inv--product-table-section">
                                             <div class="table-responsive">
                                                 <table class="table table-hover table-bordered item-table">
@@ -359,7 +359,7 @@
                                                             <div class="subtotal-amount"><span class="currency"></span><span class="amount">{{new Intl.NumberFormat().format(subtotal)}}</span></div>
                                                         </div>
                                                     </div>
-                                                    <div v-if="cartItemsPenJasa != null" class="invoice-totals-row invoice-summary-subtotal" >
+                                                    <div v-if="$store.state.auth.user === 'root'" class="invoice-totals-row invoice-summary-subtotal" >
                                                         <div class="invoice-summary-label">Total Jasa</div>
                                                          <div class="invoice-summary-label"></div>
                                                         <div class="invoice-summary-value">
