@@ -39,7 +39,14 @@
 
                                                     <div >
                                                         <!-- <div class="row invoice layout-top-spacing layout-spacing apps-invoice"></div> -->
-                                                        <button type="button" class="btn btn-danger btn-lg mb-3 me-3" v-if="load"><span class="spinner-border text-white me-2 align-self-center loader-sm">Loading...</span> Loading</button> 
+                                                        <div v-if="load" class="la-ball-circus" id="loading-indicator">
+                                                            <h2 class="text-center mt-3">Loading</h2>
+                                                            <div></div>
+                                                            <div></div>
+                                                            <div></div>
+                                                            <div></div>
+                                                            <div></div>
+                                                        </div> 
                                                         <!-- <div class="table-responsive"> -->
                                                             <table style="font-size:8px">
                                                                 <tr>

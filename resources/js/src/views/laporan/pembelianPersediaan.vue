@@ -63,13 +63,23 @@
                                 </div>
                             </div>
                         </div>
-
+                        <div v-if="loading" class="la-ball-circus" id="loading-indicator">
+                            <h2 class="text-center mt-3">Loading</h2>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
                         <v-client-table :data="items" :columns="columns" :options="table_pembelian">
                             <template #tglPembelian="props"> {{ moment(props.row.tglPembelian).format("D-M-YYYY") }} </template>
                             <template #hutangPembelian="props"> {{ Number(props.row.hutangPembelian).toLocaleString() }} </template>
                             <template #total="props"> {{ Number(props.row.total).toLocaleString() }} </template>
+                            <template #typeBayar="props">
+                                {{ props.row.typeBayar === 0 ? 'Cash' : 'Kredit' }}
+                            </template>
                             <template #action="props">
-
+                            
                                 <a href="javascript:void(0);" @click="editnotabeli([{
                                                     noNota:props.row.noNota, 
                                                     tglNota: props.row.tglPembelian,
@@ -175,7 +185,7 @@
     const store = useStore();
     const router = useRouter()
 
-    const columns = ref(['noNota', 'tglPembelian', 'nmSupplier', 'hutangPembelian', 'total', 'action']);
+    const columns = ref(['noNota', 'tglPembelian', 'nmSupplier', 'typeBayar' ,'hutangPembelian', 'total', 'action']);
     const items = ref([]);
     const table_pembelian = ref({
         perPage: 10,
@@ -206,6 +216,7 @@
     });
     const totalPembelian = ref(0);
     const totalHutang = ref(0);
+    const loading = ref();
 
     onMounted(() => {
         bind_data();
@@ -223,6 +234,7 @@
 
     
     const bind_data = () => {
+        loading.value = true;
         store.dispatch('GetLaporanPembelian', sorting.value).then(response => {
             // console.log('response: ', response)
             items.value = store.getters.SlaporanPembelian;
@@ -238,7 +250,7 @@
             sumhutang +=  parseInt(element.hutangPembelian);
             });
             totalHutang.value = sumhutang;
-
+            loading.value = false;
         }).catch(error => {
             // console.log('error: ', error)
             return

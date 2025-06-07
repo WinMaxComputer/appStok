@@ -67,7 +67,14 @@
                             </div>
                             
                         </div>
-
+                        <div v-if="loading" class="la-ball-circus" id="loading-indicator">
+                            <h2 class="text-center mt-3">Loading</h2>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
                         <v-client-table :data="items" :columns="columns" :options="table_option">
                             <template #tglPenjualan="props"> {{ moment(props.row.tglPenjualan).format("DD-MM-YYYY") }} </template>
                             <template #piutangPenjualan="props"> {{ Number(props.row.piutangPenjualan).toLocaleString() }} </template>
@@ -239,7 +246,7 @@
     });
     const totalPenjualan = ref(0);
     const totalPiutang = ref(0);
-    
+    const loading = ref();
 
     onMounted(() => {
         bind_data();
@@ -252,6 +259,7 @@
 
     
     const bind_data = () => {
+        loading.value = true;
         store.dispatch('GetLaporanBarang', sorting.value).then(response => {
             // console.log('response: ', response)
             items.value = store.getters.SlaporanBarang;
@@ -263,6 +271,8 @@
             });
             totalPenjualan.value = sum;
             totalPiutang.value = sumPiutang;
+
+            loading.value = false;
         }).catch(error => {
             console.log('error: ', error)
         })

@@ -77,6 +77,7 @@ class pembelianController extends Controller
                         'updated_at'     => \Carbon\Carbon::now()->toDateTimeString()
                     ]);
                     DB::table('tblpembelian_detail')->where('r_noNota', $noNota)->delete();
+                    DB::table('tblpembayaran_pembelian')->where('noBeli', $noNota)->delete();
                     //====hapus jurnal
                     $gl = DB::table('general_ledger')->where('order_no', $noNota)->get();
                     for($i=0;$i< count($gl);$i++){

@@ -266,49 +266,49 @@ const routes = [
         component: () => import(/* webpackChunkName: "auth-login-boxed" */ '../views/auth/login_boxed.vue'),
         meta: { layout: 'auth' },
     },
-    {
-        path: '/auth/register-boxed',
-        name: 'register-boxed',
-        component: () => import(/* webpackChunkName: "auth-register-boxed" */ '../views/auth/register_boxed.vue'),
-        meta: { layout: 'auth' },
-    },
-    {
-        path: '/auth/lockscreen-boxed',
-        name: 'lockscreen-boxed',
-        component: () => import(/* webpackChunkName: "auth-lockscreen-boxed" */ '../views/auth/lockscreen_boxed.vue'),
-        meta: { layout: 'auth' },
-        // children: [{ path: '', name: 'Home', component: Home }],
-    },
-    {
-        path: '/auth/pass-recovery-boxed',
-        name: 'pass-recovery-boxed',
-        component: () => import(/* webpackChunkName: "auth-pass-recovery-boxed" */ '../views/auth/pass_recovery_boxed.vue'),
-        meta: { layout: 'auth' },
-    },
-    {
-        path: '/auth/login',
-        name: 'login',
-        component: () => import(/* webpackChunkName: "auth-login" */ '../views/auth/login.vue'),
-        meta: { layout: 'auth' },
-    },
-    {
-        path: '/auth/register',
-        name: 'register',
-        component: () => import(/* webpackChunkName: "auth-register" */ '../views/auth/register.vue'),
-        meta: { layout: 'auth' },
-    },
-    {
-        path: '/auth/lockscreen',
-        name: 'lockscreen',
-        component: () => import(/* webpackChunkName: "auth-lockscreen" */ '../views/auth/lockscreen.vue'),
-        meta: { layout: 'auth' },
-    },
-    {
-        path: '/auth/pass-recovery',
-        name: 'pass-recovery',
-        component: () => import(/* webpackChunkName: "auth-pass-recovery" */ '../views/auth/pass_recovery.vue'),
-        meta: { layout: 'auth' },
-    },
+    // {
+    //     path: '/auth/register-boxed',
+    //     name: 'register-boxed',
+    //     component: () => import(/* webpackChunkName: "auth-register-boxed" */ '../views/auth/register_boxed.vue'),
+    //     meta: { layout: 'auth' },
+    // },
+    // {
+    //     path: '/auth/lockscreen-boxed',
+    //     name: 'lockscreen-boxed',
+    //     component: () => import(/* webpackChunkName: "auth-lockscreen-boxed" */ '../views/auth/lockscreen_boxed.vue'),
+    //     meta: { layout: 'auth' },
+    //     // children: [{ path: '', name: 'Home', component: Home }],
+    // },
+    // {
+    //     path: '/auth/pass-recovery-boxed',
+    //     name: 'pass-recovery-boxed',
+    //     component: () => import(/* webpackChunkName: "auth-pass-recovery-boxed" */ '../views/auth/pass_recovery_boxed.vue'),
+    //     meta: { layout: 'auth' },
+    // },
+    // {
+    //     path: '/auth/login',
+    //     name: 'login',
+    //     component: () => import(/* webpackChunkName: "auth-login" */ '../views/auth/login.vue'),
+    //     meta: { layout: 'auth' },
+    // },
+    // {
+    //     path: '/auth/register',
+    //     name: 'register',
+    //     component: () => import(/* webpackChunkName: "auth-register" */ '../views/auth/register.vue'),
+    //     meta: { layout: 'auth' },
+    // },
+    // {
+    //     path: '/auth/lockscreen',
+    //     name: 'lockscreen',
+    //     component: () => import(/* webpackChunkName: "auth-lockscreen" */ '../views/auth/lockscreen.vue'),
+    //     meta: { layout: 'auth' },
+    // },
+    // {
+    //     path: '/auth/pass-recovery',
+    //     name: 'pass-recovery',
+    //     component: () => import(/* webpackChunkName: "auth-pass-recovery" */ '../views/auth/pass_recovery.vue'),
+    //     meta: { layout: 'auth' },
+    // },
 
     
 
@@ -332,11 +332,11 @@ const routes = [
     },
 
     //drag&drop
-    {
-        path: '/dragndrop',
-        name: 'dragndrop',
-        component: () => import(/* webpackChunkName: "dragndrop" */ '../views/dragndrop.vue'),
-    },
+    // {
+    //     path: '/dragndrop',
+    //     name: 'dragndrop',
+    //     component: () => import(/* webpackChunkName: "dragndrop" */ '../views/dragndrop.vue'),
+    // },
 
     //charts
     {
@@ -387,15 +387,20 @@ router.beforeEach((to, from, next) => {
     if (to.meta && to.meta.layout && to.meta.layout == 'auth') {
         store.commit('setLayout', 'auth');
     } else {
-        store.commit('setLayout', 'app');
+        
         // console.log('unauthenticated user');
         // console.log(to)
         // if(to.matched.some(record => record.meta.requiresAuth)) {
             if (store.getters.isAuthenticated) { // jika user sudah login maka route akan diteruskan
-                
-              next()
-              return
+                store.commit('setLayout', 'app');
+                console.log(store.getters.isAuthenticated);
+                next()
+                return
+            }else {
+                console.log('unauthenticated user');
+                next('/auth/login-boxed')
             }
+
             next('/auth/login-boxed') // jika tidak maka akan redirect ke halaman login
         //   } else {
         //     next()

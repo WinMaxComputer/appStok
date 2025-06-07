@@ -112,6 +112,10 @@
 
                                     <div class="invoice-detail-items">
                                         <div class="row">
+                                            <div class="form-group col-xs-2">
+                                                <label for="Inputqty">Barcode</label>
+                                                <input type="text" ref="InputBarcode" v-model="barcode" class="form-control form-control-sm" placeholder="Barcode" @keyup.enter="addToCartB(barcode)" />
+                                            </div>
                                             <div class="form-group col-md-3">
                                                 <label for="inputCity">NAMA BARANG</label>
                                                 <multiselect 
@@ -318,7 +322,7 @@
                                         :cancelButton="{text: 'cancel', onclick: () => {isVisible = false}, loading: false}"
                                         :okButton="{text: 'SAVE', onclick: () => {simpanPembelian()}, loading: false}"
                                         width="60%">
-
+                                        
                                             <div class="col-md-12">
                                                 <div class="totals-row">
                                                     <div class="invoice-totals-row ">
@@ -423,6 +427,7 @@
     const selected_file = ref(null);
     const payment = ref([]);
     const isVisible = ref(false);
+    const barcode = ref('');
 
     const params = ref({});
     const paramssupplier = ref({
@@ -436,7 +441,7 @@
     });
     const paramsbayar = ref({
         noBayar: null,
-        tglBayar: params.value.jthTempo,
+        tglBayar: moment().format("YYYY-MM-DD"),
         jmlBayar: total,
         metodeBayar: 'cash',
     });
@@ -569,6 +574,7 @@
                 });
             };
             localStorage.setItem('cartItemsP', JSON.stringify(cartItemsP.value));
+            
             paramssupplier.value.kdSupplier = store.getters.SdetailPembelian[0][0].kdSupplier;
             paramssupplier.value.nmSupplier = store.getters.SdetailPembelian[0][0].nmSupplier;
             paramssupplier.value.almtSupplier = store.getters.SdetailPembelian[0][0].almtSupplier;

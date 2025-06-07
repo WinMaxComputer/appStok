@@ -5,7 +5,7 @@
             <header class="header navbar navbar-expand-sm">
                 <ul class="navbar-item theme-brand flex-row text-center">
                     <li class="nav-item theme-logo">
-                        <router-link to="/">
+                        <router-link to="/index2">
                             <img src="@/assets/images/logo1.jpg" class="navbar-logo" alt="logo" />
                         </router-link>
                     </li>

@@ -13,7 +13,16 @@
                             <h1 class="">Sign In</h1>
                             <p class="">Log in to your account to continue.</p>
 
-                            <form class="text-start">
+                            <div v-if="loading === true" class="la-ball-circus" id="loading-indicator">
+                                <h2 class="text-center mt-3">Loading</h2>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                            </div>
+
+                            <form class="text-start" v-if="loading === false">
                                 <div class="form">
                                     <div id="username-field" class="field-wrapper input">
                                         <label for="username">USERNAME</label>
@@ -94,6 +103,7 @@
     </div>
 </template>
 
+
 <script setup>
     import { ref } from 'vue';
     import '@/assets/sass/authentication/auth-boxed.scss';
@@ -109,6 +119,7 @@
 
     const pwd_type = ref('password');
     const store = useStore();
+    const loading = ref(false);
 
     const set_pwd_type = () => {
         if (pwd_type.value === 'password') {
@@ -126,19 +137,22 @@
     const router = useRouter()
     const route = useRoute()
     // console.log(form.value.email)
-    
+    if (localStorage.getItem('tokenLogin')) {
+        router.push({ path: '/barang' });
+    }
     const login = async () => {
-            store.dispatch('LogIn', form.value)
-            .then(response => {
-                // console.log('result: ', response)
-                router.push({path: '/barang'})
-            })
-            .catch(error => {
-                // console.log('error: ', error)
-                return
-            })
-            
-            
+        loading.value = true;
+        store.dispatch('LogIn', form.value)
+        .then(response => {
+            // console.log('result: ', response)
+            router.push({path: '/barang'})
+            loading.value = false;
+        })
+        .catch(error => {
+            loading.value = false;
+            // console.log('error: ', error)
+            return
+        })
         
     }
 

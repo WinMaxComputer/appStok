@@ -22,7 +22,7 @@
                 <div class="panel br-6">
                     <div class="custom-table panel-body p-0">
                         <div class="d-flex flex-wrap justify-content-center justify-content-sm-start px-3 pt-3 pb-0">
-                            <button class="btn btn-primary mb-2 me-2" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">Tambah</button>
+                            <button class="btn btn-primary mb-2 me-2" @click="openModal">Tambah</button>
                             <button class="btn btn-primary mb-2 me-2" @click="export_table('print')">Print</button>
                             <button class="btn btn-primary mb-2 me-2" @click="export_table('pdf')">PDF</button>
 <span>{{ barangs }}</span>
@@ -108,7 +108,9 @@
                 :showCancelButton="false" 
                 :cancelButton="{text: 'cancel', onclick: () => {isVisible = false}, loading: false}"
                 :okButton="{text: 'SAVE', onclick: () => {edit_barang()}, loading: false}"
-                width="80%">
+                width="80%"
+                v-if="loading === false">
+                
                 <div class="row">
                     <div class="col-md">
                         <label for="inputState">Kode</label>
@@ -189,15 +191,24 @@
                     </div>
                 </div>
             </Modal>
+            <div v-if="loading === true" class="la-ball-circus" id="loading-indicator">
+                <h2 class="text-center mt-3">Loading</h2>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
 
-            <!-- <div v-show="modalinput" > -->
-                <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="exampleModalLabel">Tambah Data Barang</h5>
-                                <button type="button" data-dismiss="modal" data-bs-dismiss="modal" aria-label="Close" class="btn-close"></button>
-                            </div>
+                    <Modal 
+                        v-model:visible="isVisibleTambah" 
+                        :draggable="true" 
+                        :title="'Tambah Data Barang'"
+                        :showCancelButton="false" 
+                        :cancelButton="{text: 'cancel', onclick: () => {isVisibleTambah = false}, loading: false}"
+                        :okButton="{text: 'SAVE', onclick: () => {simpan_barang()}, loading: false}"
+                        width="80%"
+                        v-if="loading === false">
                             <div class="modal-body">
                                 <form>
                                     <div class="row">
@@ -281,16 +292,7 @@
                                     </div>
                                 </form>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn" data-dismiss="modal" data-bs-dismiss="modal"><i class="flaticon-cancel-12"></i> Discard</button>
-                                <button type="button" class="btn btn-primary" @click="simpan_barang()">Save</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            <!-- </div> -->
-
-
+                    </Modal>
         </div>
         <!--  -->
     
@@ -310,12 +312,13 @@
     import { useRouter, useRoute } from 'vue-router'
 
     import { useMeta } from '@/composables/use-meta';
+import { f } from 'html2pdf.js';
     useMeta({ title: 'Data Barang' });
 
     const store = useStore();
     const router = useRouter();
     const route = useRoute();
-    
+    const loading = ref(false);
 
     const columns = ref(['kdBarang','barCode' , 'nmBarang', 'hrgPokok', 'hrgJual', 'namaKtg', 'stokPersediaan', 'kartuStok' ,'action']);
 
@@ -349,8 +352,27 @@
     });
 
     const isVisible = ref(false);
+    const isVisibleTambah = ref(false);
     const edit = ref({});
 
+    const openModal = () => {
+        isVisibleTambah.value = true;
+        // const modal = document.getElementById('exampleModalCenter');
+        // if (modal) {
+        //     const bsModal = new window.bootstrap.Modal(modal);
+        //     bsModal.show();
+        // }
+    };
+
+    const closeModal = () => {
+        const modal = document.getElementById('exampleModalCenter');
+        if (modal) {
+            const bsModal = window.bootstrap.Modal.getInstance(modal);
+            if (bsModal) {
+                bsModal.hide();
+            }
+        }
+    };
     
     const kdbrg = ref([])
     const input = ref({
@@ -363,10 +385,10 @@
         merek: '',
         qtyMin: '1',
         qtyMax: '999',
-        acc_id: accs,
-        acchpp: accs,
-        accpersediaan: accs,
-        accbiaya: accs
+        acc_id: '',
+        acchpp: '',
+        accpersediaan: '',
+        accbiaya: ''
     })
 
 
@@ -386,11 +408,14 @@
 
     
     const bind_data = () => {
+        loading.value = true;
         store.dispatch('GetBarang').then(response => {
             // console.log('response: ', response)
             items.value = store.getters.StateBarang;
+            loading.value = false;
         }).catch(error => {
             // console.log('error: ', error)
+            loading.value = false;
             return
         })
     }
@@ -442,43 +467,63 @@
     }
 
     const simpan_barang = () => {
-        const isi = input.value
-        store.dispatch('CreateBarang', isi )
-        .then(response => {
-            bind_data();
-            getkd()
-            input.value = {
-                kdB: kdbrg,
-                kdktg: '',
-                nmB: '',
-                satuanB: '',
-                hrgBeli: '',
-                hrgJual: '',
-                merek: '',
-                qtyMin: '1',
-                qtyMax: '999',
-                acc_id: '',
-                acchpp: '',
-                accpersediaan: '',
-                accbiaya: ''
-            }
-        }).catch(error => {
-            // console.log('error: ', error)
+        
+        if (input.value.kdB == '' || input.value.nmB == '' || input.value.satuanB == '' || input.value.kdktg == '' || input.value.hrgBeli == '' || input.value.hrgJual == '' || input.value.merek == '' || input.value.acc_id == '' || input.value.acchpp == '' || input.value.accpersediaan == '' || input.value.accbiaya == '') {
+            new window.Swal({
+                title: 'Perhatian',
+                text: "Mohon lengkapi data yang diperlukan.",
+                type: 'warning',
+                padding: '2em'
+            });
+            // loading.value = false;
             return
-        })
+        }else{
+            loading.value = true;
+            const isi = input.value
+            store.dispatch('CreateBarang', isi )
+            .then(response => {
+                loading.value = false;
+                bind_data();
+                getkd()
+                input.value = {
+                    kdB: kdbrg,
+                    kdktg: '',
+                    nmB: '',
+                    satuanB: '',
+                    hrgBeli: '',
+                    hrgJual: '',
+                    merek: '',
+                    qtyMin: '1',
+                    qtyMax: '999',
+                    acc_id: '',
+                    acchpp: '',
+                    accpersediaan: '',
+                    accbiaya: ''
+                }
+            }).catch(error => {
+                console.log('error: ', error)
+                // window.location.reload();
+                return
+            })
+        }
+        
        
     }
     const edit_barang = () => {
+        // console.log(edit.value)
+        loading.value = true;
         const isi = edit.value
         store.dispatch('CreateBarang', isi )
-        .then(response => {
-            bind_data();
-            getkd()
-            isVisible.value = false;
-        }).catch(error => {
-            // console.log('error: ', error)
-            return
-        })
+            .then(response => {
+                bind_data();
+                getkd()
+                isVisible.value = false;
+                loading.value = false;
+            }).catch(error => {
+                // console.log('error: ', error)
+                loading.value = false;
+                return
+            })
         // console.log(isi)
         
     }

@@ -66,6 +66,7 @@ const actions = {
     async LogOut({commit}){
         let user = []
         localStorage.removeItem('tokenLogin');
+        localStorage.removeItem('userLogin');
         // localStorage.removeItem('vuex');
         commit('LogOut', user)
     }  
