@@ -174,12 +174,28 @@
                                                                         <div class="text-end">{{ items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0).toLocaleString() }}</div>
                                                                     </div>
                                                                     
+                                                                    <div class="col-sm-8 col-7" >
+                                                                        <div class="text-end">Payment :</div>
+                                                                    </div>
+                                                                    <div class="col-sm-4 col-5" >
+                                                                        <div class="text-end">{{ sudahbayar.reduce((sum, item) => sum + Number(item.jmlBayar), 0).toLocaleString() }}</div>
+                                                                    </div>
 
                                                                     <div class="col-sm-8 col-7">
                                                                         <div class="text-end">Grand Total :</div>
                                                                     </div>
                                                                     <div class="col-sm-4 col-5">
-                                                                        <div class="text-end">{{ (Number( items.reduce((sum, item) => sum + Number(item.totalJual), 0) - Number(discPenjualan)) +  items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0)).toLocaleString() }}</div>
+                                                                        <div class="text-end">
+                                                                            {{
+                                                                                (
+                                                                                    Number(
+                                                                                        items.reduce((sum, item) => sum + Number(item.totalJual), 0) - Number(discPenjualan)
+                                                                                    ) +
+                                                                                    items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0) -
+                                                                                    sudahbayar.reduce((sum, item) => sum + Number(item.jmlBayar), 0)
+                                                                                ).toLocaleString()
+                                                                            }}
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -305,6 +321,7 @@
     const ttdPenerima = ref();
     const jthTempo = ref();
     const isi = ref(null);
+    const sudahbayar = ref([]);
 
 
 
@@ -455,7 +472,8 @@
                 namaPenerima.value = store.getters.SdetailPenjualan[0][0].penerimaNota;
                 ttdPenerima.value = store.getters.SdetailPenjualan[0][0].ttdPenerima;
                 jthTempo.value = store.getters.SdetailPenjualan[0][0].jthTempo;
-            // console.log(nmPelanggan.value);
+                // console.log(nmPelanggan.value);
+                sudahbayar.value = store.getters.SdetailPenjualan[3];
                 console.log(response);
             }).catch((error) => {
                 console.log(error);

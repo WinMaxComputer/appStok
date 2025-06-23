@@ -506,10 +506,13 @@ class penjualanController extends Controller
         ->join('tbljasa', 'tblpenjualan_detail_jasa.r_kdJasa', 'tbljasa.kdJasa')
         ->select('tbljasa.kdJasa', 'tbljasa.nmJasa', 'tbljasa.accid', 'tbljasa.accid_jasa' ,'tblpenjualan_detail_jasa.*')
         ->get();
+        $totalBayar = DB::table('tblpembayaran_penjualan')
+            ->where('noJual', $noPenjualan)
+            ->get();
         return response()->json([
             'success' => true,
             'message' => 'Detail Penjualan!',
-            'data' => [$dataH, $dataD, $dataJ]
+            'data' => [$dataH, $dataD, $dataJ, $totalBayar]
         ], 200);
     }
 }
