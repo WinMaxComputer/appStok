@@ -94,7 +94,7 @@ class penjualanController extends Controller
                     'termPenjualan'     => $dateDifference,
                     'jthTempo'     => $request[0]['jthTempo'],
                     'typeBayar'     => $request[0]['term'],
-                    'piutangPenjualan'     => $piutang,
+                    'piutangPenjualan'     => $request[0]['subtotal'], //$piutang,
                     'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
                     'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                 ]);

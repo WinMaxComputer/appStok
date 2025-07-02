@@ -160,31 +160,45 @@
                                                            
                                                             <div class="text-sm-end">
                                                                 <div class="row">
-                                                                    <div class="col-sm-8 col-7">
+                                                                    <div class="col-sm-7 col-7">
                                                                         <div class="text-end">Sub Total:</div>
                                                                     </div>
-                                                                    <div class="col-sm-4 col-5">
+                                                                    <div class="col-sm-5 col-6">
                                                                         <div class="text-end">{{ items.reduce((sum, item) => sum + Number(item.totalJual), 0).toLocaleString() }}</div>
                                                                     </div>
 
-                                                                    <div class="col-sm-8 col-7" v-if="items_jasa.length > 0">
-                                                                        <div class="text-end">Jasa</div>
+                                                                    <div class="col-sm-7 col-7" v-if="items_jasa.length > 0">
+                                                                        <div class="text-end">Jasa:</div>
                                                                     </div>
-                                                                    <div class="col-sm-4 col-5" v-if="items_jasa.length > 0">
+                                                                    <div class="col-sm-5 col-6" v-if="items_jasa.length > 0">
                                                                         <div class="text-end">{{ items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0).toLocaleString() }}</div>
                                                                     </div>
-                                                                    
-                                                                    <div class="col-sm-8 col-7" >
+                                                                    <div class="col-sm-7 col-7">
+                                                                        <div class="text-end">Total:</div>
+                                                                    </div>
+                                                                    <div class="col-sm-5 col-6">
+                                                                        <div class="text-end">
+                                                                            {{
+                                                                                (
+                                                                                    Number(
+                                                                                        items.reduce((sum, item) => sum + Number(item.totalJual), 0) - Number(discPenjualan)
+                                                                                    ) +
+                                                                                    items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0)
+                                                                                ).toLocaleString()
+                                                                            }}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-sm-7 col-7" v-if="typeBayar !== '0'">
                                                                         <div class="text-end">Payment :</div>
                                                                     </div>
-                                                                    <div class="col-sm-4 col-5" >
+                                                                    <div class="col-sm-5 col-6" v-if="typeBayar !== '0'">
                                                                         <div class="text-end">{{ sudahbayar.reduce((sum, item) => sum + Number(item.jmlBayar), 0).toLocaleString() }}</div>
                                                                     </div>
 
-                                                                    <div class="col-sm-8 col-7">
-                                                                        <div class="text-end">Grand Total :</div>
+                                                                    <div class="col-sm-7 col-7" v-if="typeBayar !== '0'">
+                                                                        <div class="text-end">Sisa :</div>
                                                                     </div>
-                                                                    <div class="col-sm-4 col-5">
+                                                                    <div class="col-sm-5 col-6" v-if="typeBayar !== '0'">
                                                                         <div class="text-end">
                                                                             {{
                                                                                 (
