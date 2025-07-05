@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Bayarjual;
 use App\Models\Penjualan;
-use App\Models\BayarBeli;
+use App\Models\Bayarbeli;
 use App\Models\Pembelian;
 
 class pembayaranController extends Controller
