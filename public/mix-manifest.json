@@ -1,13 +1,13 @@
 {
-    "/js/main.js": "/js/main.js?id=4dfbc9248ed360f0468d899091908c47",
-    "/js/chunks/index2.e28d55dc4cd6b9c2.js": "/js/chunks/index2.e28d55dc4cd6b9c2.js?id=705279da6668c931b3cd9461b235fd3a",
-    "/js/chunks/components-tabs.ce1705c79b77a583.js": "/js/chunks/components-tabs.ce1705c79b77a583.js?id=e50a80a992d123dc0f7c5acb28117b4f",
-    "/js/chunks/apps-invoice-preview.6c87e323954d1dfa.js": "/js/chunks/apps-invoice-preview.6c87e323954d1dfa.js?id=3d9b9977231e6f4980c13954c7797cc7",
-    "/js/chunks/font-icons.2ca38441fe585bb8.js": "/js/chunks/font-icons.2ca38441fe585bb8.js?id=ba824ffdb81cecfe3da171ac79a1cbc5",
-    "/js/chunks/auth-login-boxed.86240b03bd639c4a.js": "/js/chunks/auth-login-boxed.86240b03bd639c4a.js?id=cbd6c3e5d78756fc79d5732e72ec0725",
-    "/js/chunks/tables.7de84219eb06fc4c.js": "/js/chunks/tables.7de84219eb06fc4c.js?id=f7936805d806040ad6a714b643c0e655",
-    "/js/chunks/users-profile.5a00dfb84f722d52.js": "/js/chunks/users-profile.5a00dfb84f722d52.js?id=95ed756f6397691afd1d0cb7a87ed8fe",
-    "/js/chunks/users-account-setting.fd7bbe5348fff299.js": "/js/chunks/users-account-setting.fd7bbe5348fff299.js?id=58d88d46c686a0b886ecd4c23bff547b",
-    "/js/chunks/charts-apex-chart.7e30d8f8117c7586.js": "/js/chunks/charts-apex-chart.7e30d8f8117c7586.js?id=b511148c42e2fb82ff43fa9979e31d8f",
-    "/css/app.css": "/css/app.css?id=721cbdc03286fda6eb5286184a62f140"
+    "/js/main.js": "/js/main.js?id=7fe1ec171702c0dc84919b442538643a",
+    "/js/chunks/index2.40d50e997a3e198a.js": "/js/chunks/index2.40d50e997a3e198a.js?id=2d550f75004effc8cb2c074cb33dabf2",
+    "/js/chunks/components-tabs.319716ae1188a157.js": "/js/chunks/components-tabs.319716ae1188a157.js?id=ca476a6614117c737135452d79218e2d",
+    "/js/chunks/apps-invoice-preview.d46c4d3d0eb76d15.js": "/js/chunks/apps-invoice-preview.d46c4d3d0eb76d15.js?id=57959deb5ee95d603cf0459e01dd74b9",
+    "/js/chunks/font-icons.7fbc5ae8b3baca55.js": "/js/chunks/font-icons.7fbc5ae8b3baca55.js?id=8f8345786aa130c4af5983e38de5c386",
+    "/js/chunks/auth-login-boxed.9235a6a57285b484.js": "/js/chunks/auth-login-boxed.9235a6a57285b484.js?id=c8d4169b5cf6309f8a3b1505881fce19",
+    "/js/chunks/tables.488d46cc300b4a8c.js": "/js/chunks/tables.488d46cc300b4a8c.js?id=18351a1c7e73f14c52564325faf5c85a",
+    "/js/chunks/users-profile.825d3a67f95dc2d0.js": "/js/chunks/users-profile.825d3a67f95dc2d0.js?id=cc03b9f7402fd1c12ffff0516ace890c",
+    "/js/chunks/users-account-setting.381214c77c80e334.js": "/js/chunks/users-account-setting.381214c77c80e334.js?id=c058075895e210bc716b6de935f47313",
+    "/js/chunks/charts-apex-chart.89cb27421d53da2a.js": "/js/chunks/charts-apex-chart.89cb27421d53da2a.js?id=858b434171f8fd011bad12c4c8eef5ae",
+    "/css/app.css": "/css/app.css?id=4f845814a45344dbcb88d336db300746"
 }

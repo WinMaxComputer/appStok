@@ -173,7 +173,7 @@
                                                                     <div class="col-sm-5 col-6" v-if="items_jasa.length > 0">
                                                                         <div class="text-end">{{ items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0).toLocaleString() }}</div>
                                                                     </div>
-                                                                    <div class="col-sm-7 col-7">
+                                                                    <div class="col-sm-7 col-6">
                                                                         <div class="text-end">Total:</div>
                                                                     </div>
                                                                     <div class="col-sm-5 col-6">
@@ -188,14 +188,14 @@
                                                                             }}
                                                                         </div>
                                                                     </div>
-                                                                    <div class="col-sm-7 col-7" v-if="typeBayar !== '0'">
+                                                                    <div class="col-sm-7 col-6" v-if="typeBayar !== '0'">
                                                                         <div class="text-end">Payment :</div>
                                                                     </div>
                                                                     <div class="col-sm-5 col-6" v-if="typeBayar !== '0'">
                                                                         <div class="text-end">{{ sudahbayar.reduce((sum, item) => sum + Number(item.jmlBayar), 0).toLocaleString() }}</div>
                                                                     </div>
 
-                                                                    <div class="col-sm-7 col-7" v-if="typeBayar !== '0'">
+                                                                    <div class="col-sm-7 col-6" v-if="typeBayar !== '0'">
                                                                         <div class="text-end">Sisa :</div>
                                                                     </div>
                                                                     <div class="col-sm-5 col-6" v-if="typeBayar !== '0'">
