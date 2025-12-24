@@ -501,7 +501,7 @@ class penjualanController extends Controller
         $noPenjualan = $request->input('noNota');
 
         $dataH = Penjualan::where('noPenjualan', $noPenjualan)->join('tblpelanggan', 'tblpenjualan.r_pelanggan', 'tblpelanggan.kdPelanggan')->get();
-        $dataD = PenjualanDetail::where('r_noPenjualan', $noPenjualan)->join('tblbarang', 'tblpenjualan_detail.r_kdBarang', 'tblbarang.kdBarang')->get();
+        $dataD = PenjualanDetail::where('r_noPenjualan', $noPenjualan)->leftJoin('tblbarang', 'tblpenjualan_detail.r_kdBarang', 'tblbarang.kdBarang')->get();
         $dataJ = PenjualanDetailJasa::where('r_noPenjualan', $noPenjualan)
         ->join('tbljasa', 'tblpenjualan_detail_jasa.r_kdJasa', 'tbljasa.kdJasa')
         ->select('tbljasa.kdJasa', 'tbljasa.nmJasa', 'tbljasa.accid', 'tbljasa.accid_jasa' ,'tblpenjualan_detail_jasa.*')
