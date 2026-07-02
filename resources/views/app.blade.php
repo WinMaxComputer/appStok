@@ -8,7 +8,7 @@
 
     <title>Swamerta - App</title>
 
-    <link rel="stylesheet" href="{{ asset(mix('css/app.css')) }}">
+    @vite(['resources/js/src/main.js'])
 
     <link rel="shortcut icon" href="{{ asset('favicon.png') }}">
 
@@ -64,7 +64,5 @@
     </noscript>
 
     <div id="app"></div>
-
-    <script src="{{ asset(mix('js/main.js')) }}"></script>
 </body>
 </html>

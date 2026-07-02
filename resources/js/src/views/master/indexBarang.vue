@@ -375,9 +375,10 @@ import { f } from 'html2pdf.js';
     };
     
     const kdbrg = ref([])
+    const ktgs = ref([])
     const input = ref({
-        kdB: kdbrg,
-        kdktg: ktgs,
+        kdB: '',
+        kdktg: '',
         nmB: '',
         satuanB: '',
         hrgBeli: '',
@@ -441,7 +442,6 @@ import { f } from 'html2pdf.js';
         })
     }
 
-    const ktgs = ref([]);
     const getKtg = async () => {
         await store.dispatch('GetKategori').then(response => {
             // console.log('response: ', response)
@@ -486,7 +486,7 @@ import { f } from 'html2pdf.js';
                 bind_data();
                 getkd()
                 input.value = {
-                    kdB: kdbrg,
+                    kdB: kdbrg.value,
                     kdktg: '',
                     nmB: '',
                     satuanB: '',

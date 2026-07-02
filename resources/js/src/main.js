@@ -23,10 +23,6 @@ const head = createHead();
 import Swal from 'sweetalert2';
 window.Swal = Swal;
 
-// nouislider - later remove and add to page due to not working in page
-import VueNouislider from 'vue3-nouislider';
-import 'vue3-nouislider/dist/vue3-nouislider.css';
-
 // vue input mask
 import Maska from 'maska';
 
@@ -66,4 +62,4 @@ import axios from 'axios';
 axios.defaults.headers.common['Authorization'] = `Bearer ${AUTH_TOKEN}` 
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 
-app.use(vfmPlugin).use(store).use(router).use(i18n).use(PerfectScrollbar).use(VueNouislider).use(Maska).use(ClientTable).use(vue3JsonExcel).use(VueFormWizard).use(head).mount('#app');
+app.use(vfmPlugin).use(store).use(router).use(i18n).use(PerfectScrollbar).use(Maska).use(ClientTable).use(vue3JsonExcel).use(VueFormWizard).use(head).mount('#app');
