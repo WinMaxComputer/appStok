@@ -5,98 +5,314 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Schema\Blueprint;
 
 class coaController extends Controller
 {
     //
 	public function create_acc(Request $request){
-		try{
-            $exception = DB::transaction(function() use ($request){
-				$level = $request->input('level');
-				$table = 'level'.$level;
-				$old_id = $request->input('oldid');
+		try {
+			$level = (int) $request->input('level');
+			$accid = trim((string) $request->input('accid'));
+			$oldId = trim((string) $request->input('oldid'));
+			$parent = trim((string) $request->input('parent'));
+			$name = trim((string) $request->input('name'));
+			$jenis = strtolower(trim((string) $request->input('jenis')));
+			$amount = (float) $request->input('amount', 0);
+			$actorId = optional($request->user())->id;
 
-				$accid = $request->input('accid');
-				$det = DB::table($table)->where('acc_id', $accid)->first();
-				if($old_id == ''){					
-					$id = $det->id;
-					$accid = $request->input('accid');
-					$alevel = $det->alevel;
-					$parent = $request->input('parent');
-					$name = $request->input('name');
-					$jurnal = 'JK';
-					$amount = $request->input('amount');
-					$jtype = $det->jtype;
-					$atype = $det->atype;
-					$trigered = '0';
-					$active = '1';
-					$date_create = \Carbon\Carbon::now()->toDateTimeString();
-				}else{
-					$id = strtotime("now");
-					$accid = $request->input('accid');
-					$alevel = $det->alevel;
-					$parent = $request->input('parent');
-					$name = $request->input('name');
-					$jurnal = 'JK';
-					$amount = $request->input('amount');
-					$jtype = $det->jtype;
-					$atype = $det->atype;
-					$trigered = '0';
-					$active = '1';
-					$date_create = \Carbon\Carbon::now()->toDateTimeString();
-				}
-
-				
-
-				DB::table($table)->upsert([
-					'id' => $id,
+			if ($level < 1 || $level > 4 || $accid === '' || $name === '') {
+				Log::warning('COA create rejected: incomplete data', [
+					'user_id' => $actorId,
+					'level' => $level,
 					'acc_id' => $accid,
-					'alevel' => $alevel,
-					'atype' => $atype,
-					'parent' => $parent,
-					'name' => $name,
-					'jurnal' => $jurnal,
-					'amount' => $amount,
-					'jtype' => $jtype,
-					'trigered' => $trigered,
-					'active' => $active,
-					'date_create' => $date_create
-				],
-				[
-					'acc_id' => $accid,
-					'alevel' => $alevel,
-					'atype' => $atype,
-					'parent' => $parent,
-					'name' => $name,
-					'jurnal' => $jurnal,
-					'amount' => $amount,
-					'jtype' => $jtype,
-					'trigered' => $trigered,
-					'active' => $active,
-					'date_create' => $date_create
+					'old_id' => $oldId,
 				]);
-			DB::commit();
-		});
-			if(is_null($exception)) {
-				return response()->json([
-					'success' => true,
-					'message' => 'Berhasil update Akun',
-					// 'data' => $data
-				], 200);
-			} else {
-				DB::rollback();
 				return response()->json([
 					'success' => false,
-					'message' => 'Post Gagal Diupdate!',
-				], 500);
+					'message' => 'Data akun tidak lengkap',
+				], 422);
 			}
+
+			if ($level === 1) {
+				$parent = '';
+			} else {
+				if ($parent === '') {
+					Log::warning('COA create rejected: parent required', [
+						'user_id' => $actorId,
+						'level' => $level,
+						'acc_id' => $accid,
+					]);
+					return response()->json([
+						'success' => false,
+						'message' => 'Akun induk wajib diisi untuk level ini',
+					], 422);
+				}
+
+				$parentTable = 'level' . ($level - 1);
+				$parentExists = DB::table($parentTable)->where('acc_id', $parent)->exists();
+				if (!$parentExists) {
+					Log::warning('COA create rejected: invalid parent', [
+						'user_id' => $actorId,
+						'level' => $level,
+						'acc_id' => $accid,
+						'parent' => $parent,
+					]);
+					return response()->json([
+						'success' => false,
+						'message' => 'Akun induk tidak valid untuk level ini',
+					], 422);
+				}
+			}
+
+			$table = 'level' . $level;
+			$duplicateOnOtherLevel = DB::table('level1')->where('acc_id', $accid)->exists()
+				|| DB::table('level2')->where('acc_id', $accid)->exists()
+				|| DB::table('level3')->where('acc_id', $accid)->exists()
+				|| DB::table('level4')->where('acc_id', $accid)->exists();
+
+			if ($oldId !== '') {
+				$oldOnCurrentLevel = DB::table($table)->where('acc_id', $oldId)->exists();
+				if (!$oldOnCurrentLevel) {
+					Log::warning('COA update rejected: old account not found', [
+						'user_id' => $actorId,
+						'level' => $level,
+						'acc_id' => $accid,
+						'old_id' => $oldId,
+					]);
+					return response()->json([
+						'success' => false,
+						'message' => 'Akun yang akan diubah tidak ditemukan',
+					], 404);
+				}
+
+				if ($oldId !== $accid && $duplicateOnOtherLevel) {
+					Log::warning('COA update rejected: duplicate code', [
+						'user_id' => $actorId,
+						'level' => $level,
+						'acc_id' => $accid,
+						'old_id' => $oldId,
+					]);
+					return response()->json([
+						'success' => false,
+						'message' => 'Kode akun sudah digunakan',
+					], 409);
+				}
+			} else {
+				if ($duplicateOnOtherLevel) {
+					Log::warning('COA create rejected: duplicate code', [
+						'user_id' => $actorId,
+						'level' => $level,
+						'acc_id' => $accid,
+					]);
+					return response()->json([
+						'success' => false,
+						'message' => 'Kode akun sudah digunakan',
+					], 409);
+				}
+			}
+
+			$existing = DB::table($table)->where('acc_id', $oldId !== '' ? $oldId : $accid)->first();
+
+			$atype = 'D';
+			$jtype = 'D';
+			if ($existing) {
+				$atype = $existing->atype;
+				$jtype = $existing->jtype;
+			} else {
+				if ($jenis === 'header' || $jenis === 'h') {
+					$atype = 'H';
+					$jtype = 'H';
+				}
+
+				if ($level > 1 && $parent !== '' && $atype === 'D') {
+				$parentRow = DB::table('level' . ($level - 1))->where('acc_id', $parent)->first();
+				if ($parentRow) {
+					// Keep new accounts as detail rows unless the caller explicitly marks them as header.
+					$atype = 'D';
+					$jtype = 'D';
+				}
+			}
+			}
+
+			DB::transaction(function () use ($table, $existing, $accid, $oldId, $parent, $name, $amount, $level, $atype, $jtype) {
+				if ($existing && $oldId !== '' && $oldId !== $accid) {
+					DB::table($table)->where('acc_id', $oldId)->delete();
+				}
+
+				DB::table($table)->updateOrInsert(
+					['acc_id' => $accid],
+					[
+						'id' => $existing ? $existing->id : strtotime('now'),
+						'alevel' => (string) $level,
+						'atype' => $atype,
+						'parent' => $parent,
+						'name' => $name,
+						'jurnal' => 'JK',
+						'amount' => $amount,
+						'jtype' => $jtype,
+						'trigered' => '0',
+						'active' => '1',
+						'date_create' => \Carbon\Carbon::now()->toDateTimeString(),
+					]
+				);
+			});
+
+			Log::info('COA saved', [
+				'user_id' => $actorId,
+				'level' => $level,
+				'acc_id' => $accid,
+				'old_id' => $oldId,
+				'action' => $oldId !== '' ? 'update' : 'create',
+			]);
+
+			return response()->json([
+				'success' => true,
+				'message' => 'Berhasil update Akun',
+			], 200);
 		} catch (\Exception $e) {
-			DB::rollback();
-			// something went wrong
+			Log::error('COA save exception', [
+				'user_id' => optional($request->user())->id,
+				'level' => $request->input('level'),
+				'acc_id' => $request->input('accid'),
+				'error' => $e->getMessage(),
+			]);
 			return response()->json([
 				'success' => false,
-				'message' => 'exception'.$e,
+				'message' => 'exception' . $e->getMessage(),
+			], 400);
+		}
+	}
+
+	public function delete_acc(Request $request){
+		try {
+			$level = (int) $request->input('level');
+			$accid = trim((string) $request->input('accid'));
+			$actorId = optional($request->user())->id;
+
+			if ($level < 1 || $level > 4 || $accid === '') {
+				Log::warning('COA delete rejected: invalid data', [
+					'user_id' => $actorId,
+					'level' => $level,
+					'acc_id' => $accid,
+				]);
+				return response()->json([
+					'success' => false,
+					'message' => 'Data akun tidak valid',
+				], 422);
+			}
+
+			$table = 'level' . $level;
+
+			$foundLevels = [];
+			for ($i = 1; $i <= 4; $i++) {
+				if (DB::table('level' . $i)->where('acc_id', $accid)->exists()) {
+					$foundLevels[] = $i;
+				}
+			}
+
+			if (count($foundLevels) === 0) {
+				Log::warning('COA delete rejected: account not found', [
+					'user_id' => $actorId,
+					'level' => $level,
+					'acc_id' => $accid,
+				]);
+				return response()->json([
+					'success' => false,
+					'message' => 'Akun tidak ditemukan',
+				], 404);
+			}
+
+			if (!in_array($level, $foundLevels, true)) {
+				Log::warning('COA delete rejected: level mismatch', [
+					'user_id' => $actorId,
+					'level' => $level,
+					'acc_id' => $accid,
+					'found_levels' => $foundLevels,
+				]);
+				return response()->json([
+					'success' => false,
+					'message' => 'Level akun tidak sesuai',
+				], 422);
+			}
+
+			if (count($foundLevels) > 1) {
+				Log::warning('COA delete rejected: duplicate account across levels', [
+					'user_id' => $actorId,
+					'level' => $level,
+					'acc_id' => $accid,
+					'found_levels' => $foundLevels,
+				]);
+				return response()->json([
+					'success' => false,
+					'message' => 'Data akun duplikat lintas level, hubungi administrator',
+				], 409);
+			}
+
+			$exists = DB::table($table)->where('acc_id', $accid)->first();
+			if (!$exists) {
+				Log::warning('COA delete rejected: account missing on requested level', [
+					'user_id' => $actorId,
+					'level' => $level,
+					'acc_id' => $accid,
+				]);
+				return response()->json([
+					'success' => false,
+					'message' => 'Akun tidak ditemukan pada level yang diminta',
+				], 404);
+			}
+
+			if ($level < 4) {
+				$childExists = DB::table('level' . ($level + 1))->where('parent', $accid)->exists();
+				if ($childExists) {
+					Log::warning('COA delete rejected: has child account', [
+						'user_id' => $actorId,
+						'level' => $level,
+						'acc_id' => $accid,
+					]);
+					return response()->json([
+						'success' => false,
+						'message' => 'Akun tidak bisa dihapus karena masih punya akun turunan',
+					], 409);
+				}
+			}
+
+			$hasJournal = DB::table('gl_detail')->where('acc_id', $accid)->exists();
+			if ($hasJournal) {
+				Log::warning('COA delete rejected: account already used in journal', [
+					'user_id' => $actorId,
+					'level' => $level,
+					'acc_id' => $accid,
+				]);
+				return response()->json([
+					'success' => false,
+					'message' => 'Akun tidak bisa dihapus karena sudah dipakai jurnal',
+				], 409);
+			}
+
+			DB::table($table)->where('acc_id', $accid)->delete();
+
+			Log::info('COA deleted', [
+				'user_id' => $actorId,
+				'level' => $level,
+				'acc_id' => $accid,
+			]);
+
+			return response()->json([
+				'success' => true,
+				'message' => 'Akun berhasil dihapus',
+			], 200);
+		} catch (\Exception $e) {
+			Log::error('COA delete exception', [
+				'user_id' => optional($request->user())->id,
+				'level' => $request->input('level'),
+				'acc_id' => $request->input('accid'),
+				'error' => $e->getMessage(),
+			]);
+			return response()->json([
+				'success' => false,
+				'message' => 'exception' . $e->getMessage(),
 			], 400);
 		}
 	}
@@ -267,6 +483,31 @@ class coaController extends Controller
 			DB::table('gl')->where('acc_id', '38100')->update([ 'amount' => -1*((-1*$income)-$expense)]);
 
 
+			$coaLevel1 = DB::table('level1 as a')
+				->select('a.acc_id as idparent1', 'a.name as parent1', 'a.alevel as parent1level', 'a.atype as parent1type', 'a.acc_id as idparent2', 'a.name as parent2', 'a.alevel as parent2level', 'a.atype as parent2type', 'a.acc_id as idparent3', 'a.name as parent3', 'a.alevel as parent3level', 'a.atype as parent3type', 'a.acc_id', 'a.name', 'a.atype')
+				->whereRaw("left(a.acc_id,1) in ($filter)")
+				->get();
+                $dataLevel1 = [];
+                foreach ($coaLevel1 as $l1) {
+                    $dataLevel1[] = [
+                        'idparent1'  => $l1->idparent1,
+                        'parent1'    => $l1->parent1,
+						'parent1level'  => $l1->parent1level,
+                        'parent1type'    => $l1->parent1type,
+                        'parent2'    => $l1->parent2,
+						'parent2level'  => $l1->parent2level,
+                        'parent2type'    => $l1->parent2type,
+						'idparent2'  => $l1->idparent2,
+                        'parent3'    => $l1->parent3,
+						'parent3level'  => $l1->parent3level,
+                        'parent3type'    => $l1->parent3type,
+						'idparent3'  => $l1->idparent3,
+						'acc_id'  => $l1->acc_id,
+                        'name'    => $l1->name,
+						'atype'    => $l1->atype,
+                    ];
+                }
+            DB::table('coa')->insert($dataLevel1);
 			$coa1 = DB::table('level2 as a')
 						->select('b.acc_id as idparent1', 'b.name as parent1', 'b.alevel as parent1level', 'b.atype as parent1type', 'a.acc_id as idparent2', 'a.name as parent2', 'a.alevel as parent2level', 'a.atype as parent2type', 'a.acc_id as idparent3', 'a.name as parent3', 'a.alevel as parent3level', 'a.atype as parent3type', 'a.acc_id', 'a.name', 'a.atype')
 						->join('level1 as b', 'a.parent', '=', 'b.acc_id')->get();
@@ -296,7 +537,6 @@ class coaController extends Controller
 						->select('c.acc_id as idparent1', 'c.name as parent1', 'c.alevel as parent1level', 'c.atype as parent1type', 'b.acc_id as idparent2', 'b.name as parent2', 'b.alevel as parent2level', 'b.atype as parent2type', 'a.acc_id as idparent3', 'a.name as parent3', 'a.alevel as parent3level', 'a.atype as parent3type', 'a.acc_id', 'a.name', 'a.atype')
 						->join('level2 as b', 'a.parent', '=', 'b.acc_id')
 						->join('level1 as c', 'b.parent', '=', 'c.acc_id')
-						->where('a.atype', 'D')
 						->get();
                 $dataCC = [];
                 foreach ($coa2 as $cc) {
@@ -325,7 +565,6 @@ class coaController extends Controller
 						->join('level3 as b', 'a.parent', '=', 'b.acc_id')
 						->join('level2 as c', 'b.parent', '=', 'c.acc_id')
 						->join('level1 as d', 'c.parent', '=', 'd.acc_id')
-						->where('a.atype', 'D')
 						->get();
                 $dataCCC = [];
                 foreach ($coa3 as $ccc) {

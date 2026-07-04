@@ -22,10 +22,18 @@ const actions = {
             // await dispatch('GetHarta')
             return res ;
         } catch (ex) {
-            // Handle error
-            return res ;
+            return ex?.response
         }
-    },  
+    },
+    async DeleteAcc({dispatch}, post) {
+        let res
+        try {
+            res = await axios.post('/api/delete/coa-acc', post)
+            return res
+        } catch (ex) {
+            return ex?.response
+        }
+    },
     async GetHarta({ commit }, group){
         let response = await axios.post('/api/get/acc-data', group)
         commit('setHarta', response.data.data)
