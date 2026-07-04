@@ -29,7 +29,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="invoice-detail-header">
+                                    <div class="invoice-detail-header txn-block">
                                         <div class="row justify-content-between">
                                             <div class="col-xl-5 invoice-address-company">
 
@@ -107,8 +107,8 @@
                                         </div>
                                     </div>
 
-                                    <div class="invoice-detail-items">
-                                        <div class="row">
+                                    <div class="invoice-detail-items txn-block">
+                                        <div class="row g-2 align-items-end txn-entry-row txn-mobile-stack txn-entry-area">
                                             <div class="form-group col-xs-2">
                                                 <label for="Inputqty">Barcode</label>
                                                 <input type="text" ref="InputBarcode" v-model="barcode" class="form-control form-control-sm" placeholder="Barcode" @keyup.enter="addToCartB(barcode)" />
@@ -145,18 +145,18 @@
                                                 <!-- {{ new Intl.NumberFormat().format(brg.lastPrice * qty) }} -->
                                                 <input type="text" v-model="tot" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
                                             </div>
-                                            <div class="form-group col-sm-1">
+                                            <div class="form-group col-sm-1 d-grid">
                                                 <label for="aksi">Aksi</label>
-                                                <button @click="addToCart(brg)" class="btn btn-xs btn-primary">
+                                                <button @click="addToCart(brg)" class="btn btn-primary btn-sm">
                                                     + 
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="invoice-detail-items">
+                                    <div class="invoice-detail-items txn-block">
                                         <div class="inv--product-table-section">
-                                            <div class="table-responsive">
+                                            <div class="table-responsive txn-table-wrap">
                                                 <table class="table table-hover table-bordered item-table">
                                                     <thead>
                                                         <tr>
@@ -209,7 +209,7 @@
 
                                     
 
-                                    <div class="invoice-detail-total">
+                                    <div class="invoice-detail-total txn-block txn-summary-panel">
                                         <div class="row">
 
                                             <div class="col-md-6">
@@ -228,7 +228,7 @@
                                                                 <a href="javascript:;" @click="addPayment" class="btn btn-dark btn-preview" data-bs-toggle="modal" data-bs-target="#modalPayment">Pembayaran</a>
                                                             </div> -->
                                                             <div class="col-sm-4">
-                                                                <a href="javascript:;" @click="openModal()" class="btn btn-success btn-download">PAYMENT</a>
+                                                                <a href="javascript:;" @click="openModal()" class="btn btn-success btn-download txn-payment-btn">PAYMENT</a>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -335,7 +335,7 @@
                                                         <!-- <div class="invoice-summary-label"></div> -->
                                                         <div class="invoice-summary-value">
                                                             <div class="balance-due-amount">
-                                                                <select v-model="paramsbayar.metodeBayar" >
+                                                                <select v-model="paramsbayar.metodeBayar" class="form-select form-select-sm" >
                                                                     <option value="cash" selected>Cash</option>
                                                                     <option value="credit_card">Credit Card</option>
                                                                     <option value="bank_transfer">Bank Transfer</option>
@@ -378,6 +378,87 @@
         </div>
     </div>
 </template>
+
+<style scoped>
+.txn-block {
+    background: #ffffff;
+    border: 1px solid #e8edf5;
+    border-radius: 12px;
+    padding: 14px 14px 10px;
+    margin-bottom: 14px;
+}
+
+.txn-entry-area {
+    background: #f9fbff;
+    border: 1px solid #edf2fa;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.txn-entry-row .form-group {
+    margin-bottom: 0;
+}
+
+.txn-entry-row label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 4px;
+}
+
+.txn-table-wrap {
+    border: 1px solid #edf1f7;
+    border-radius: 10px;
+    overflow-x: auto;
+}
+
+.txn-table-wrap :deep(table) {
+    margin-bottom: 0;
+}
+
+.txn-table-wrap :deep(thead th) {
+    background: #f6f9ff;
+}
+
+.txn-summary-panel {
+    background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+}
+
+@media (max-width: 992px) {
+    .txn-entry-area {
+        padding: 10px 8px;
+    }
+
+    .txn-block {
+        padding: 12px 10px 8px;
+    }
+}
+
+@media (max-width: 767px) {
+    .txn-mobile-stack .col-sm-1,
+    .txn-mobile-stack .col-sm-2,
+    .txn-mobile-stack .col-sm-3,
+    .txn-mobile-stack .col-sm-4,
+    .txn-mobile-stack .col-sm-6,
+    .txn-mobile-stack .col-md-1,
+    .txn-mobile-stack .col-md-2,
+    .txn-mobile-stack .col-md-3,
+    .txn-mobile-stack .col-md-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .txn-mobile-stack .form-control,
+    .txn-mobile-stack :deep(.multiselect),
+    .txn-mobile-stack .btn {
+        min-height: 38px;
+    }
+
+    .txn-payment-btn {
+        width: 100%;
+    }
+}
+</style>
 
 <script setup>
     // import { onMounted, ref } from 'vue';
@@ -485,6 +566,22 @@
         console.log('Modal opened');
         isVisible.value = true;
         
+    };
+
+    const toast = window.Swal.mixin({
+        toast: true,
+        position: 'top-center',
+        showConfirmButton: false,
+        timer: 3000,
+        padding: '2em',
+    });
+
+    const showToast = (icon, title) => {
+        toast.fire({
+            icon,
+            title,
+            padding: '2em',
+        });
     };
 
 
@@ -633,18 +730,7 @@
             .then((response) => {
                 console.log(response.data);
                 if (!response.data.exist === true && brg.lastPrice == null) {
-                    const toast = window.Swal.mixin({
-                        toast: true,
-                        position: 'top-center',
-                        showConfirmButton: false,
-                        timer: 3000,
-                        padding: '2em',
-                    });
-                    toast.fire({
-                        icon: 'error',
-                        title: 'Barang tidak ditemukan di database',
-                        padding: '2em',
-                    });
+                    showToast('error', 'Barang tidak ditemukan di database');
                     return;
                 }
                 // Proceed with adding to cart if exists
@@ -667,18 +753,7 @@
                     localStorage.setItem('cartItemsP', JSON.stringify(cartItems.value));
                     getCart();
                     reset_form();
-                    const toast = window.Swal.mixin({
-                        toast: true,
-                        position: 'top-center',
-                        showConfirmButton: false,
-                        timer: 3000,
-                        padding: '2em',
-                    });
-                    toast.fire({
-                        icon: 'success',
-                        title: oldName + ' Quantity Update',
-                        padding: '2em',
-                    });
+                    showToast('success', oldName + ' Quantity Update');
                 } else {
                     cartItems.value.push({
                         kdBarang: brg.kdPersediaan,
@@ -692,33 +767,11 @@
                     localStorage.setItem('cartItemsP', JSON.stringify(cartItems.value));
                     getCart();
                     reset_form();
-                    const toast = window.Swal.mixin({
-                        toast: true,
-                        position: 'top-center',
-                        showConfirmButton: false,
-                        timer: 3000,
-                        padding: '2em',
-                    });
-                    toast.fire({
-                        icon: 'success',
-                        title: brg.nmPersediaan + " berhasil disimpan",
-                        padding: '2em',
-                    });
+                    showToast('success', brg.nmPersediaan + ' berhasil disimpan');
                 }
             })
             .catch(() => {
-                const toast = window.Swal.mixin({
-                    toast: true,
-                    position: 'top-center',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    padding: '2em',
-                });
-                toast.fire({
-                    icon: 'error',
-                    title: 'Terjadi kesalahan saat memeriksa barang',
-                    padding: '2em',
-                });
+                showToast('error', 'Terjadi kesalahan saat memeriksa barang');
             });
         
     }
@@ -738,36 +791,14 @@
                 }
              
                 if (!response.data.exist === true) {
-                    const toast = window.Swal.mixin({
-                        toast: true,
-                        position: 'top-center',
-                        showConfirmButton: false,
-                        timer: 3000,
-                        padding: '2em',
-                    });
-                    toast.fire({
-                        icon: 'error',
-                        title: 'Barang tidak ditemukan di database',
-                        padding: '2em',
-                    });
+                    showToast('error', 'Barang tidak ditemukan di database');
                     return;
                 }
                 // Proceed with adding to cart if exists
                 
             })
             .catch(() => {
-                const toast = window.Swal.mixin({
-                    toast: true,
-                    position: 'top-center',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    padding: '2em',
-                });
-                toast.fire({
-                    icon: 'error',
-                    title: 'Terjadi kesalahan saat memeriksa barang',
-                    padding: '2em',
-                });
+                showToast('error', 'Terjadi kesalahan saat memeriksa barang');
             });
         
     }

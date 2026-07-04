@@ -63,3 +63,6 @@ axios.defaults.headers.common['Authorization'] = `Bearer ${AUTH_TOKEN}`
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 
 app.use(vfmPlugin).use(store).use(router).use(i18n).use(PerfectScrollbar).use(Maska).use(ClientTable).use(vue3JsonExcel).use(VueFormWizard).use(head).mount('#app');
+
+// Temporary safety switch for mobile white-screen debugging:
+// disable service worker registration to prevent stale cached app shell.

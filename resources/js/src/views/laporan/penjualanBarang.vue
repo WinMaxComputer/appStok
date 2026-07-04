@@ -75,11 +75,19 @@
                             <div></div>
                             <div></div>
                         </div>
-                        <v-client-table :data="items" :columns="columns" :options="table_option">
+                        <v-client-table ref="tableRef" :data="items" :columns="columns" :options="table_option">
+                            <template #noPenjualan="props">
+                                <a href="javascript:void(0);" @click="viewnota(id = props.row.noPenjualan)">
+                                    {{ props.row.noPenjualan }}
+                                </a>
+                            </template>
                             <template #tglPenjualan="props"> {{ moment(props.row.tglPenjualan).format("DD-MM-YYYY") }} </template>
                             <template #piutangPenjualan="props"> {{ Number(props.row.piutangPenjualan).toLocaleString() }} </template>
-                            <template #totalPenjualan="props"> {{ Number(props.row.totalPenjualan).toLocaleString() }} </template>
+                            <template #subTotalPenjualan="props"> {{ Number(props.row.subTotalPenjualan).toLocaleString() }} </template>
                             <template #taxPenjualan="props"> {{ Number(props.row.taxPenjualan).toLocaleString() }} </template>
+                            <template #totalPenjualan="props"> {{ Number(props.row.totalPenjualan).toLocaleString() }} </template>
+                            <template #termPenjualan="props"> {{ props.row.termPenjualan }} </template>
+                            <template #jthTempo="props"> {{ props.row.jthTempo ? moment(props.row.jthTempo).format('DD-MM-YYYY') : '' }} </template>
                             <template #typeBayar="props">
                                 {{ props.row.typeBayar === '0' ? 'Cash' : 'Kredit' }}
                             </template>
@@ -196,7 +204,7 @@
 </template>
 
 <script setup>
-    import { computed, onMounted, ref, onBeforeMount } from 'vue';
+    import { computed, onMounted, ref, onBeforeMount, watch } from 'vue';
 
     //pdf export
     import jsPDF from 'jspdf';
@@ -215,9 +223,11 @@
     useMeta({ title: 'Data Laporan Penjualan' });
 
     const store = useStore();
-    const router = useRouter()
+    const router = useRouter();
+    const route = useRoute();
+    const tableRef = ref(null);
 
-    const columns = ref(['noPenjualan', 'tglPenjualan', 'nmPelanggan', 'typeBayar', 'piutangPenjualan' ,'totalPenjualan', 'action']);
+    const columns = ref(['noPenjualan', 'tglPenjualan', 'nmPelanggan', 'typeBayar', 'piutangPenjualan', 'subTotalPenjualan', 'taxPenjualan', 'totalPenjualan', 'termPenjualan', 'jthTempo', 'action']);
     const items = ref([]);
     const table_option = ref({
         perPage: 10,
@@ -232,7 +242,12 @@
             filterPlaceholder: 'Search...',
             limit: 'Results:',
         },
-        sortable: ['noPenjualan', 'tglPenjualan', 'nmPelanggan', 'typeBayar', 'totalPenjualan'],
+        initFilters: {
+            GENERIC: route.query.filter || ''
+        },
+        filter: '',
+        filterable: true,
+        sortable: ['noPenjualan', 'tglPenjualan', 'nmPelanggan', 'typeBayar', 'subTotalPenjualan', 'taxPenjualan', 'termPenjualan', 'jthTempo', 'totalPenjualan'],
         sortIcon: {
             base: 'sort-icon-none',
             up: 'sort-icon-asc',
@@ -244,18 +259,34 @@
         startDate: moment().subtract(30,'d').format("D-M-YYYY"),
         endDate: moment().format("D-M-YYYY")
     });
+    const tableFilter = ref('');
     const totalPenjualan = ref(0);
     const totalPiutang = ref(0);
     const loading = ref();
 
+    const getTableFilterText = () => {
+        const input = document.querySelector('.VueTables__search input');
+        return input ? input.value : '';
+    };
+
     onMounted(() => {
+        if (route.query.startDate && route.query.endDate) {
+            sorting.value.startDate = route.query.startDate;
+            sorting.value.endDate = route.query.endDate;
+        }
+        if (route.query.filter) {
+            tableFilter.value = route.query.filter;
+            table_option.value.filter = route.query.filter;
+        }
         bind_data();
-        console.log('on mount pagr')
+        if (route.query.filter && tableRef.value && typeof tableRef.value.setFilter === 'function') {
+            tableRef.value.setFilter(route.query.filter);
+        }
+        console.log('on mount pagr');
     });
     onBeforeMount(() => {
-        console.log(' before onmount')
-        
-    })
+        console.log(' before onmount');
+    });
 
     
     const bind_data = () => {
@@ -271,6 +302,14 @@
             });
             totalPenjualan.value = sum;
             totalPiutang.value = sumPiutang;
+
+            router.replace({
+                query: {
+                    startDate: sorting.value.startDate,
+                    endDate: sorting.value.endDate,
+                    filter: tableFilter.value,
+                },
+            });
 
             loading.value = false;
         }).catch(error => {
@@ -291,16 +330,28 @@
     });
 
     const viewnota = (id) => {
-        store.commit('setIdnota', id)
-        // If user is root, allow access
+        store.commit('setIdnota', id);
         const user = store.state.auth.user;
-        if (user === 'root') {
-            // Root user logic here if needed
-            router.push({ name: 'invoice-penjualan-max' })
-        }else{
-            router.push({ name: 'invoice-penjualan' })
+        let currentFilter = tableFilter.value;
+        if (!currentFilter) {
+            if (tableRef.value && tableRef.value.$refs && tableRef.value.$refs.table && tableRef.value.$refs.table.query) {
+                currentFilter = tableRef.value.$refs.table.query;
+            }
+            if (!currentFilter) {
+                currentFilter = getTableFilterText();
+            }
         }
-        
+        const query = {
+            startDate: sorting.value.startDate,
+            endDate: sorting.value.endDate,
+            filter: currentFilter,
+        };
+
+        if (user === 'root') {
+            router.push({ name: 'invoice-penjualan-max', query });
+        } else {
+            router.push({ name: 'invoice-penjualan', query });
+        }
     }
     const editnota = (data) => {
         store.commit('setEditNota', data)

@@ -7,7 +7,7 @@
                         <nav class="breadcrumb-one" aria-label="breadcrumb">
                             <ol class="breadcrumb">
                                 <li class="breadcrumb-item"><a href="javascript:;">Dashboard</a></li>
-                                <li class="breadcrumb-item active" aria-current="page"><span>Sales</span></li>
+                                <li class="breadcrumb-item active" aria-current="page"><span>COA Penghasilan Lain</span></li>
                             </ol>
                         </nav>
                     </div>
@@ -28,7 +28,7 @@
                                     <div class="panel-heading">
                                         <div class="row">
                                             <div class="col-xl-12 col-md-12 col-sm-12 col-12">
-                                                <h4>Penhasilan Lain</h4>
+                                                <h4>Penghasilan Lain</h4>
                                             </div>
                                         </div>
                                     </div>
@@ -37,7 +37,7 @@
 
                                             
                                             <table>
-                                                <tbody  v-for="hrt, index in hartalist" :key="hrt.acc_id" :set="amount = hrt.amount">
+                                                <tbody  v-for="(hrt, index) in hartalist" :key="hrt.acc_id" :set="amount = hrt.amount">
                                                     
                                                         <tr v-if="hrt.level === '1'" >
                                                             <td v-if="hrt.jenis != 'Total'" style="min-width:70px">{{ hrt.acc_id }}</td>
@@ -107,16 +107,19 @@
                                     <div class="row">
                                         
                                         <div class="col-xl-12 col-md-3 col-sm-6">
-                                            <a href="javascript:;" class="btn btn-secondary btn-print action-print" @click="print()">Print</a>
+                                            <button type="button" class="btn btn-secondary btn-print action-print" @click="printPage">Cetak</button>
                                         </div>
                                         <div class="col-xl-12 col-md-3 col-sm-6">
-                                            <a href="javascript:;" class="btn btn-primary btn-send">Send Invoice</a>
+                                            <button type="button" class="btn btn-primary btn-send" @click="loadData" :disabled="isLoadingList">Muat Ulang</button>
                                         </div>
                                         <div class="col-xl-12 col-md-3 col-sm-6">
-                                            <a href="javascript:;" class="btn btn-success btn-download">Download</a>
+                                            <button type="button" class="btn btn-success btn-download" @click="loadData" :disabled="isLoadingList">
+                                                <span v-if="isLoadingList" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                                {{ isLoadingList ? 'Memuat...' : 'Muat Data' }}
+                                            </button>
                                         </div>
                                         <div class="col-xl-12 col-md-3 col-sm-6">
-                                            <router-link to="/apps/invoice/edit" class="btn btn-dark btn-edit">Edit</router-link>
+                                            <button type="button" class="btn btn-dark btn-edit" @click="reloadPage">Muat Ulang</button>
                                         </div>
 
                                     </div>
@@ -135,35 +138,41 @@
 <script setup>
     import '@/assets/sass/apps/invoice-preview.scss';
 
-    import { computed, ref, onMounted, reactive } from 'vue';
+    import { ref, onMounted } from 'vue';
     import { useStore } from 'vuex';
-    import { useRouter, useRoute } from 'vue-router';
-
-    import moment from "moment";
 
     import { useMeta } from '@/composables/use-meta';
-    useMeta({ title: 'BBM' });
+    useMeta({ title: 'COA Penghasilan Lain' });
 
     
     const store = useStore();
-    const router = useRouter();
-    const route = useRoute();
 
 
     // const modalRef = ref(null);
     // const openModal = () => Modal.getInstance(modalRef.value)?.show();
-    const hartalist = ref();
-    onMounted(() => {
-        const harta = ref({
-            group: '7'
-        });
-        store.dispatch('GetHarta', harta.value);
-        // hartalist.value = store.getters.StateHarta;
-        setTimeout(function() { 
-            // store.dispatch('GetCoaList')
-            hartalist.value = store.getters.StateHarta;
-        }, 3000);
-       
-    })
+    const hartalist = ref([]);
+    const isLoadingList = ref(false);
+
+    const loadData = async () => {
+        isLoadingList.value = true;
+        try {
+            await store.dispatch('GetHarta', { group: '7' });
+            hartalist.value = store.getters.StateHarta || [];
+        } finally {
+            isLoadingList.value = false;
+        }
+    };
+
+    onMounted(async () => {
+        await loadData();
+    });
+
+    const printPage = () => {
+        window.print();
+    };
+
+    const reloadPage = () => {
+        window.location.reload();
+    };
     
 </script>

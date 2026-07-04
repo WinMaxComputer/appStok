@@ -79,7 +79,23 @@
                                 {{ props.row.typeBayar === 0 ? 'Cash' : 'Kredit' }}
                             </template>
                             <template #action="props">
-                            
+                                <a href="javascript:void(0);" @click="viewDetail(props.row)" class="me-2" title="Detail">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        class="feather feather-eye"
+                                    >
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </a>
                                 <a href="javascript:void(0);" @click="editnotabeli([{
                                                     noNota:props.row.noNota, 
                                                     tglNota: props.row.tglPembelian,
@@ -149,8 +165,66 @@
             </div>
         </div>
 
-
-        <!--  -->
+        <div v-if="showDetailModal" class="modal d-block" tabindex="-1" role="dialog" style="background: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Detail Pembelian {{ detailHeader.noNota }}</h5>
+                        <button type="button" class="btn-close" @click="showDetailModal = false"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-4"><strong>No Nota:</strong> {{ detailHeader.noNota }}</div>
+                            <div class="col-md-4"><strong>Tanggal:</strong> {{ detailHeader.tglPembelian ? moment(detailHeader.tglPembelian).format('DD-MM-YYYY') : '' }}</div>
+                            <div class="col-md-4"><strong>Supplier:</strong> {{ detailHeader.nmSupplier }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4"><strong>Type Bayar:</strong> {{ detailHeader.typeBayar === 0 ? 'Cash' : 'Kredit' }}</div>
+                            <div class="col-md-4"><strong>Term:</strong> {{ detailHeader.term }}</div>
+                            <div class="col-md-4"><strong>Jth Tempo:</strong> {{ detailHeader.jthTempo ? moment(detailHeader.jthTempo).format('DD-MM-YYYY') : '' }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-12"><strong>Notes:</strong> {{ detailHeader.notes }}</div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Produk</th>
+                                        <th class="text-end">Qty</th>
+                                        <th class="text-end">Satuan</th>
+                                        <th class="text-end">Harga</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(item, index) in detailItems" :key="index">
+                                        <td>{{ item.kdBarang }}</td>
+                                        <td>{{ item.nmBarang }}</td>
+                                        <td class="text-end">{{ item.qty }}</td>
+                                        <td class="text-end">{{ item.satuanBarang }}</td>
+                                        <td class="text-end">{{ Number(item.hrgBeli || item.hrgPokok || item.harga).toLocaleString() }}</td>
+                                        <td class="text-end">{{ Number(item.total).toLocaleString() }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-4"><strong>Sub Total:</strong> {{ Number(detailHeader.subTotal).toLocaleString() }}</div>
+                            <div class="col-md-4"><strong>Tax:</strong> {{ Number(detailHeader.tax).toLocaleString() }}</div>
+                            <div class="col-md-4"><strong>Disc:</strong> {{ Number(detailHeader.disc).toLocaleString() }}</div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12 text-end"><strong>Grand Total: </strong>{{ Number(detailHeader.total).toLocaleString() }}</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @click="showDetailModal = false">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         
     </div>
 </template>
@@ -217,6 +291,9 @@
     const totalPembelian = ref(0);
     const totalHutang = ref(0);
     const loading = ref();
+    const showDetailModal = ref(false);
+    const detailHeader = ref({});
+    const detailItems = ref([]);
 
     onMounted(() => {
         bind_data();
@@ -232,7 +309,21 @@
         
     }
 
-    
+    const viewDetail = async (row) => {
+        try {
+            await store.dispatch('GetDetailPembelian', { noNota: row.noNota });
+            const detail = store.getters.SdetailPembelian;
+            detailHeader.value = detail[0] && detail[0][0] ? detail[0][0] : row;
+            detailItems.value = detail[1] || [];
+            showDetailModal.value = true;
+        } catch (error) {
+            console.error('Failed to load detail pembelian:', error);
+            detailHeader.value = row;
+            detailItems.value = [];
+            showDetailModal.value = true;
+        }
+    }
+
     const bind_data = () => {
         loading.value = true;
         store.dispatch('GetLaporanPembelian', sorting.value).then(response => {

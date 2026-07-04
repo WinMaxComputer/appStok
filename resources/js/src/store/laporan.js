@@ -13,10 +13,18 @@ const state = {
     listbbmdatang: [],
     listpenyusutan: [],
     bukubesar: [],
+    bukubesarmeta: {
+        opening_balance: 0,
+        closing_balance: 0,
+    },
     jurnalumum: [],
     costbbm: [],
     listkartustok: [],
     generalledger: [],
+    generalledgermeta: {
+        opening_balance: 0,
+        closing_balance: 0,
+    },
     detailbiaya: [],
     listbayarpenjualan: [],
     listbayarpembelian: [],
@@ -34,10 +42,12 @@ const getters = {
     SlistBbmDatang: state => state.listbbmdatang,
     SlistPenyusutan: state => state.listpenyusutan,
     SBukuBesar: state => state.bukubesar,
+    SBukuBesarMeta: state => state.bukubesarmeta,
     StateGjList: state => state.jurnalumum,
     StateCostBbm: state => state.costbbm,
     StateListKartuStok: state => state.listkartustok,
     StateGL: state => state.generalledger,
+    StateGLMeta: state => state.generalledgermeta,
     StateBiayaDetail: state => state.detailbiaya,
     SlistBayarPenjualan: state => state.listbayarpenjualan,
     SlistBayarPembelian: state => state.listbayarpembelian,
@@ -211,6 +221,10 @@ const actions = {
         try {
             response = await axios.post('/api/buku-besar', buku)
             commit('setBukuBesar', response.data.data)
+            commit('setBukuBesarMeta', {
+                opening_balance: response.data.opening_balance || 0,
+                closing_balance: response.data.closing_balance || 0,
+            })
         } catch (ex) {
             // Handle error
             alert('error load buku besar')
@@ -222,6 +236,10 @@ const actions = {
         try {
             response = await axios.post('/api/general-ledger', buku)
             commit('setGL', response.data.data)
+            commit('setGLMeta', {
+                opening_balance: response.data.opening_balance || 0,
+                closing_balance: response.data.closing_balance || 0,
+            })
         } catch (ex) {
             // Handle error
             alert('error load buku besar')
@@ -306,6 +324,9 @@ const mutations = {
     setBukuBesar(state, bukubesar){
         state.bukubesar = bukubesar
     },
+    setBukuBesarMeta(state, meta){
+        state.bukubesarmeta = meta
+    },
     setJurnalUmum(state, ju){
         state.jurnalumum = ju
     },
@@ -317,6 +338,9 @@ const mutations = {
     },
     setGL(state, gl){
         state.generalledger = gl
+    },
+    setGLMeta(state, glmeta){
+        state.generalledgermeta = glmeta
     }
 
 

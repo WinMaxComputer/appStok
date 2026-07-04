@@ -29,7 +29,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="invoice-detail-header">
+                                    <div class="invoice-detail-header txn-block">
                                         <div class="row justify-content-between">
                                             <div class="col-xl-5 invoice-address-company">
 
@@ -107,7 +107,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="invoice-detail-items">
+                                    <div class="invoice-detail-items txn-block">
                                         <ul class="nav nav-tabs mb-3 mt-3" id="simpletab" role="tablist">
                                             <li class="nav-item">
                                                 <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">BARANG</a>
@@ -118,8 +118,8 @@
                                         </ul>
                                         <div class="tab-content" id="simpletabContent">
                                             <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-                                                <div class="invoice-detail-items">
-                                                    <div class="row">
+                                                <div class="invoice-detail-items txn-entry-area">
+                                                    <div class="row g-2 align-items-end txn-entry-row txn-mobile-stack">
                                                         <div class="form-group col-xs-2">
                                                             <label for="Inputqty">Barcode</label>
                                                             <input type="text" ref="InputBarcode" v-model="barcode" class="form-control form-control-sm" placeholder="Barcode" @keydown.enter="addToCartB(barcode)" />
@@ -161,9 +161,9 @@
                                                             <!-- {{ new Intl.NumberFormat().format(brg.hrgJual * qty) }} -->
                                                             <input type="text" v-model="tot" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
                                                         </div>
-                                                        <div class="form-group col-sm-1">
+                                                        <div class="form-group col-sm-1 d-grid">
                                                             <label for="aksi">Aksi</label>
-                                                            <button @click="addToCart(brg)" class="btn btn-xs btn-primary">
+                                                            <button @click="addToCart(brg)" class="btn btn-primary btn-sm">
                                                                 + 
                                                             </button>
                                                         </div>
@@ -171,8 +171,8 @@
                                                 </div>
                                             </div>
                                             <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                                                <div class="invoice-detail-items">
-                                                    <div class="row">
+                                                <div class="invoice-detail-items txn-entry-area">
+                                                    <div class="row g-2 align-items-end txn-entry-row txn-mobile-stack">
                                                         <div class="form-group col-md-4">
                                                             <label for="inputCity">NAMA JASA</label>
                                                             <multiselect 
@@ -201,14 +201,14 @@
                                                             <!-- {{ new Intl.NumberFormat().format(brg.hrgJual * qty) }} -->
                                                             <input type="number" v-model="totjasa" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
                                                         </div>
-                                                        <div class="form-group col-md-1">
+                                                        <div class="form-group col-md-1 d-grid">
                                                             <label for="aksi">Aksi</label>
-                                                            <button @click="addToCartJasa(jsa)" class="btn btn-xs btn-primary">
+                                                            <button @click="addToCartJasa(jsa)" class="btn btn-primary btn-sm">
                                                                 + 
                                                             </button>
                                                         </div>
                                                     </div>
-                                                    <div class="row">
+                                                    <div class="row mt-1">
                                                         <div class="form-group col-md-6">
                                                             <label for="inputState">Note</label>
                                                             <textarea v-model="jsa.note" class="form-control form-control-sm" placeholder="Price" ></textarea>
@@ -222,9 +222,9 @@
 
                                     
 
-                                    <div class="invoice-detail-items" >
+                                    <div class="invoice-detail-items txn-block" >
                                         <div class="inv--product-table-section">
-                                            <div class="table-responsive">
+                                            <div class="table-responsive txn-table-wrap">
                                                 <table class="table table-hover table-bordered item-table">
                                                     <thead>
                                                         <tr>
@@ -286,9 +286,9 @@
                                         <!-- <button type="button" class="btn btn-secondary additem btn-sm" @click="add_item()">Add Item</button> -->
                                     </div>
 
-                                    <div v-if="cartItemsPenJasa" class="invoice-detail-items" >
+                                    <div v-if="cartItemsPenJasa" class="invoice-detail-items txn-block" >
                                         <div class="inv--product-table-section">
-                                            <div class="table-responsive">
+                                            <div class="table-responsive txn-table-wrap">
                                                 <table class="table table-hover table-bordered item-table">
                                                     <thead>
                                                         <tr>
@@ -335,7 +335,7 @@
 
                                     
 
-                                    <div class="invoice-detail-total">
+                                    <div class="invoice-detail-total txn-block txn-summary-panel">
                                         <div class="row">
 
                                             <div class="col-md-6">
@@ -354,7 +354,7 @@
                                                                 <a href="javascript:;" @click="addPayment" class="btn btn-dark btn-preview" data-bs-toggle="modal" data-bs-target="#modalPayment">Pembayaran</a>
                                                             </div> -->
                                                             <div class="col-sm-4">
-                                                                <button @click="openModal()" class="btn btn-success btn-download">PAYMENT</button>
+                                                                <button @click="openModal()" class="btn btn-success btn-download txn-payment-btn">PAYMENT</button>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -489,6 +489,87 @@
         </div>
     </div>
 </template>
+
+<style scoped>
+.txn-block {
+    background: #ffffff;
+    border: 1px solid #e8edf5;
+    border-radius: 12px;
+    padding: 14px 14px 10px;
+    margin-bottom: 14px;
+}
+
+.txn-entry-area {
+    background: #f9fbff;
+    border: 1px solid #edf2fa;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.txn-entry-row .form-group {
+    margin-bottom: 0;
+}
+
+.txn-entry-row label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 4px;
+}
+
+.txn-table-wrap {
+    border: 1px solid #edf1f7;
+    border-radius: 10px;
+    overflow-x: auto;
+}
+
+.txn-table-wrap :deep(table) {
+    margin-bottom: 0;
+}
+
+.txn-table-wrap :deep(thead th) {
+    background: #f6f9ff;
+}
+
+.txn-summary-panel {
+    background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+}
+
+@media (max-width: 992px) {
+    .txn-entry-area {
+        padding: 10px 8px;
+    }
+
+    .txn-block {
+        padding: 12px 10px 8px;
+    }
+}
+
+@media (max-width: 767px) {
+    .txn-mobile-stack .col-sm-1,
+    .txn-mobile-stack .col-sm-2,
+    .txn-mobile-stack .col-sm-3,
+    .txn-mobile-stack .col-sm-4,
+    .txn-mobile-stack .col-sm-6,
+    .txn-mobile-stack .col-md-1,
+    .txn-mobile-stack .col-md-2,
+    .txn-mobile-stack .col-md-3,
+    .txn-mobile-stack .col-md-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .txn-mobile-stack .form-control,
+    .txn-mobile-stack :deep(.multiselect),
+    .txn-mobile-stack .btn {
+        min-height: 38px;
+    }
+
+    .txn-payment-btn {
+        width: 100%;
+    }
+}
+</style>
 
 <script setup>
     import { computed, onMounted, ref, onBeforeMount } from 'vue';
@@ -730,6 +811,36 @@
         
     };
 
+    const toast = window.Swal.mixin({
+        toast: true,
+        position: 'top-center',
+        showConfirmButton: false,
+        timer: 3000,
+        padding: '2em',
+    });
+
+    const showToast = (icon, title) => {
+        toast.fire({
+            icon,
+            title,
+            padding: '2em',
+        });
+    };
+
+    const showConfirm = async (text) => {
+        const result = await window.Swal.fire({
+            title: 'Konfirmasi',
+            text,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Lanjut',
+            cancelButtonText: 'Batal',
+            padding: '2em',
+        });
+
+        return result.isConfirmed;
+    };
+
     // const change_file = (event) => {
     //     selected_file.value = URL.createObjectURL(event.target.files[0]);
     // };
@@ -748,12 +859,13 @@
 
     function addToCart(brg) {
         store.dispatch('CheckBarangExist', {kdBarang: brg.kdBarang})
-            .then((response) => {
+            .then(async (response) => {
                 // console.log(response.data);
                 const brgasli = response.data.data;
                 
                 if (brgasli.stokPersediaan < qty.value) {
-                    if (!window.confirm('Stok barang kurang')) {
+                    const isConfirmed = await showConfirm('Stok barang kurang');
+                    if (!isConfirmed) {
                         return;
                     }
                     // alert('Barang kurang dari 1')
@@ -854,11 +966,12 @@
 
     function addToCartB(barcode) {
         store.dispatch('CheckBarangExist', {kdBarang: barcode})
-            .then((response) => {
+            .then(async (response) => {
                 // console.log(response.data);
                 const brg = response.data.data;
                 if (brg.stokPersediaan < 1) {
-                    if (!window.confirm('Stok barang kurang dari 1. Jika dilanjukan akan mempengaruhi perhitungan laba rugi.')) {
+                    const isConfirmed = await showConfirm('Stok barang kurang dari 1. Jika dilanjutkan akan mempengaruhi perhitungan laba rugi.');
+                    if (!isConfirmed) {
                         return;
                     }
                     // alert('Barang kurang dari 1')
@@ -1006,7 +1119,7 @@
                 cartItemsPenJasa.value[objIndex].qtyjasa = parseInt(newQty);
                 cartItemsPenJasa.value[objIndex].total = parseInt(newTotal);
                 localStorage.setItem('cartItemsPenJasa',JSON.stringify(cartItemsPenJasa.value));
-                alert(oldName+' Quantity Update')
+                showToast('success', oldName + ' Quantity Update')
                 getCartJasa();
                 getTotal()
                 // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
@@ -1025,7 +1138,7 @@
                 getCartJasa();
                 getTotal();
                 // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
-                alert(jsa.nmJasa+ " berhasil disimpan")
+                showToast('success', jsa.nmJasa + ' berhasil disimpan')
             }
     }
 

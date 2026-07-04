@@ -1,0 +1,81 @@
+
+.neraca-table[data-v-138b7d92] td,
+.neraca-table[data-v-138b7d92] th {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.neraca-table[data-v-138b7d92] {
+    font-size: 12px;
+}
+.total-line[data-v-138b7d92] {
+    border-top: 1px solid #000;
+}
+.header-total-row[data-v-138b7d92] td {
+    border-bottom: 1px solid #000;
+}
+.invoice-actions-btn .row[data-v-138b7d92] {
+    row-gap: 10px;
+}
+@media (max-width: 991px) {
+.invoice-actions-btn[data-v-138b7d92] {
+        margin-top: 16px;
+}
+}
+@media print {
+.layout-px-spacing[data-v-138b7d92] {
+        padding: 0 !important;
+}
+.invoice-actions-btn[data-v-138b7d92],
+    .page-header[data-v-138b7d92],
+    .la-ball-circus[data-v-138b7d92],
+    .btn[data-v-138b7d92],
+    .row.invoice.layout-top-spacing.layout-spacing.apps-invoice > .col-xl-12 > .doc-container > .row > .col-xl-3[data-v-138b7d92] {
+        display: none !important;
+}
+.row.invoice.layout-top-spacing.layout-spacing.apps-invoice > .col-xl-12 > .doc-container > .row > .col-xl-9[data-v-138b7d92] {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+}
+.doc-container[data-v-138b7d92],
+    .invoice-container[data-v-138b7d92],
+    .invoice-inbox[data-v-138b7d92],
+    .content-section[data-v-138b7d92],
+    .inv--detail-section[data-v-138b7d92] {
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: 0 !important;
+}
+.neraca-table[data-v-138b7d92] {
+        width: 100% !important;
+        font-size: 10px !important;
+}
+.neraca-table[data-v-138b7d92] th,
+    .neraca-table[data-v-138b7d92] td {
+        color: #000 !important;
+        border-color: #bbb !important;
+        white-space: nowrap !important;
+        padding-top: 3px !important;
+        padding-right: 6px !important;
+        padding-bottom: 3px !important;
+        padding-left: 6px !important;
+}
+.neraca-table[data-v-138b7d92] td.print-level-1 { padding-left: 8px !important;
+}
+.neraca-table[data-v-138b7d92] td.print-level-2 { padding-left: 20px !important;
+}
+.neraca-table[data-v-138b7d92] td.print-level-3 { padding-left: 32px !important;
+}
+.neraca-table[data-v-138b7d92] td.print-level-4 { padding-left: 44px !important;
+}
+.neraca-table[data-v-138b7d92] tr.header-total-row td {
+        border-bottom: 1px solid #000 !important;
+}
+.neraca-table[data-v-138b7d92] tr.header-total-row {
+        page-break-inside: avoid !important;
+}
+}
+@page {
+    size: A4 portrait;
+    margin: 10mm;
+}

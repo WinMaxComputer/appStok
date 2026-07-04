@@ -7,7 +7,7 @@
                         <nav class="breadcrumb-one" aria-label="breadcrumb">
                             <ol class="breadcrumb">
                                 <li class="breadcrumb-item"><a href="javascript:;">Dashboard</a></li>
-                                <li class="breadcrumb-item active" aria-current="page"><span>Sales</span></li>
+                                <li class="breadcrumb-item active" aria-current="page"><span>COA Biaya Penjualan</span></li>
                             </ol>
                         </nav>
                     </div>
@@ -37,11 +37,11 @@
 
                                             
                                             <table>
-                                                <tbody  v-for="hrt, index in hartalist" :key="hrt.acc_id" :set="amount = hrt.amount">
+                                                <tbody  v-for="(hrt, index) in hartalist" :key="hrt.acc_id" :set="amount = hrt.amount">
                                                     
                                                         <tr v-if="hrt.level === '1'" >
                                                             <td v-if="hrt.jenis != 'Total'" style="min-width:70px">{{ hrt.acc_id }}
-                                                                <a href="javascript:void(0);" title="Edit" @click="edit_acc(accid=hrt.acc_id, level=hrt.level, parent=hrt.parent, name=hrt.name, jenis=hrt.jenis)">edit</a>
+                                                                <a href="javascript:void(0);" title="Ubah" @click="edit_acc(hrt)">Ubah</a>
                                                             </td>
                                                             <td v-else></td>
                                                             <td v-if="hrt.jenis === 'Total' || hrt.jenis.substring(0,1) === 'H'" style="min-width: 400px;" ><b>&nbsp;&nbsp;{{ hrt.name }}</b></td>
@@ -62,7 +62,7 @@
                                                         </tr>
                                                         <tr v-if="hrt.level === '2'">
                                                             <td v-if="hrt.jenis != 'Total'" >{{ hrt.acc_id }}
-                                                                <a href="javascript:void(0);" title="Edit" @click="edit_acc(accid=hrt.acc_id, level=hrt.level, parent=hrt.parent, name=hrt.name, jenis=hrt.jenis)">edit</a>
+                                                                <a href="javascript:void(0);" title="Ubah" @click="edit_acc(hrt)">Ubah</a>
                                                             </td>
                                                             <td v-else></td>
                                                             <td v-if="hrt.jenis === 'Total' || hrt.jenis.substring(0,1) === 'H'" style="min-width: 300px;"><b>&nbsp;&nbsp;&nbsp;&nbsp;{{ hrt.name }}</b></td>
@@ -77,7 +77,7 @@
                                                         </tr>
                                                         <tr v-if="hrt.level === '3'">
                                                             <td v-if="hrt.jenis != 'Total'">{{ hrt.acc_id }}
-                                                                <a href="javascript:void(0);" title="Edit" @click="edit_acc(accid=hrt.acc_id, level=hrt.level, parent=hrt.parent, name=hrt.name, jenis=hrt.jenis)">edit</a>
+                                                                <a href="javascript:void(0);" title="Ubah" @click="edit_acc(hrt)">Ubah</a>
                                                             </td>
                                                             <td v-else></td>
                                                             <td v-if="hrt.jenis === 'Total' || hrt.jenis.substring(0,1) === 'H'" style="min-width: 300px;"><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ hrt.name }}</b></td>
@@ -91,7 +91,7 @@
                                                         </tr>
                                                         <tr v-if="hrt.level === '4'">
                                                             <td>{{ hrt.acc_id }}
-                                                                <a href="javascript:void(0);" title="Edit" @click="edit_acc(accid=hrt.acc_id, level=hrt.level, parent=hrt.parent, name=hrt.name, jenis=hrt.jenis)">edit</a>
+                                                                <a href="javascript:void(0);" title="Ubah" @click="edit_acc(hrt)">Ubah</a>
                                                             </td>
                                                             <td style="min-width: 300px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ hrt.name }}</td>
                                                             <td>{{ Number(amount).toLocaleString() }}</td>
@@ -109,11 +109,11 @@
                                 </div>
                             </div>
                         </div>
-                        <Modal v-model:visible="isVisible" :draggable="true" :title="edit">
+                        <Modal v-model:visible="isVisible" :draggable="true" :title="modalTitle">
                             <input type="text" class="form-control" v-model="selected.oldid" />
                             <div class="input-group input-group-sm mb-4">
                                 <select v-model="selected.parent" class="form-control">
-                                    <option v-for="hrt in hartalist" :key="hrt.acc_id" :value="hrt.parent">Acc Parent {{ hrt.parent }}</option>
+                                    <option v-for="hrt in hartalist" :key="hrt.acc_id" :value="hrt.parent">Akun Induk {{ hrt.parent }}</option>
                                 </select>
                             </div>
                             <div class="input-group input-group-sm mb-4">
@@ -121,7 +121,6 @@
                                     <option v-for="hrt in hartalist" :key="hrt.acc_id" :value="hrt.level">Level {{ hrt.level }}</option>
                                 </select>
                             </div>
-                            {{ selected.jenis }}
                             <div class="input-group mb-4">
                                 <select v-model="selected.jenis" class="form-control" >
                                     <option v-for="hrt in hartalist" :key="hrt.acc_id" :value="hrt.jenis">{{ hrt.jenis }}</option>
@@ -137,7 +136,10 @@
                                 <input type="text" class="form-control" v-model="selected.name" />
                             </div>
                             <div class="input-group input-group-sm mb-4">
-                                <a href="javascript:;" @click="simpan_acc()" class="btn btn-success btn-download">Simpan</a>
+                                <button type="button" @click="simpan_acc()" class="btn btn-success btn-download" :disabled="isSaving">
+                                    <span v-if="isSaving" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                    {{ isSaving ? 'Menyimpan...' : 'Simpan' }}
+                                </button>
                             </div>
                         </Modal>
                         <div class="col-xl-3">
@@ -146,16 +148,19 @@
                                     <div class="row">
                                         
                                         <div class="col-xl-12 col-md-3 col-sm-6">
-                                            <a href="javascript:;" class="btn btn-secondary btn-print action-print" @click="print()">Print</a>
+                                            <button type="button" class="btn btn-secondary btn-print action-print" @click="printPage">Cetak</button>
                                         </div>
                                         <div class="col-xl-12 col-md-3 col-sm-6">
-                                            <a href="javascript:;" class="btn btn-primary btn-send">Send Invoice</a>
+                                            <button type="button" class="btn btn-primary btn-send" @click="openCreateModal">Baru</button>
                                         </div>
                                         <div class="col-xl-12 col-md-3 col-sm-6">
-                                            <a href="javascript:;" class="btn btn-success btn-download">Download</a>
+                                            <button type="button" class="btn btn-success btn-download" @click="loadData" :disabled="isLoadingList">
+                                                <span v-if="isLoadingList" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                                {{ isLoadingList ? 'Memuat...' : 'Muat Data' }}
+                                            </button>
                                         </div>
                                         <div class="col-xl-12 col-md-3 col-sm-6">
-                                            <router-link to="/apps/invoice/edit" class="btn btn-dark btn-edit">Edit</router-link>
+                                            <button type="button" class="btn btn-dark btn-edit" @click="loadData" :disabled="isLoadingList">Muat Ulang</button>
                                         </div>
 
                                     </div>
@@ -174,22 +179,20 @@
 <script setup>
     import '@/assets/sass/apps/invoice-preview.scss';
 
-    import { computed, ref, onMounted, reactive } from 'vue';
+    import { computed, ref, onMounted } from 'vue';
     import { useStore } from 'vuex';
-    import { useRouter, useRoute } from 'vue-router';
 
     import { Modal } from 'usemodal-vue3';
-    import moment from "moment";
 
     import { useMeta } from '@/composables/use-meta';
-    useMeta({ title: 'BBM' });
+    useMeta({ title: 'COA Biaya Penjualan' });
 
     
     const store = useStore();
-    const router = useRouter();
-    const route = useRoute();
 
     const isVisible = ref(false);
+    const isLoadingList = ref(false);
+    const isSaving = ref(false);
     const selected = ref({
         accid: '',
         name: '',
@@ -202,46 +205,81 @@
 
     // const modalRef = ref(null);
     // const openModal = () => Modal.getInstance(modalRef.value)?.show();
-    const hartalist = ref();
-    onMounted(() => {
-        const harta = ref({
-            group: '5'
-        });
-        store.dispatch('GetHarta', harta.value);
-        // hartalist.value = store.getters.StateHarta;
-        setTimeout(function() { 
-            // store.dispatch('GetCoaList')
-            hartalist.value = store.getters.StateHarta;
-        }, 3000);
-       
-    })
+    const hartalist = ref([]);
 
-    const edit_acc = (accid, level, parent, name, jenis) =>{
-        // alert('yg di edit : '+ accid + ' level : '+ level + 'parent : '+ parent);
-        selected.value.accid = accid ;
-        selected.value.level = level ;
-        selected.value.parent = parent ;
-        selected.value.name = name ;
-        selected.value.jenis = jenis ;
+    const modalTitle = computed(() => (selected.value.oldid ? 'Ubah Akun Biaya Penjualan' : 'Tambah Akun Biaya Penjualan'));
+
+    const showToast = (icon, title) => {
+        if (window.Swal) {
+            const toast = window.Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+            });
+            toast.fire({ icon, title, padding: '10px 20px' });
+            return;
+        }
+        window.alert(title);
+    };
+
+    const loadData = async () => {
+        isLoadingList.value = true;
+        try {
+            await store.dispatch('GetHarta', { group: '5' });
+            hartalist.value = store.getters.StateHarta || [];
+        } finally {
+            isLoadingList.value = false;
+        }
+    };
+
+    onMounted(async () => {
+        await loadData();
+    });
+
+    const openCreateModal = () => {
+        selected.value = {
+            accid: '',
+            name: '',
+            level: '',
+            parent: '',
+            jenis: '',
+            oldid: '',
+            amount: 0
+        };
         isVisible.value = true;
-        // console.log(isVisible.value)
+    };
 
-    }
+    const edit_acc = (hrt) => {
+        selected.value.accid = hrt.acc_id || '';
+        selected.value.oldid = hrt.acc_id || '';
+        selected.value.level = hrt.level || '';
+        selected.value.parent = hrt.parent || '';
+        selected.value.name = hrt.name || '';
+        selected.value.jenis = hrt.jenis || '';
+        selected.value.amount = hrt.amount || 0;
+        isVisible.value = true;
+    };
 
-    const simpan_acc = () => {
-        store.dispatch('CreateAcc', selected.value).then((res) => {
-            if (res.data.success === true) {
-                // console.log('berhasil');
-                store.dispatch('GetHarta', { group: '5' });
-                setTimeout(function() { 
-                    // store.dispatch('GetCoaList')
-                    hartalist.value = store.getters.StateHarta;
-                }, 3000);
+    const simpan_acc = async () => {
+        isSaving.value = true;
+        try {
+            const res = await store.dispatch('CreateAcc', selected.value);
+            if (res?.data?.success === true) {
+                await loadData();
                 isVisible.value = false;
-            } else {
-                console.log('gagal');
+                showToast('success', 'Data akun berhasil disimpan');
+                return;
             }
-        });
-    }
+            showToast('error', 'Gagal menyimpan data akun');
+        } finally {
+            isSaving.value = false;
+        }
+    };
+
+    const printPage = () => {
+        window.print();
+    };
     
 </script>

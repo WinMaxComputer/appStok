@@ -7,7 +7,7 @@
                         <nav class="breadcrumb-one" aria-label="breadcrumb">
                             <ol class="breadcrumb">
                                 <li class="breadcrumb-item"><a href="javascript:;">Laporan</a></li>
-                                <li class="breadcrumb-item active" aria-current="page"><span>Pembelian</span></li>
+                                <li class="breadcrumb-item active" aria-current="page"><span>Buku Kas</span></li>
                             </ol>
                         </nav>
                     </div>
@@ -39,53 +39,56 @@
                                             :config="{dateFormat: 'd-m-Y'}"
                                             class="form-control form-control-sm">
                                         </flat-pickr>
-                                        <button variant="primary" class="btn m-1 btn-primary" @click="bind_data()" >CARI</button>
-                                        <button variant="primary" class="btn m-1 btn-primary" @click="export_table('print')">Print</button>
+                                        <button type="button" class="btn m-1 btn-primary" @click="bind_data" :disabled="isLoading">{{ isLoading ? 'Memuat...' : 'Cari' }}</button>
+                                        <button type="button" class="btn m-1 btn-primary" @click="export_table('print')">Print</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <v-client-table :data="items" :columns="columns" :options="table_option" v-if="items.debet != 0 && items.kredit != 0">
+                        <div v-if="showSummary" class="px-3 pb-2">
+                            <table class="table table-sm table-bordered mb-0">
+                                <tbody>
+                                    <tr class="table-primary">
+                                        <th class="w-25">Saldo Awal</th>
+                                        <td class="text-end fw-bold">{{ Number(summary.openingBalance).toLocaleString() }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <v-client-table :data="items" :columns="columns" :options="table_option" v-if="items.length">
                             <template #tgl="props"> {{ moment(props.row.tgl).format("D-M-YYYY") }} </template>
-                            <template #debet="props"> {{ Number(props.row.debet).toLocaleString() }} </template>
-                            <template #kredit="props"> {{ Number(props.row.kredit).toLocaleString() }} </template>
-                            <template #saldo="props"> {{ Number(props.row.saldo).toLocaleString() }} </template>
-                            <!-- <template #action="props">
-                                <div class="custom-dropdown dropdown btn-group ">
-                                    <div class="btn-group" href="#" role="button" id="pendingTask" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <div role="group" class="btn-group">
-                                            <div class="dropdown b-dropdown custom-dropdown show btn-group">
-                                                <a class="btn dropdown-toggle btn-dark"
-                                                    ><svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="24"
-                                                        height="24"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        stroke-width="2"
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        class="feather feather-chevron-down"
-                                                    >
-                                                        <polyline points="6 9 12 15 18 9"></polyline>
-                                                    </svg>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li>
-                                            <router-link to="/editpenjualan" class="dropdown-item" @click="edit_row(props.row)">Edit</router-link>
-                                        </li>
-                                        <li>
-                                            <router-link :to="{ name: 'nosel', params: { id: props.row } }" class="dropdown-item">coba</router-link>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </template> -->
+                            <template #debet="props"> {{ Number(props.row.debet || 0).toLocaleString() }} </template>
+                            <template #kredit="props"> {{ Number(props.row.kredit || 0).toLocaleString() }} </template>
+                            <template #mutasi="props"> {{ Number(props.row.mutasi || 0).toLocaleString() }} </template>
+                            <template #saldo="props"> {{ Number(props.row.saldo || 0).toLocaleString() }} </template>
                         </v-client-table>
+
+                        <div v-if="showSummary" class="px-3 pb-3">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <th class="w-25">Saldo Awal</th>
+                                            <td class="text-end">{{ Number(summary.openingBalance).toLocaleString() }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Total Debet</th>
+                                            <td class="text-end">{{ Number(summary.totalDebet).toLocaleString() }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Total Kredit</th>
+                                            <td class="text-end">{{ Number(summary.totalKredit).toLocaleString() }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Saldo Akhir Periode</th>
+                                            <td class="text-end fw-bold">{{ Number(summary.closingBalance).toLocaleString() }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
 
                         
                         
@@ -101,7 +104,7 @@
 </template>
 
 <script setup>
-    import { computed, onMounted, ref, onBeforeMount } from 'vue';
+    import { computed, onMounted, ref } from 'vue';
 
     //pdf export
     import jsPDF from 'jspdf';
@@ -112,17 +115,17 @@
     import '@/assets/sass/forms/custom-flatpickr.css';
 
     import { useStore } from 'vuex';
-    import { useRouter, useRoute } from 'vue-router'
 
     import moment from "moment";
 
     import { useMeta } from '@/composables/use-meta';
-    useMeta({ title: 'Buku Besar' });
+    useMeta({ title: 'Buku Kas' });
 
     const store = useStore();
-    const router = useRouter()
+    const isLoading = ref(false);
+    const bukuBesarMeta = computed(() => store.getters.SBukuBesarMeta || { opening_balance: 0, closing_balance: 0 });
 
-    const columns = ref(['notrans', 'acc_id','name', 'memo' ,'tgl', 'debet', 'kredit', 'saldo']);
+    const columns = ref(['notrans', 'acc_id','name', 'memo' ,'tgl', 'debet', 'kredit', 'mutasi', 'saldo']);
     const items = ref([]);
     const table_option = ref({
         perPage: 100,
@@ -153,18 +156,83 @@
 
     onMounted(() => {
         bind_data();
-        // console.log('on mount pagr')
     });
-    onBeforeMount(() => {
-        // console.log(' before onmount')
-        
-    })
 
+    const toNumber = (value) => Number(value || 0);
+
+    const normalizeRows = (rows) => {
+        const list = Array.isArray(rows) ? [...rows] : [];
+
+        if (!list.length) {
+            return [];
+        }
+
+        // Keep transaction order stable while ensuring dates are processed chronologically.
+        list.sort((a, b) => {
+            const t1 = new Date(a.tgl).getTime();
+            const t2 = new Date(b.tgl).getTime();
+            if (t1 === t2) {
+                return String(a.notrans || '').localeCompare(String(b.notrans || ''));
+            }
+            return t1 - t2;
+        });
+
+        const first = list[0];
+        const firstMovement = toNumber(first.debet) - toNumber(first.kredit);
+        let running = toNumber(first.saldo) ? toNumber(first.saldo) - firstMovement : 0;
+
+        return list.map((row) => {
+            const debet = toNumber(row.debet);
+            const kredit = toNumber(row.kredit);
+            const mutasi = debet - kredit;
+            running += mutasi;
+
+            return {
+                ...row,
+                debet,
+                kredit,
+                mutasi,
+                saldo: running,
+            };
+        });
+    };
     
-    const bind_data = () => {
-        store.dispatch('GetBukuBesar', sorting.value);
-        setTimeout(function() { items.value = store.getters.SBukuBesar; }, 2000);
-    }
+    const bind_data = async () => {
+        isLoading.value = true;
+        try {
+            await store.dispatch('GetBukuBesar', sorting.value);
+            const rows = store.getters.SBukuBesar || [];
+            items.value = normalizeRows(rows);
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
+    const showSummary = computed(() => {
+        return items.value.length || toNumber(bukuBesarMeta.value.opening_balance) !== 0 || toNumber(bukuBesarMeta.value.closing_balance) !== 0;
+    });
+
+    const summary = computed(() => {
+        let totalDebet = 0;
+        let totalKredit = 0;
+
+        items.value.forEach((row) => {
+            totalDebet += toNumber(row.debet);
+            totalKredit += toNumber(row.kredit);
+        });
+
+        const closingBalance = items.value.length
+            ? toNumber(items.value[items.value.length - 1].saldo)
+            : toNumber(bukuBesarMeta.value.closing_balance);
+        const openingBalance = toNumber(bukuBesarMeta.value.opening_balance);
+
+        return {
+            openingBalance,
+            totalDebet,
+            totalKredit,
+            closingBalance,
+        };
+    });
 
     // const bbm = computed(() => {
     //     items.value = store.getters.SlaporanPembelian;
@@ -181,7 +249,7 @@
     const export_table = (type) => {
         let cols = columns.value.filter((d) => d != 'profile' && d != 'action');
         let records = items.value;
-        let filename = 'table';
+        let filename = 'Buku Kas';
 
         if (type == 'csv') {
             let coldelimiter = ',';
@@ -225,40 +293,48 @@
             });
             rowhtml += '</tr></thead>';
             rowhtml += '<tbody>';
+
+            rowhtml += '<tr>';
+            rowhtml += '<td>-</td>';
+            rowhtml += '<td>-</td>';
+            rowhtml += '<td>-</td>';
+            rowhtml += '<td><b>Saldo Awal</b></td>';
+            rowhtml += '<td>-</td>';
+            rowhtml += '<td class="num">-</td>';
+            rowhtml += '<td class="num">-</td>';
+            rowhtml += '<td class="num">-</td>';
+            rowhtml += '<td class="num"><b>'+Number(summary.value.openingBalance).toLocaleString()+'</b></td>';
+            rowhtml += '</tr>';
+
             records.map((item) => {
                 rowhtml += '<tr>';
-                rowhtml += '<td>'+item.noPenjualan+'</td>';
-                rowhtml += '<td>'+moment(item.tglPenjualan).format("DD-MM-YYYY")+'</td>';
-                rowhtml += '<td>'+item.nmPelanggan+'</td>';
-                rowhtml += '<td>'+Number(item.subTotalPenjualan).toLocaleString()+'</td>';
-                rowhtml += '<td>'+Number(item.discPenjualan).toLocaleString()+'</td>';
-                rowhtml += '<td>'+Number(item.taxPenjualan).toLocaleString()+'</td>';
-                rowhtml += '<td>'+Number(item.totalPenjualan).toLocaleString()+'</td>';
-                rowhtml += '</tr>';
-                // cols.map((d) => {
-                //     let val = item[d] ? item[d] : '';
-                //     rowhtml += '<td>' + val + '</td>';
-                // });
+                rowhtml += '<td>'+ (item.notrans || '') +'</td>';
+                rowhtml += '<td>'+ (item.acc_id || '') +'</td>';
+                rowhtml += '<td>'+ (item.name || '') +'</td>';
+                rowhtml += '<td>'+ (item.memo || '') +'</td>';
+                rowhtml += '<td>'+moment(item.tgl).format("DD-MM-YYYY")+'</td>';
+                rowhtml += '<td class="num">'+Number(item.debet || 0).toLocaleString()+'</td>';
+                rowhtml += '<td class="num">'+Number(item.kredit || 0).toLocaleString()+'</td>';
+                rowhtml += '<td class="num">'+Number(item.mutasi || 0).toLocaleString()+'</td>';
+                rowhtml += '<td class="num">'+Number(item.saldo || 0).toLocaleString()+'</td>';
                 rowhtml += '</tr>';
             });
-            // tot =+val[d];
-            let sum = 0;
-            let sumtax = 0;
-            records.forEach(element => {
-            sum +=  parseInt(element.totalPenjualan);
-            sumtax +=  parseInt(element.taxPenjualan);
+            let totalDebet = 0;
+            let totalKredit = 0;
+            let totalMutasi = 0;
+            records.forEach((element) => {
+                totalDebet += toNumber(element.debet);
+                totalKredit += toNumber(element.kredit);
+                totalMutasi += toNumber(element.mutasi);
             });
-
-            // console.log(sum)
+            const saldoAkhir = records.length ? toNumber(records[records.length - 1].saldo) : 0;
 
             rowhtml +=
-                '<style>body {font-family:Arial; color:#495057;}p{text-align:center;font-size:18px;font-weight:bold;margin:15px;}table{ border-collapse: collapse; border-spacing: 0; }th,td{font-size:12px;text-align:left;padding: 4px;}th{padding:8px 4px;}tr:nth-child(2n-1){background:#f7f7f7; }</style>';
+                '<style>body {font-family:Arial; color:#495057;}p{text-align:center;font-size:18px;font-weight:bold;margin:15px;}table{ border-collapse: collapse; border-spacing: 0; }th,td{font-size:12px;text-align:left;padding: 4px;border:1px solid #ddd;}th{padding:8px 4px;}tr:nth-child(2n-1){background:#f7f7f7; }.num{text-align:right;}</style>';
             rowhtml += '</tbody>';
-            rowhtml += '<tfoot><tr>'
-
-            rowhtml += '<th></th><th></th><th></th><th></th><th>Total</th><th>'+Number(sumtax).toLocaleString()+'</th><th>'+Number(sum).toLocaleString()+'</th></tr>'
-            rowhtml += '<tr><th></th><th></th><th></th><th></th><th>Total Net</th><th></th><th>'+Number(sum - sumtax).toLocaleString()+'</th>'
-            rowhtml += '</tr></tfoot></table>'
+            rowhtml += '<tfoot><tr>';
+            rowhtml += '<th colspan="5" style="text-align:right;">Total</th><th class="num">'+Number(totalDebet).toLocaleString()+'</th><th class="num">'+Number(totalKredit).toLocaleString()+'</th><th class="num">'+Number(totalMutasi).toLocaleString()+'</th><th class="num">'+Number(saldoAkhir).toLocaleString()+'</th></tr>';
+            rowhtml += '</tfoot></table>';
             var winPrint = window.open('', '', 'left=0,top=0,width=1000,height=600,toolbar=0,scrollbars=0,status=0');
             winPrint.document.write('<title>Print</title>' + rowhtml);
             winPrint.document.close();
@@ -306,11 +382,5 @@
             .split(' ')
             .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
             .join(' ');
-    };
-    const edit_row = (item) => {
-        store.dispatch('GetDetailPmbelian', {kd : item.noPenjualan})
-        store.dispatch('CreateEditPembelian', item);
-        // router.push({ path: '/editpenjualan' })
-        // alert('ID: '+ item.noPenjualan);
     };
 </script>

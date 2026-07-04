@@ -1,0 +1,27 @@
+
+.neraca-table-wrap[data-v-de9dfb71] {
+    overflow-x: auto;
+}
+.neraca-table[data-v-de9dfb71] {
+    width: 100%;
+}
+.neraca-table[data-v-de9dfb71] td,
+.neraca-table[data-v-de9dfb71] th {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.edit-link[data-v-de9dfb71] {
+    margin-left: 8px;
+    font-size: 12px;
+}
+.total-line[data-v-de9dfb71] {
+    border-top: 1px solid #000;
+}
+.invoice-actions-btn .row[data-v-de9dfb71] {
+    row-gap: 10px;
+}
+@media (max-width: 991px) {
+.invoice-actions-btn[data-v-de9dfb71] {
+        margin-top: 16px;
+}
+}

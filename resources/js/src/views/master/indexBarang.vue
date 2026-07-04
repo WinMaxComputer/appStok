@@ -25,18 +25,12 @@
                             <button class="btn btn-primary mb-2 me-2" @click="openModal">Tambah</button>
                             <button class="btn btn-primary mb-2 me-2" @click="export_table('print')">Print</button>
                             <button class="btn btn-primary mb-2 me-2" @click="export_table('pdf')">PDF</button>
-<span>{{ barangs }}</span>
                         </div>
                         <v-client-table :data="items" :columns="columns" :options="table_option">
                             <template #hrgJual="props"> {{ Number(props.row.hrgJual).toLocaleString() }} </template>
                             <template #hrgPokok="props"> {{ Number(props.row.hrgPokok).toLocaleString() }} </template>
                             <template #kartuStok="props"> 
-                                <a href="javascript:void(0);" @click="viewstok([{
-                                                        startDate: sorting.startDate,
-                                                        endDate:sorting.endDate ,
-                                                        kdBarang:props.row.kdBarang,
-                                                        nmBarang:props.row.nmBarang
-                                                    }])"  >
+                                <a href="javascript:void(0);" @click="viewstok(props.row)" title="Lihat Kartu Stok">
                                 <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="24"
@@ -47,10 +41,10 @@
                                         stroke-width="2"
                                         stroke-linecap="round"
                                         stroke-linejoin="round"
-                                        class="feather feather-check-circle text-primary"
+                                        class="feather feather-eye text-primary"
                                     >
-                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
                                     </svg>    
                                                     
                                 </a>
@@ -97,6 +91,85 @@
 
                         
                         
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="isKartuStokVisible" class="modal d-block" tabindex="-1" role="dialog" style="background: rgba(0,0,0,0.5);">
+                <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Detail Kartu Stok</h5>
+                            <button type="button" class="btn-close" @click="isKartuStokVisible = false"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row mb-3">
+                                <div class="col-md-4"><strong>Kode Barang:</strong> {{ kartuStokHeader.kdBarang }}</div>
+                                <div class="col-md-4"><strong>Nama Barang:</strong> {{ kartuStokHeader.nmBarang }}</div>
+                                <div class="col-md-4"><strong>Periode:</strong> {{ kartuStokHeader.startDate }} sd {{ kartuStokHeader.endDate }}</div>
+                            </div>
+
+                            <div class="row mb-3 align-items-end">
+                                <div class="col-md-3">
+                                    <label class="form-label">Awal</label>
+                                    <flat-pickr
+                                        v-model="kartuStokHeader.startDate"
+                                        :config="kartuStokPickerConfig"
+                                        class="form-control form-control-sm"
+                                    />
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Akhir</label>
+                                    <flat-pickr
+                                        v-model="kartuStokHeader.endDate"
+                                        :config="kartuStokPickerConfig"
+                                        class="form-control form-control-sm"
+                                    />
+                                </div>
+                                <div class="col-md-6 d-flex gap-2 justify-content-md-end">
+                                    <button class="btn btn-primary" @click="cariKartuStok" :disabled="kartuStokLoading">Cari</button>
+                                </div>
+                            </div>
+
+                            <div v-if="kartuStokLoading" class="text-center py-4">
+                                <h6>Loading detail kartu stok...</h6>
+                            </div>
+
+                            <div v-else class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Tanggal</th>
+                                            <th class="text-end">Qty Beli</th>
+                                            <th class="text-end">Nilai Beli</th>
+                                            <th class="text-end">Qty Jual</th>
+                                            <th class="text-end">Nilai Jual</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="item in kartuStokItems" :key="item.id || `${item.tgl}-${item.unit_beli}-${item.unit_jual}`">
+                                            <td>{{ moment(item.tgl).format('D-M-YYYY') }}</td>
+                                            <td class="text-end">{{ Number(item.unit_beli).toLocaleString() }}</td>
+                                            <td class="text-end">{{ Number(item.total_beli).toLocaleString() }}</td>
+                                            <td class="text-end">{{ Number(item.unit_jual).toLocaleString() }}</td>
+                                            <td class="text-end">{{ Number(item.total_jual).toLocaleString() }}</td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Total</th>
+                                            <th class="text-end">{{ Number(kartuStokSummary.unitBeli).toLocaleString() }}</th>
+                                            <th class="text-end">{{ Number(kartuStokSummary.totalBeli).toLocaleString() }}</th>
+                                            <th class="text-end">{{ Number(kartuStokSummary.unitJual).toLocaleString() }}</th>
+                                            <th class="text-end">{{ Number(kartuStokSummary.totalJual).toLocaleString() }}</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @click="isKartuStokVisible = false">Close</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -299,8 +372,15 @@
     </div>
 </template>
 
+<style scoped>
+:deep(.flatpickr-calendar),
+:deep(.flatpickr-calendar.open) {
+    z-index: 100000 !important;
+}
+</style>
+
 <script setup>
-    import { computed, onMounted, ref } from 'vue';
+    import { onMounted, ref } from 'vue';
 
     //pdf export
     import jsPDF from 'jspdf';
@@ -308,16 +388,17 @@
 
     import moment from "moment";
     import { Modal } from 'usemodal-vue3';
+    import flatPickr from 'vue-flatpickr-component';
+    import 'flatpickr/dist/flatpickr.css';
+    import '@/assets/sass/forms/custom-flatpickr.css';
     import { useStore } from 'vuex';
-    import { useRouter, useRoute } from 'vue-router'
+    import { useRouter } from 'vue-router'
 
     import { useMeta } from '@/composables/use-meta';
-import { f } from 'html2pdf.js';
     useMeta({ title: 'Data Barang' });
 
     const store = useStore();
     const router = useRouter();
-    const route = useRoute();
     const loading = ref(false);
 
     const columns = ref(['kdBarang','barCode' , 'nmBarang', 'hrgPokok', 'hrgJual', 'namaKtg', 'stokPersediaan', 'kartuStok' ,'action']);
@@ -354,6 +435,26 @@ import { f } from 'html2pdf.js';
     const isVisible = ref(false);
     const isVisibleTambah = ref(false);
     const edit = ref({});
+    const isKartuStokVisible = ref(false);
+    const kartuStokLoading = ref(false);
+    const kartuStokItems = ref([]);
+    const kartuStokHeader = ref({
+        kdBarang: '',
+        nmBarang: '',
+        startDate: '',
+        endDate: '',
+    });
+    const kartuStokSummary = ref({
+        unitBeli: 0,
+        totalBeli: 0,
+        unitJual: 0,
+        totalJual: 0,
+        hpp: 0,
+    });
+    const kartuStokPickerConfig = ref({
+        dateFormat: 'd-m-Y',
+        static: true,
+    });
 
     const openModal = () => {
         isVisibleTambah.value = true;
@@ -396,6 +497,10 @@ import { f } from 'html2pdf.js';
    
 
     onMounted(() => {
+        kartuStokPickerConfig.value = {
+            dateFormat: 'd-m-Y',
+            static: true,
+        };
         bind_data();
         GetCoaHpp();
         getKtg();
@@ -420,13 +525,6 @@ import { f } from 'html2pdf.js';
             return
         })
     }
-
-    const barangs = computed(() => {
-        items.value = store.getters.StateBarang;
-        kdbrg.value = store.getters.NoBarang;
-        // console.log(items)
-        // return { kdbrg }
-    });
 
     // input.value = computed(() => {
     //     kdbrg.value = store.getters.NoBarang;
@@ -635,12 +733,60 @@ import { f } from 'html2pdf.js';
             .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
             .join(' ');
     };
-    const viewstok = (data) => {
-        store.commit('SetViewStok', data)
-        router.push({ name: 'kartu-stok' })
-        // alert('ID: ' + item.kdBarang + ', Name: ' + item.nmBarang);
-        // console.log(item);
-        // alert('ID: ' + item.kdBarang + ', Name: ' + item.nmBarang);
+    const viewstok = async (item) => {
+        kartuStokHeader.value = {
+            kdBarang: item.kdBarang,
+            nmBarang: item.nmBarang,
+            startDate: sorting.value.startDate,
+            endDate: sorting.value.endDate,
+        };
+
+        await loadKartuStok(item.kdBarang, kartuStokHeader.value.startDate, kartuStokHeader.value.endDate);
+        isKartuStokVisible.value = true;
+    };
+
+    const cariKartuStok = async () => {
+        if (!kartuStokHeader.value.kdBarang) {
+            return;
+        }
+
+        await loadKartuStok(
+            kartuStokHeader.value.kdBarang,
+            kartuStokHeader.value.startDate,
+            kartuStokHeader.value.endDate,
+        );
+    };
+
+    const loadKartuStok = async (kdBarang, startDate, endDate) => {
+        kartuStokLoading.value = true;
+
+        try {
+            await store.dispatch('GetKartuStok', {
+                startDate,
+                endDate,
+                kdBarang,
+            });
+
+            const data = store.getters.StateListKartuStok || [];
+            kartuStokItems.value = data;
+
+            const summary = data.reduce((accumulator, current) => {
+                accumulator.unitBeli += parseInt(current.unit_beli || 0);
+                accumulator.totalBeli += parseInt(current.total_beli || 0);
+                accumulator.unitJual += parseInt(current.unit_jual || 0);
+                accumulator.totalJual += parseInt(current.total_jual || 0);
+                return accumulator;
+            }, { unitBeli: 0, totalBeli: 0, unitJual: 0, totalJual: 0 });
+
+            kartuStokSummary.value = {
+                ...summary,
+                hpp: summary.unitBeli > 0 ? summary.totalBeli / summary.unitBeli : 0,
+            };
+        } catch (error) {
+            console.log('error: ', error);
+        } finally {
+            kartuStokLoading.value = false;
+        }
     };
 
     const view_row = (item) => {

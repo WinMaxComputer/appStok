@@ -4,13 +4,25 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#0f766e">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Swamerta App">
+    <meta name="application-name" content="Swamerta App">
 
     <title>Swamerta - App</title>
 
     @vite(['resources/js/src/main.js'])
 
-    <link rel="shortcut icon" href="{{ asset('favicon.png') }}">
+    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/winmax-90e19e7f41d823ab49c83617de39c94d.png') }}">
 
     <link href="https://fonts.googleapis.com/css?family=Nunito:400,600,700" rel="stylesheet">
     <style>

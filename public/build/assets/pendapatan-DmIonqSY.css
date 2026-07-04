@@ -1,0 +1,21 @@
+
+.coa-table-wrap[data-v-9aed89a9] {
+    overflow-x: auto;
+}
+.coa-table[data-v-9aed89a9] td,
+.coa-table[data-v-9aed89a9] th {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.edit-link[data-v-9aed89a9] {
+    margin-left: 8px;
+    font-size: 12px;
+}
+.invoice-actions-btn .row[data-v-9aed89a9] {
+    row-gap: 10px;
+}
+@media (max-width: 991px) {
+.invoice-actions-btn[data-v-9aed89a9] {
+        margin-top: 16px;
+}
+}

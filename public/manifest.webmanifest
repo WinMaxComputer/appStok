@@ -1,0 +1,28 @@
+{
+  "id": "/",
+  "name": "Swamerta App",
+  "short_name": "Swamerta",
+  "lang": "id",
+  "description": "Aplikasi operasional dan laporan.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#0f766e",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/images/winmax-90e19e7f41d823ab49c83617de39c94d.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}

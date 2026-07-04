@@ -268,7 +268,7 @@
                                             <a href="javascript:;" class="btn btn-primary btn-send" @click="openModal()">Penerima</a>
                                         </div>
                                         <div class="col-xl-12 col-md-3 col-sm-6">
-                                            <a href="javascript:;" class="btn btn-secondary btn-print action-print" @click="print()">Print</a>
+                                            <a href="javascript:;" class="btn btn-secondary btn-print action-print" @click="printInvoice()">Print</a>
                                         </div>
                                         <div class="col-xl-12 col-md-3 col-sm-6">
                                             <a href="javascript:;" class="btn btn-success btn-download" @click="downloadWithCSS()">Download</a>
@@ -277,7 +277,7 @@
                                             <a href="javascript:;" class="btn btn-success btn-download" @click="downloadWithCSS()">Download Winmax</a>
                                         </div>
                                         <div class="col-xl-12 col-md-3 col-sm-6">
-                                            <router-link to="/laporan/penjualan-barang" class="btn btn-warning btn-print">Back</router-link>
+                                            <router-link :to="{ name: 'penjualan-barang', query: route.query }" class="btn btn-warning btn-print">Back</router-link>
                                         </div>
                                         <div class="col-xl-12 col-md-3 col-sm-6">
 
@@ -301,7 +301,7 @@
     import jsPDF from 'jspdf';
     import 'jspdf-autotable';
     import html2canvas from "html2canvas"
-    import * as html2pdf from 'html2pdf.js';
+    import html2pdf from 'html2pdf.js';
 
     import { useMeta } from '@/composables/use-meta';
     useMeta({ title: 'Invoice' });
@@ -345,28 +345,22 @@
         // console.log(isi.value);
     });
 
+    const getPdfOptions = () => ({
+        margin: 0.35,
+        filename: `invoice-${noNota.value || invoiceId.value || 'penjualan'}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] },
+    });
+
     const downloadWithCSS = () => {
-        const doc = new jsPDF();
-        /** WITH CSS */
-        // var canvasElement = document.createElement('canvas');
-        // // console.log(canvasElement)
-        // html2canvas(isi.value, { canvas: canvasElement, scale: 1 }).then(function (canvas) {
-        //     const img = canvas.toDataURL("image/jpeg", 0.5);
-        //     doc.addImage(img,'JPEG', 0, 0, 210, 297);
-        //     doc.save("sample.pdf");
-        // });
-
-        var element = document.getElementById('element-to-print');
-        var opt = {
-        margin:       0.5,
-        filename:     'myfile.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        // New Promise-based usage:
-        html2pdf().set(opt).from(element).save();
+        const element = document.getElementById('element-to-print');
+        html2pdf().set(getPdfOptions()).from(element).save();
     }
     
     onBeforeMount(() => {
@@ -397,8 +391,32 @@
         // ];
     };
 
-    const print = () => {
-        window.print();
+    const printInvoice = () => {
+        const element = document.getElementById('element-to-print');
+        html2pdf().set(getPdfOptions()).from(element).outputPdf('bloburl').then((blobUrl) => {
+            const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=1100,height=900');
+
+            if (!printWindow) {
+                return;
+            }
+
+            printWindow.document.write(`
+                <html>
+                    <head><title>Print Invoice</title></head>
+                    <body style="margin:0;">
+                        <iframe id="print-frame" src="${blobUrl}" style="border:0;width:100%;height:100vh;"></iframe>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+
+            const triggerPrint = () => {
+                printWindow.focus();
+                printWindow.print();
+            };
+
+            setTimeout(triggerPrint, 1200);
+        });
     };
 
     const openModal = () => {
@@ -517,6 +535,132 @@
     flex: 0 0 auto;
     width: 33.33333333%;
   }
+}
+
+@media print {
+    :global(body) {
+        background: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    :global(body *) {
+        visibility: hidden !important;
+    }
+
+    :global(#element-to-print),
+    :global(#element-to-print *) {
+        visibility: visible !important;
+    }
+
+    :global(#element-to-print) {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+    }
+
+    .layout-px-spacing,
+    .row.invoice,
+    .doc-container,
+    .invoice-container,
+    .invoice-inbox,
+    .content-section {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .invoice-container,
+    .invoice-inbox,
+    .content-section {
+        box-shadow: none !important;
+    }
+
+    .content-section {
+        padding: 0 4mm 0 4mm !important;
+    }
+
+    .inv--total-amounts {
+        position: static !important;
+        width: 100% !important;
+        margin-top: 3mm !important;
+        padding-top: 2mm !important;
+        background: #fff !important;
+    }
+
+    .inv--product-table-section,
+    .row {
+        margin-bottom: 0 !important;
+    }
+
+    .inv-street-addr,
+    .inv-email-address,
+    .inv-created-date,
+    .text-end {
+        line-height: 1.2 !important;
+    }
+
+    .inv--product-table-section table,
+    .inv--product-table-section th,
+    .inv--product-table-section td {
+        font-size: 10px !important;
+    }
+
+    .inv--product-table-section th,
+    .inv--product-table-section td {
+        padding-top: 3px !important;
+        padding-bottom: 3px !important;
+    }
+
+    .col-sm-41,
+    .col-sm-51,
+    .col-sm-21 {
+        padding-left: 2mm !important;
+        padding-right: 2mm !important;
+    }
+
+    .invoice-00001 {
+        width: 100% !important;
+        page-break-inside: auto;
+    }
+
+    .table-responsive {
+        overflow: visible !important;
+    }
+
+    table {
+        width: 100% !important;
+        page-break-inside: auto;
+    }
+
+    thead {
+        display: table-header-group;
+    }
+
+    tr,
+    img,
+    svg {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+
+    .invoice-actions-btn,
+    .btn,
+    .modal,
+    .modal-backdrop {
+        display: none !important;
+    }
+
+    @page {
+        size: A4 portrait;
+        margin: 8mm;
+    }
 }
 
 </style>

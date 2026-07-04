@@ -7,7 +7,7 @@
                         <nav class="breadcrumb-one" aria-label="breadcrumb">
                             <ol class="breadcrumb">
                                 <li class="breadcrumb-item"><a href="javascript:;">Dashboard</a></li>
-                                <li class="breadcrumb-item active" aria-current="page"><span>Sales</span></li>
+                                <li class="breadcrumb-item active" aria-current="page"><span>COA Biaya Lain</span></li>
                             </ol>
                         </nav>
                     </div>
@@ -33,11 +33,16 @@
                                         </div>
                                     </div>
                                     <div class="panel-body">
-                                        <!-- <div class="table-responsive"> -->
-
-                                            
-                                            <table>
-                                                <tbody  v-for="hrt, index in hartalist" :key="hrt.acc_id" :set="amount = hrt.amount">
+                                        <div class="table-responsive coa-table-wrap">
+                                            <table class="table table-sm coa-table mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 140px;">Kode</th>
+                                                        <th>Nama Akun</th>
+                                                        <th class="text-end" style="width: 220px;">Jumlah</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody  v-for="(hrt, index) in hartalist" :key="hrt.acc_id" :set="amount = hrt.amount">
                                                     
                                                         <tr v-if="hrt.level === '1'" >
                                                             <td v-if="hrt.jenis != 'Total'" style="min-width:70px">{{ hrt.acc_id }}</td>
@@ -94,7 +99,7 @@
 
                                                 </tbody>
                                             </table>
-                                        <!-- </div> -->
+                                        </div>
 
                                         
                                     </div>
@@ -107,16 +112,19 @@
                                     <div class="row">
                                         
                                         <div class="col-xl-12 col-md-3 col-sm-6">
-                                            <a href="javascript:;" class="btn btn-secondary btn-print action-print" @click="print()">Print</a>
+                                            <button type="button" class="btn btn-secondary btn-print action-print w-100" @click="printPage">Cetak</button>
                                         </div>
                                         <div class="col-xl-12 col-md-3 col-sm-6">
-                                            <a href="javascript:;" class="btn btn-primary btn-send">Send Invoice</a>
+                                            <button type="button" class="btn btn-primary btn-send w-100" @click="loadData" :disabled="isLoadingList">Muat Ulang</button>
                                         </div>
                                         <div class="col-xl-12 col-md-3 col-sm-6">
-                                            <a href="javascript:;" class="btn btn-success btn-download">Download</a>
+                                            <button type="button" class="btn btn-success btn-download w-100" @click="loadData" :disabled="isLoadingList">
+                                                <span v-if="isLoadingList" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                                {{ isLoadingList ? 'Memuat...' : 'Muat Data' }}
+                                            </button>
                                         </div>
                                         <div class="col-xl-12 col-md-3 col-sm-6">
-                                            <router-link to="/apps/invoice/edit" class="btn btn-dark btn-edit">Edit</router-link>
+                                            <button type="button" class="btn btn-dark btn-edit w-100" @click="reloadPage">Muat Halaman</button>
                                         </div>
 
                                     </div>
@@ -135,35 +143,61 @@
 <script setup>
     import '@/assets/sass/apps/invoice-preview.scss';
 
-    import { computed, ref, onMounted, reactive } from 'vue';
+    import { ref, onMounted } from 'vue';
     import { useStore } from 'vuex';
-    import { useRouter, useRoute } from 'vue-router';
-
-    import moment from "moment";
 
     import { useMeta } from '@/composables/use-meta';
-    useMeta({ title: 'BBM' });
+    useMeta({ title: 'COA Biaya Lain' });
 
     
     const store = useStore();
-    const router = useRouter();
-    const route = useRoute();
 
 
-    // const modalRef = ref(null);
-    // const openModal = () => Modal.getInstance(modalRef.value)?.show();
-    const hartalist = ref();
-    onMounted(() => {
-        const harta = ref({
-            group: '8'
-        });
-        store.dispatch('GetHarta', harta.value);
-        // hartalist.value = store.getters.StateHarta;
-        setTimeout(function() { 
-            // store.dispatch('GetCoaList')
-            hartalist.value = store.getters.StateHarta;
-        }, 3000);
-       
-    })
+    const hartalist = ref([]);
+    const isLoadingList = ref(false);
+
+    const loadData = async () => {
+        isLoadingList.value = true;
+        try {
+            await store.dispatch('GetHarta', { group: '8' });
+            hartalist.value = store.getters.StateHarta || [];
+        } finally {
+            isLoadingList.value = false;
+        }
+    };
+
+    onMounted(async () => {
+        await loadData();
+    });
+
+    const printPage = () => {
+        window.print();
+    };
+
+    const reloadPage = () => {
+        window.location.reload();
+    };
     
 </script>
+
+<style scoped>
+.coa-table-wrap {
+    overflow-x: auto;
+}
+
+.coa-table :deep(td),
+.coa-table :deep(th) {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.invoice-actions-btn .row {
+    row-gap: 10px;
+}
+
+@media (max-width: 991px) {
+    .invoice-actions-btn {
+        margin-top: 16px;
+    }
+}
+</style>

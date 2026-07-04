@@ -140,6 +140,66 @@ class laporanController extends Controller
             'data' => $lap
         ], 200);
     }
+
+    public function mostSaleBarang(Request $request){
+        $startDate = date("Y-m-d", strtotime($request->input('startDate')));
+        $endDate = date("Y-m-d", strtotime($request->input('endDate')));
+        $limit = (int) $request->input('limit', 5);
+
+        if ($limit <= 0) {
+            $limit = 5;
+        }
+
+        $lap = DB::table('tblpenjualan_detail')
+                ->join('tblpenjualan', 'tblpenjualan_detail.r_noPenjualan', '=', 'tblpenjualan.noPenjualan')
+                ->join('tblbarang', 'tblpenjualan_detail.r_kdBarang', '=', 'tblbarang.kdBarang')
+                ->whereBetween('tblpenjualan.tglPenjualan', [$startDate, $endDate])
+                ->select(
+                    'tblbarang.kdBarang',
+                    'tblbarang.nmBarang',
+                    DB::raw('COALESCE(SUM(tblpenjualan_detail.qty),0) as totalQty')
+                )
+                ->groupBy('tblbarang.kdBarang', 'tblbarang.nmBarang')
+                ->orderBy('totalQty', 'desc')
+                ->limit($limit)
+                ->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Most Sale Barang',
+            'data' => $lap
+        ], 200);
+    }
+
+    public function mostSaleJasa(Request $request){
+        $startDate = date("Y-m-d", strtotime($request->input('startDate')));
+        $endDate = date("Y-m-d", strtotime($request->input('endDate')));
+        $limit = (int) $request->input('limit', 5);
+
+        if ($limit <= 0) {
+            $limit = 5;
+        }
+
+        $lap = DB::table('tblpenjualan_detail_jasa')
+                ->join('tblpenjualan', 'tblpenjualan_detail_jasa.r_noPenjualan', '=', 'tblpenjualan.noPenjualan')
+                ->join('tbljasa', 'tblpenjualan_detail_jasa.r_kdJasa', '=', 'tbljasa.kdJasa')
+                ->whereBetween('tblpenjualan.tglPenjualan', [$startDate, $endDate])
+                ->select(
+                    'tbljasa.kdJasa',
+                    'tbljasa.nmJasa',
+                    DB::raw('COALESCE(SUM(tblpenjualan_detail_jasa.qtyJasa),0) as totalQty')
+                )
+                ->groupBy('tbljasa.kdJasa', 'tbljasa.nmJasa')
+                ->orderBy('totalQty', 'desc')
+                ->limit($limit)
+                ->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Most Sale Jasa',
+            'data' => $lap
+        ], 200);
+    }
     
 
     public function laporanOpnum(Request $request){
@@ -807,23 +867,38 @@ class laporanController extends Controller
     public function bukubesar(Request $request){
         $startDate = date("Y-m-d", strtotime($request->input('startDate')));
         $endDate = date("Y-m-d", strtotime($request->input('endDate')));
-        // $list = DB::table('general_ledger')
-        //         ->join('gl_detail', 'gl_detail.rgl', 'general_ledger.notrans')
-        //         ->whereBetween('general_ledger.tgl', [$startDate, $endDate])
-        //         ->orderBy("general_ledger.id", "desc")
-        //         ->get();
+
+        // Closing previous period becomes opening balance for selected period.
+        $openingBalance = (float) DB::table('general_ledger')
+            ->join('gl_detail', 'general_ledger.notrans', '=', 'gl_detail.rgl')
+            ->whereDate('general_ledger.tgl', '<', $startDate)
+            ->sum(DB::raw('coalesce(gl_detail.debet,0) - coalesce(gl_detail.kredit,0)'));
+
+        DB::statement("SET @saldo := {$openingBalance}");
+
         $list = DB::table('general_ledger')
                 ->join('gl_detail', 'general_ledger.notrans', 'gl_detail.rgl')
                 ->join('coa', 'gl_detail.acc_id', 'coa.acc_id')
                 ->whereBetween('general_ledger.tgl', [$startDate, $endDate])
                 // ->where('general_ledger.jurnal', 'GJ')
-                ->select('general_ledger.*', 'gl_detail.*', 'coa.name')
-                ->orderBy("general_ledger.notrans", "desc")
+            ->select(
+                'general_ledger.*',
+                'gl_detail.*',
+                'coa.name',
+                DB::raw('(@saldo := @saldo + coalesce(gl_detail.debet,0) - coalesce(gl_detail.kredit,0)) as saldo')
+            )
+            ->orderBy('general_ledger.tgl', 'asc')
+            ->orderBy('general_ledger.notrans', 'asc')
+            ->orderBy('gl_detail.id', 'asc')
                 ->get();
+
+        $closingBalance = $list->count() ? (float) $list->last()->saldo : $openingBalance;
         
         return response()->json([
             'success' => true,
             'message' => 'buku besar',
+            'opening_balance' => $openingBalance,
+            'closing_balance' => $closingBalance,
             'data' => $list
         ], 200);
 
@@ -832,15 +907,54 @@ class laporanController extends Controller
         $startDate = date("Y-m-d", strtotime($request->input('startDate')));
         $endDate = date("Y-m-d", strtotime($request->input('endDate')));
         $acc = $request->input('acc_id');
-        
-        // DB::statement( DB::raw("SET @saldo := 0;"));
-        DB::select("SELECT @saldo:= sum(debet-kredit) from gl_detail a left join general_ledger b on a.rgl = b.notrans where acc_id = '$acc' and cast(b.tgl as date) < '$startDate'; ");
-        $list = DB::select("SELECT dealer_repcode_desc Cabang,'SLA.GJ000001' NoTransaksi,'$startDate' Tanggal,'Saldo Awal' Memo,case when coalesce(@saldo,0)>=0 then coalesce(@saldo,0) else 0 end as Debet,case when coalesce(@saldo,0)<0 then 0 else coalesce(@saldo,0) end as Kredit,coalesce(@saldo,0) as Saldo,0 as KodeAnggaran,'Default Anggaran' Nama_rekening from setup_dealer where dealer_repcode = '01020' union
-        SELECT d.dealer_repcode_desc,a.notrans,a.tgl,a.memo,b.debet,b.kredit,(@saldo:=coalesce(@saldo,0)+b.debet-b.kredit) as saldo,a.r_anggaran,case when a.r_anggaran = 0 then 'Default Anggaran' else c.nama_rekening end as NamaAnggaran FROM general_ledger a left join gl_detail b on a.notrans = b.rgl left join rekening_anggaran c on a.r_anggaran = c.id_rekening left join setup_dealer d on a.rlocation = d.dealer_repcode where b.acc_id = '$acc' and a.rlocation = '01020' and cast(a.tgl as date) between '$startDate' and '$endDate' ;");
+
+        if (empty($acc) || $acc === '-') {
+            return response()->json([
+                'success' => true,
+                'message' => 'ledger',
+                'opening_balance' => 0,
+                'closing_balance' => 0,
+                'data' => []
+            ], 200);
+        }
+
+        $openingBalance = (float) DB::table('gl_detail as b')
+            ->join('general_ledger as a', 'a.notrans', '=', 'b.rgl')
+            ->where('b.acc_id', $acc)
+            ->where('a.rlocation', '01020')
+            ->whereDate('a.tgl', '<', $startDate)
+            ->sum(DB::raw('coalesce(b.debet,0) - coalesce(b.kredit,0)'));
+
+        DB::statement("SET @saldo := {$openingBalance}");
+
+        $list = DB::table('general_ledger as a')
+            ->leftJoin('gl_detail as b', 'a.notrans', '=', 'b.rgl')
+            ->leftJoin('rekening_anggaran as c', 'a.r_anggaran', '=', 'c.id_rekening')
+            ->where('b.acc_id', $acc)
+            ->where('a.rlocation', '01020')
+            ->whereBetween('a.tgl', [$startDate, $endDate])
+            ->select(
+                DB::raw('a.notrans as NoTransaksi'),
+                DB::raw('a.tgl as Tanggal'),
+                DB::raw('a.memo as Memo'),
+                DB::raw('coalesce(b.debet,0) as Debet'),
+                DB::raw('coalesce(b.kredit,0) as Kredit'),
+                DB::raw('(@saldo := @saldo + coalesce(b.debet,0) - coalesce(b.kredit,0)) as Saldo'),
+                DB::raw('a.r_anggaran as KodeAnggaran'),
+                DB::raw("case when a.r_anggaran = 0 then 'Default Anggaran' else c.nama_rekening end as Nama_rekening")
+            )
+            ->orderBy('a.tgl', 'asc')
+            ->orderBy('a.notrans', 'asc')
+            ->orderBy('b.id', 'asc')
+            ->get();
+
+        $closingBalance = $list->count() ? (float) $list->last()->Saldo : $openingBalance;
         
         return response()->json([
             'success' => true,
             'message' => 'ledger',
+            'opening_balance' => $openingBalance,
+            'closing_balance' => $closingBalance,
             'data' => $list
         ], 200);
 
