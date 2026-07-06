@@ -1,0 +1,158 @@
+
+.print-only-neraca[data-v-e0930ade] {
+    display: none;
+}
+.neraca-report-shell[data-v-e0930ade] {
+    display: grid;
+    gap: 14px;
+}
+.neraca-period-banner[data-v-e0930ade] {
+    border-radius: 12px;
+    padding: 14px 16px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    box-shadow: 0 10px 24px rgba(31, 42, 68, 0.06);
+}
+.neraca-period-label[data-v-e0930ade] {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #5b6b84;
+    margin-bottom: 4px;
+}
+.neraca-period-range[data-v-e0930ade] {
+    font-size: 16px;
+    font-weight: 700;
+    color: #23314d;
+}
+.neraca-list-wrap[data-v-e0930ade] {
+    display: grid;
+    gap: 0;
+}
+.neraca-accounts-wrap[data-v-e0930ade] {
+    display: grid;
+    gap: 0;
+}
+.neraca-list-row[data-v-e0930ade] {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 5px 0 7px;
+}
+.neraca-list-main[data-v-e0930ade] {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+.neraca-list-code[data-v-e0930ade] {
+    color: #52627c;
+    background: transparent;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 70px;
+}
+.neraca-list-name[data-v-e0930ade] {
+    min-width: 0;
+    color: #22314a;
+    font-size: 11px;
+    line-height: 1.35;
+}
+.neraca-list-amount[data-v-e0930ade] {
+    min-width: 170px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-weight: 700;
+    color: #22314a;
+    font-size: 11px;
+    margin-left: 10px;
+}
+.detail-soft-row[data-v-e0930ade]:hover {
+    background: transparent;
+}
+.print-level-1 .neraca-list-name[data-v-e0930ade] { padding-left: 2px !important;
+}
+.print-level-2 .neraca-list-name[data-v-e0930ade] { padding-left: 14px !important;
+}
+.print-level-3 .neraca-list-name[data-v-e0930ade] { padding-left: 26px !important;
+}
+.print-level-4 .neraca-list-name[data-v-e0930ade] { padding-left: 38px !important;
+}
+.head-total-row[data-v-e0930ade] {
+    font-weight: 700;
+    padding-bottom: 8px;
+    margin-bottom: 2px;
+    background: rgba(238, 245, 255, 0.65);
+}
+.neraca-detail-box[data-v-e0930ade] {
+    padding: 12px 14px;
+}
+.invoice-actions-btn .row[data-v-e0930ade] {
+    row-gap: 10px;
+}
+.neraca-breakdown-box[data-v-e0930ade] {
+    padding: 10px;
+    background: #f8fbff;
+    box-shadow: 0 10px 24px rgba(31, 42, 68, 0.05);
+}
+.neraca-breakdown-title[data-v-e0930ade] {
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #2f3c56;
+}
+.neraca-breakdown-row[data-v-e0930ade] {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 11px;
+    padding: 4px 0;
+}
+.neraca-breakdown-row.total[data-v-e0930ade] {
+    margin-top: 4px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-weight: 700;
+    background: rgba(238, 245, 255, 0.75);
+    padding-left: 8px;
+    padding-right: 8px;
+}
+@media (max-width: 991px) {
+.invoice-actions-btn[data-v-e0930ade] {
+        margin-top: 16px;
+}
+.neraca-list-row[data-v-e0930ade] {
+        gap: 10px;
+}
+.neraca-list-amount[data-v-e0930ade] {
+        min-width: 140px;
+}
+}
+@media (max-width: 767px) {
+.neraca-list-row[data-v-e0930ade] {
+        flex-direction: column;
+        align-items: stretch;
+}
+.neraca-list-main[data-v-e0930ade] {
+        flex-direction: column;
+        align-items: flex-start;
+}
+.neraca-list-amount[data-v-e0930ade] {
+        width: 100%;
+        min-width: 0;
+}
+}
+@media print {
+.print-only-neraca[data-v-e0930ade] {
+        display: none !important;
+}
+}

@@ -1,0 +1,99 @@
+
+.jurnal-umum-page .ju-head[data-v-2bfd79b0] {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        margin-bottom: 0.5rem;
+}
+.jurnal-umum-page .ju-subtitle[data-v-2bfd79b0] {
+        font-size: 0.85rem;
+        color: #6b7280;
+}
+.jurnal-umum-page .ju-edit-badge[data-v-2bfd79b0] {
+        margin-top: 0.25rem;
+        display: inline-flex;
+        align-items: center;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #92400e;
+        background: #fef3c7;
+        border: 1px solid #fde68a;
+        border-radius: 999px;
+        padding: 0.2rem 0.55rem;
+        width: fit-content;
+}
+.jurnal-umum-page .ju-section-card[data-v-2bfd79b0] {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 14px;
+        background: #fff;
+}
+.jurnal-umum-page .ju-table-wrap table[data-v-2bfd79b0] {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+}
+.jurnal-umum-page .ju-table-wrap thead th[data-v-2bfd79b0] {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #6b7280;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 8px;
+}
+.jurnal-umum-page .ju-table-wrap tbody tr[data-v-2bfd79b0] {
+        background: #f9fafb;
+}
+.jurnal-umum-page .ju-table-wrap tbody td[data-v-2bfd79b0] {
+        vertical-align: middle;
+        border-top: 1px solid #eceff4;
+        border-bottom: 1px solid #eceff4;
+        padding: 6px;
+}
+.jurnal-umum-page .ju-table-wrap tbody td[data-v-2bfd79b0]:first-child {
+        border-left: 1px solid #eceff4;
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+}
+.jurnal-umum-page .ju-table-wrap tbody td[data-v-2bfd79b0]:last-child {
+        border-right: 1px solid #eceff4;
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+}
+.jurnal-umum-page .ju-list-card[data-v-2bfd79b0] {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 12px;
+        background: #fff;
+}
+.jurnal-umum-page .ju-filter-panel[data-v-2bfd79b0] {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 10px;
+        background: #f8fafc;
+}
+.jurnal-umum-page .ju-list-summary[data-v-2bfd79b0] {
+        border-top: 1px dashed #cbd5e1;
+        padding-top: 10px;
+        display: grid;
+        gap: 8px;
+}
+.jurnal-umum-page .ju-summary-row[data-v-2bfd79b0] {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+}
+.jurnal-umum-page .ju-list-table-wrap[data-v-2bfd79b0] {
+        border: 1px solid #eef2f7;
+        border-radius: 10px;
+        overflow: hidden;
+}
+@media (max-width: 991px) {
+.jurnal-umum-page .invoice-detail-total .col-md-6[data-v-2bfd79b0] {
+            margin-top: 12px;
+}
+.jurnal-umum-page .ju-list-card[data-v-2bfd79b0] {
+            padding: 8px;
+}
+}

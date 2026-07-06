@@ -1,0 +1,42 @@
+
+.coa-table-wrap[data-v-7d72555d] {
+    overflow-x: auto;
+}
+.coa-table[data-v-7d72555d] {
+    width: 100%;
+}
+.coa-table[data-v-7d72555d] td,
+.coa-table[data-v-7d72555d] th {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.action-btn[data-v-7d72555d] {
+    margin-right: 6px;
+    padding: 1px 6px;
+    font-size: 11px;
+    line-height: 1.2;
+    border-radius: 3px;
+}
+.total-line[data-v-7d72555d] {
+    border-top: 1px solid #000;
+}
+.modal-info[data-v-7d72555d] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.info-pill[data-v-7d72555d] {
+    border: 1px solid #dee2e6;
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 12px;
+    background: #f8f9fa;
+}
+.invoice-actions-btn .row[data-v-7d72555d] {
+    row-gap: 10px;
+}
+@media (max-width: 991px) {
+.invoice-actions-btn[data-v-7d72555d] {
+        margin-top: 16px;
+}
+}

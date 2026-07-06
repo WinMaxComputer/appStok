@@ -1,0 +1,59 @@
+
+.biaya-page[data-v-38bf0744] {
+    --biaya-border: #e8edf5;
+    --biaya-soft: #f7faff;
+}
+.biaya-card[data-v-38bf0744] {
+    background: #ffffff;
+    border: 1px solid var(--biaya-border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 14px;
+}
+.biaya-head[data-v-38bf0744] {
+    margin-bottom: 14px;
+}
+.biaya-subtitle[data-v-38bf0744] {
+    font-size: 13px;
+    color: #6c7a92;
+    margin-top: 4px;
+}
+.biaya-summary-box[data-v-38bf0744] {
+    background: linear-gradient(180deg, #ffffff 0%, var(--biaya-soft) 100%);
+    border: 1px solid var(--biaya-border);
+    border-radius: 12px;
+    padding: 14px;
+    min-height: 100%;
+}
+.biaya-summary-label[data-v-38bf0744] {
+    font-size: 12px;
+    color: #6c7a92;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.biaya-summary-value[data-v-38bf0744] {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2a44;
+}
+.biaya-table-wrap[data-v-38bf0744] {
+    border: 1px solid #edf1f7;
+    border-radius: 10px;
+    overflow-x: auto;
+}
+.biaya-entry-table thead th[data-v-38bf0744] {
+    background: var(--biaya-soft);
+    white-space: nowrap;
+}
+.biaya-entry-table td[data-v-38bf0744],
+.biaya-entry-table th[data-v-38bf0744] {
+    vertical-align: middle;
+}
+.biaya-action-btn[data-v-38bf0744] {
+    min-width: 72px;
+}
+@media (max-width: 991px) {
+.biaya-card[data-v-38bf0744] {
+        padding: 12px;
+}
+}
