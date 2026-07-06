@@ -88,4 +88,76 @@ class jurnalController extends Controller
         }
 
     }
+
+    public function updateJurnal(Request $request){
+        try{
+            $exception = DB::transaction(function() use ($request){
+                $targetNoTrans = $request->input('targetNoTrans');
+                $header = $request->input('header', []);
+                $detail = $request->input('detail', []);
+
+                if (empty($targetNoTrans) || empty($detail)) {
+                    throw new \Exception('Data update jurnal tidak lengkap');
+                }
+
+                $existing = DB::table('general_ledger')
+                    ->where('notrans', $targetNoTrans)
+                    ->where('jurnal', 'GJ')
+                    ->first();
+
+                if (empty($existing)) {
+                    throw new \Exception('Transaksi jurnal tidak ditemukan');
+                }
+
+                $tglNota = $header['tglNota'] ?? $existing->tgl;
+                $total = $header['total'] ?? $existing->total_trans;
+                $memo = $header['notes'] ?? $existing->memo;
+
+                DB::table('general_ledger')
+                    ->where('notrans', $targetNoTrans)
+                    ->update([
+                        'tgl' => $tglNota,
+                        'total_trans' => $total,
+                        'memo' => $memo,
+                        'us_update' => 'user',
+                    ]);
+
+                DB::table('gl_detail')->where('rgl', $targetNoTrans)->delete();
+
+                $detailRows = [];
+                for ($i = 0; $i < count($detail); $i++) {
+                    $detailRows[] = [
+                        'rgl' => $targetNoTrans,
+                        'acc_id' => $detail[$i]['acc'],
+                        'debet' => $detail[$i]['debet'],
+                        'kredit' => $detail[$i]['kredit'],
+                        'trans_detail' => 'Jurnal-Umum',
+                        'void_flag' => 0,
+                    ];
+                }
+
+                insert_gl_detail($detailRows);
+                DB::commit();
+            });
+
+            if(is_null($exception)) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Jurnal Berhasil diupdate!',
+                ], 200);
+            } else {
+                DB::rollback();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Jurnal Gagal Diupdate!',
+                ], 500);
+            }
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json([
+             'success' => false,
+             'message' => 'exception'.$e,
+         ], 400);
+        }
+    }
 }

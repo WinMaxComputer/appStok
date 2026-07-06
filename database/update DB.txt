@@ -15,3 +15,101 @@ ALTER TABLE `tblpobbm_detail` ADD `pph` DECIMAL(13,2) NOT NULL AFTER `qty_reciev
 // ALTER TABLE `tblbbm` CHANGE `accid_hpp` `accid` VARCHAR(10) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL;
 
 // ALTER TABLE `tblpobbm` ADD `pph` DECIMAL(13,2) NOT NULL AFTER `tax`;
+-- =============================================
+-- CLEANUP DUPLIKAT KARTU STOK (HISTORICAL DATA)
+-- Kasus: edit pembelian lama bisa menyisakan row dobel pada tblkartu_stok
+-- Kunci duplikat yang dipakai: r_notrans, kd_barang, tgl, unit_beli, total_beli, unit_jual, total_jual
+-- =============================================
+
+-- 1) CEK RINGKASAN DUPLIKAT
+SELECT
+	r_notrans,
+	kd_barang,
+	tgl,
+	unit_beli,
+	total_beli,
+	unit_jual,
+	total_jual,
+	COUNT(*) AS jumlah
+FROM tblkartu_stok
+GROUP BY
+	r_notrans,
+	kd_barang,
+	tgl,
+	unit_beli,
+	total_beli,
+	unit_jual,
+	total_jual
+HAVING COUNT(*) > 1
+ORDER BY r_notrans, kd_barang, tgl;
+
+-- 2) HAPUS DUPLIKAT (SISAKAN id PALING KECIL)
+DELETE ks1
+FROM tblkartu_stok ks1
+JOIN tblkartu_stok ks2
+	ON ks1.r_notrans = ks2.r_notrans
+ AND ks1.kd_barang = ks2.kd_barang
+ AND ks1.tgl = ks2.tgl
+ AND ks1.unit_beli = ks2.unit_beli
+ AND ks1.total_beli = ks2.total_beli
+ AND ks1.unit_jual = ks2.unit_jual
+ AND ks1.total_jual = ks2.total_jual
+ AND ks1.id > ks2.id;
+
+-- 3) VALIDASI ULANG (HASIL SEHARUSNYA KOSONG)
+SELECT
+	r_notrans,
+	kd_barang,
+	tgl,
+	unit_beli,
+	total_beli,
+	unit_jual,
+	total_jual,
+	COUNT(*) AS jumlah
+FROM tblkartu_stok
+GROUP BY
+	r_notrans,
+	kd_barang,
+	tgl,
+	unit_beli,
+	total_beli,
+	unit_jual,
+	total_jual
+HAVING COUNT(*) > 1
+ORDER BY r_notrans, kd_barang, tgl;
+
+-- =============================================
+-- AUDIT JURNAL PENJUALAN: AKUN PENDAPATAN (4xxx) MASUK DEBET
+-- Gunakan ini untuk menemukan nota penjualan yang posting pendapatannya terbalik.
+-- =============================================
+
+-- 1) AUDIT PERIODE TERTENTU (ganti tanggal sesuai kebutuhan)
+SELECT
+	a.order_no,
+	DATE(a.tgl) AS tgl,
+	SUM(COALESCE(b.debet,0)) AS debet_pendapatan,
+	SUM(COALESCE(b.kredit,0)) AS kredit_pendapatan,
+	SUM(COALESCE(b.debet,0) - COALESCE(b.kredit,0)) AS selisih
+FROM general_ledger a
+JOIN gl_detail b ON a.notrans = b.rgl
+WHERE a.order_no LIKE 'INV%'
+	AND LEFT(b.acc_id,1) = '4'
+	AND DATE(a.tgl) BETWEEN '2026-07-01' AND '2026-07-06'
+GROUP BY a.order_no, DATE(a.tgl)
+HAVING SUM(COALESCE(b.debet,0)) > 0
+ORDER BY a.order_no;
+
+-- 2) AUDIT HISTORIS SEMUA DATA
+SELECT
+	a.order_no,
+	DATE(a.tgl) AS tgl,
+	SUM(COALESCE(b.debet,0)) AS debet_pendapatan,
+	SUM(COALESCE(b.kredit,0)) AS kredit_pendapatan,
+	SUM(COALESCE(b.debet,0) - COALESCE(b.kredit,0)) AS selisih
+FROM general_ledger a
+JOIN gl_detail b ON a.notrans = b.rgl
+WHERE a.order_no LIKE 'INV%'
+	AND LEFT(b.acc_id,1) = '4'
+GROUP BY a.order_no, DATE(a.tgl)
+HAVING SUM(COALESCE(b.debet,0)) > 0
+ORDER BY tgl DESC, a.order_no;

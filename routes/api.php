@@ -176,6 +176,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/store/biaya', [App\Http\Controllers\biayaController::class, 'simpanBiaya']);
     Route::post('/detail-biaya', [App\Http\Controllers\biayaController::class, 'detailBiaya']);
     Route::post('/store/jurnal-umum', [App\Http\Controllers\jurnalController::class, 'simpanJurnal']);
+    Route::post('/update/jurnal-umum', [App\Http\Controllers\jurnalController::class, 'updateJurnal']);
 
     //============ COA
     Route::post('/labarugi/pendapatan', [App\Http\Controllers\labarugiController::class, 'getPendapatan']);

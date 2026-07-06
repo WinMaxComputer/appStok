@@ -456,7 +456,28 @@
         static: true,
     });
 
-    const openModal = () => {
+    const resetInputForm = () => {
+        input.value = {
+            kdB: kdbrg.value,
+            kdktg: '',
+            nmB: '',
+            satuanB: '',
+            hrgBeli: '',
+            hrgJual: '',
+            merek: '',
+            barcode: '',
+            qtyMin: '1',
+            qtyMax: '999',
+            acc_id: '',
+            acchpp: '',
+            accpersediaan: '',
+            accbiaya: ''
+        };
+    };
+
+    const openModal = async () => {
+        await getkd();
+        resetInputForm();
         isVisibleTambah.value = true;
         // const modal = document.getElementById('exampleModalCenter');
         // if (modal) {
@@ -556,6 +577,7 @@
         .then(response => {
             // console.log('response: ', response)
             kdbrg.value = store.getters.NoBarang;
+            input.value.kdB = kdbrg.value;
         }).catch(error => {
             // console.log('error: ', error)
             return
@@ -579,25 +601,11 @@
             loading.value = true;
             const isi = input.value
             store.dispatch('CreateBarang', isi )
-            .then(response => {
+            .then(async (response) => {
                 loading.value = false;
                 bind_data();
-                getkd()
-                input.value = {
-                    kdB: kdbrg.value,
-                    kdktg: '',
-                    nmB: '',
-                    satuanB: '',
-                    hrgBeli: '',
-                    hrgJual: '',
-                    merek: '',
-                    qtyMin: '1',
-                    qtyMax: '999',
-                    acc_id: '',
-                    acchpp: '',
-                    accpersediaan: '',
-                    accbiaya: ''
-                }
+                await getkd()
+                resetInputForm();
             }).catch(error => {
                 console.log('error: ', error)
                 // window.location.reload();

@@ -133,6 +133,7 @@ class laporanController extends Controller
                 ->join('tblsupplier', 'tblpembelian.r_supplier', 'tblsupplier.kdSupplier')
                 ->select('tblpembelian.*', 'tblsupplier.nmSupplier')
                 ->whereBetween('tblpembelian.tglPembelian', [$startDate, $endDate])
+                ->orderBy('tblpembelian.idPembelian', 'desc')
                 ->get();
         return response()->json([
             'success' => true,
@@ -313,7 +314,21 @@ class laporanController extends Controller
                 ->join('coa', 'gl_detail.acc_id', 'coa.acc_id')
                 ->whereBetween('general_ledger.tgl', [$startDate, $endDate])
                 ->where('general_ledger.jurnal', 'GJ')
-                ->select('general_ledger.*', 'gl_detail.*', 'coa.name')
+                ->select(
+                    'general_ledger.notrans',
+                    'general_ledger.tgl',
+                    'general_ledger.total_trans',
+                    'general_ledger.memo',
+                    'general_ledger.jurnal',
+                    'gl_detail.rgl',
+                    'gl_detail.acc_id',
+                    'gl_detail.debet',
+                    'gl_detail.kredit',
+                    'gl_detail.trans_detail',
+                    'gl_detail.void_flag',
+                    'coa.name'
+                )
+                ->distinct()
                 ->orderBy("general_ledger.notrans", "desc")
                 ->get();
         
@@ -705,16 +720,24 @@ class laporanController extends Controller
                 $dtl = DB::table('tblpenjualan_detail')->where('r_noPenjualan', $kd)->get();
                 for($i=0;$i< count($dtl);$i++){
                     $oldStok = DB::table('tblpersediaan')->where('kdPersediaan', $dtl[$i]->r_kdBarang)->first();
-                    DB::table('tblpersediaan')->where('kdPersediaan', $dtl[$i]->r_kdBarang)->update([
-                        'stokPersediaan' => $oldStok->stokPersediaan + $dtl[$i]->qty,
-                    ]);
+                    if (!empty($oldStok)) {
+                        $stokBaru = $oldStok->stokPersediaan + $dtl[$i]->qty;
+                        DB::table('tblpersediaan')->where('kdPersediaan', $dtl[$i]->r_kdBarang)->update([
+                            'stokPersediaan' => $stokBaru,
+                        ]);
+                        DB::table('tblbarang')->where('kdBarang', $dtl[$i]->r_kdBarang)->update([
+                            'stkBarang' => $stokBaru,
+                        ]);
+                    }
                 };
                 $stokfifo = DB::table('tbltransaksi_stok')->where('r_trans', $kd)->get();
                 for($i=0;$i< count($stokfifo);$i++){
                     $oldStok = DB::table('tblstok_fifo')->where('id', $stokfifo[$i]->r_fifo)->first();
-                    DB::table('tblstok_fifo')->where('id', $stokfifo[$i]->r_fifo)->update([
-                        'stok' => $oldStok->stok + $stokfifo[$i]->stok_trans,
-                    ]);
+                    if (!empty($oldStok)) {
+                        DB::table('tblstok_fifo')->where('id', $stokfifo[$i]->r_fifo)->update([
+                            'stok' => $oldStok->stok + $stokfifo[$i]->stok_trans,
+                        ]);
+                    }
                 };
                 DB::table('tblpenjualan_detail')->where('r_noPenjualan', $kd)->delete();
                 DB::table('tblpenjualan_detail_jasa')->where('r_noPenjualan', $kd)->delete();

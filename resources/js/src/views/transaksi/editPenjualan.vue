@@ -23,12 +23,13 @@
                                 <div class="invoice-detail-body">
                                     <div class="invoice-detail-title">
                                        
-                                        <div class="invoice-title">
-                                            Edit Invoice Penjualan
+                                        <div class="invoice-title d-flex align-items-center gap-2 flex-wrap">
+                                            <span>Invoice Penjualan</span>
+                                            <span class="badge badge-outline-primary">Edit</span>
                                         </div>
                                     </div>
 
-                                    <div class="invoice-detail-header">
+                                    <div class="invoice-detail-header txn-block">
                                         <div class="row justify-content-between">
                                             <div class="col-xl-5 invoice-address-company">
 
@@ -111,7 +112,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="invoice-detail-items">
+                                    <div class="invoice-detail-items txn-block">
                                         <ul class="nav nav-tabs mb-3 mt-3" id="simpletab" role="tablist">
                                             <li class="nav-item">
                                                 <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">BARANG</a>
@@ -123,11 +124,11 @@
                                         <div class="tab-content" id="simpletabContent">
                                             <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
 
-                                                <div class="invoice-detail-items">
-                                                    <div class="row">
+                                                <div class="invoice-detail-items txn-entry-area">
+                                                    <div class="row g-2 align-items-end txn-entry-row txn-mobile-stack">
                                                         <div class="form-group col-xs-2">
                                                             <label for="Inputqty">Barcode</label>
-                                                            <input type="text" ref="InputBarcode" v-model="barcode" class="form-control form-control-sm" placeholder="Barcode" @keyup.enter="addToCartB(barcode)" />
+                                                            <input type="text" ref="InputBarcode" v-model="barcode" class="form-control form-control-sm" placeholder="Barcode" @keydown.enter="addToCartB(barcode)" />
                                                         </div>
                                                         <div class="form-group col-md-3">
                                                             <label for="inputCity">NAMA BARANG</label>
@@ -135,6 +136,7 @@
                                                                 v-model="brg" 
                                                                 :options="penjualan.barangs" 
                                                                 :searchable="true"
+                                                                @select="focusInput()"
                                                                 track-by="nmBarang"
                                                                 label="nmBarang"
                                                                 open-direction="top"
@@ -145,15 +147,15 @@
                                                         </div>
                                                         <div class="form-group col-md-2">
                                                             <label for="inputState">HARGA</label>
-                                                            <input type="text" v-model="brg.hrgJual" class="form-control form-control-sm" placeholder="Price" @keypress="onlyNumber" />
+                                                            <input type="number" v-model="brg.hrgJual" ref="InputHarga" class="form-control form-control-sm" placeholder="Price" @keydown.enter="moveToQty()" @keypress="onlyNumber" />
                                                         </div>
                                                         <div class="form-group col-md-1">
                                                             <label for="inputZip">QTY</label>
-                                                            <input type="text" v-model="qty" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
+                                                            <input type="number" v-model="qty" ref="Inputqty" class="form-control form-control-sm" placeholder="Quantity" @keydown.enter="addToCart(brg)" @keypress="onlyNumber" />
                                                         </div>
                                                         <div class="form-group col-md-1">
                                                             <label for="inputZip">Disc</label>
-                                                            <input type="text" v-model="disc" class="form-control form-control-sm" placeholder="Diskon" @keypress="onlyNumber" />
+                                                            <input type="number" v-model="disc" class="form-control form-control-sm" placeholder="Diskon" @keypress="onlyNumber" />
                                                         </div>
                                                         <div class="form-group col-md-2">
                                                             <label for="satuan">SATUAN</label>
@@ -164,9 +166,9 @@
                                                             <!-- {{ new Intl.NumberFormat().format(brg.hrgJual * qty) }} -->
                                                             <input type="text" v-model="tot" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
                                                         </div>
-                                                        <div class="form-group col-sm-1">
+                                                        <div class="form-group col-sm-1 d-grid">
                                                             <label for="aksi">Aksi</label>
-                                                            <button @click="addToCart(brg)" class="btn btn-xs btn-primary">
+                                                            <button @click="addToCart(brg)" class="btn btn-primary btn-sm">
                                                                 + 
                                                             </button>
                                                         </div>
@@ -174,8 +176,8 @@
                                                 </div>
                                             </div>
                                             <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                                                <div class="invoice-detail-items">
-                                                    <div class="row">
+                                                <div class="invoice-detail-items txn-entry-area">
+                                                    <div class="row g-2 align-items-end txn-entry-row txn-mobile-stack">
                                                         <div class="form-group col-md-4">
                                                             <label for="inputCity">NAMA JASA</label>
                                                             <multiselect 
@@ -192,26 +194,26 @@
                                                         </div>
                                                         <div class="form-group col-md-2">
                                                             <label for="inputState">HARGA</label>
-                                                            <input type="text" v-model="jsa.biayaJasa" class="form-control form-control-sm" placeholder="Price" @keypress="onlyNumber" />
+                                                            <input type="number" v-model="jsa.biayaJasa" class="form-control form-control-sm" placeholder="Price" @keypress="onlyNumber" />
                                                         </div>
                                                         <div class="form-group col-md-1">
                                                             <label for="inputZip">QTY</label>
-                                                            <input type="text" v-model="qtyjasa" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
+                                                            <input type="number" v-model="qtyjasa" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
                                                         </div>
                                                         
                                                         <div class="form-group col-md-2">
                                                             <label for="inputZip">TOTAL</label><br>
                                                             <!-- {{ new Intl.NumberFormat().format(brg.hrgJual * qty) }} -->
-                                                            <input type="text" v-model="totjasa" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
+                                                            <input type="number" v-model="totjasa" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
                                                         </div>
-                                                        <div class="form-group col-sm-1">
+                                                        <div class="form-group col-md-1 d-grid">
                                                             <label for="aksi">Aksi</label>
-                                                            <button @click="addToCartJasa(jsa)" class="btn btn-xs btn-primary">
+                                                            <button @click="addToCartJasa(jsa)" class="btn btn-primary btn-sm">
                                                                 + 
                                                             </button>
                                                         </div>
                                                     </div>
-                                                    <div class="row">
+                                                    <div class="row mt-1">
                                                         <div class="form-group col-md-6">
                                                             <label for="inputState">Note</label>
                                                             <textarea v-model="jsa.note" class="form-control form-control-sm" placeholder="Price" ></textarea>
@@ -221,17 +223,26 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="invoice-detail-items">
+                                    <div class="invoice-detail-items txn-block">
                                         <div class="inv--product-table-section">
-                                            <div class="table-responsive">
+                                            <div class="table-responsive txn-table-wrap">
                                                 <table class="table table-hover table-bordered item-table">
                                                     <thead>
+                                                        <tr>
+                                                            <th>Detail Barang</th>
+                                                            <th></th>
+                                                            <th></th>
+                                                            <th></th>
+                                                            <th></th>
+                                                            <th></th>
+                                                            <th></th>
+                                                        </tr>
                                                         <tr>
                                                             <th>Nama Barang</th>
                                                             <th>Harga</th>
                                                             <th>Qty</th>
                                                             <th>Satuan</th>
-                                                            <th>Disc</th>
+                                                            <th>Diskon</th>
                                                             <th>Total</th>
                                                             <th>Aksi</th>
                                                         </tr>
@@ -244,7 +255,7 @@
                                                                 <input type="number" v-model="item.qty" style="min-width: 50px;" @keypress="onlyNumber" @keyup="updateItemQty(item.kdBarang, item.qty)" />  
                                                             </td>
                                                             <td class="qty">{{ item.satuan }}</td>
-                                                            <td class="amount">{{ new Intl.NumberFormat().format(item.disc) }}</td>
+                                                            <td class="qty">{{ item.disc }} %</td>
                                                             <td class="amount">{{ new Intl.NumberFormat().format(item.total) }}</td>
                                                             <td class="tax">
                                                                 <a href="javascript:;" @click="removeItem(id=item.kdBarang)">
@@ -277,9 +288,9 @@
                                     </div>
                                             
 
-                                    <div v-if="$store.state.auth.user === 'root'" class="invoice-detail-items" >
+                                    <div v-if="cartItemsPenJasa" class="invoice-detail-items txn-block" >
                                         <div class="inv--product-table-section">
-                                            <div class="table-responsive">
+                                            <div class="table-responsive txn-table-wrap">
                                                 <table class="table table-hover table-bordered item-table">
                                                     <thead>
                                                         <tr>
@@ -325,7 +336,7 @@
                                     </div>
                                     
 
-                                    <div class="invoice-detail-total">
+                                    <div class="invoice-detail-total txn-block txn-summary-panel">
                                         <div class="row">
 
                                             <div class="col-md-6">
@@ -341,7 +352,7 @@
                                                                 </div>
                                                             </div> -->
                                                             <div class="col-sm-4">
-                                                                <button @click="openModal()" class="btn btn-success btn-download">PAYMENT</button>
+                                                                <button @click="openModal()" class="btn btn-success btn-download txn-payment-btn">PAYMENT</button>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -359,7 +370,7 @@
                                                             <div class="subtotal-amount"><span class="currency"></span><span class="amount">{{new Intl.NumberFormat().format(subtotal)}}</span></div>
                                                         </div>
                                                     </div>
-                                                    <div v-if="$store.state.auth.user === 'root'" class="invoice-totals-row invoice-summary-subtotal" >
+                                                    <div v-if="cartItemsPenJasa" class="invoice-totals-row invoice-summary-subtotal" >
                                                         <div class="invoice-summary-label">Total Jasa</div>
                                                          <div class="invoice-summary-label"></div>
                                                         <div class="invoice-summary-value">
@@ -446,7 +457,7 @@
                                                     <!-- <div class="invoice-summary-label"></div> -->
                                                     <div class="invoice-summary-value">
                                                         <div class="balance-due-amount">
-                                                            <select v-model="paramsbayar.metodeBayar" >
+                                                            <select v-model="paramsbayar.metodeBayar" class="form-select form-select-sm" >
                                                                 <option value="cash" selected>Cash</option>
                                                                 <option value="credit_card">Credit Card</option>
                                                                 <option value="bank_transfer">Bank Transfer</option>
@@ -489,6 +500,88 @@
     </div>
 
 </template>
+
+<style scoped>
+.txn-block {
+    background: #ffffff;
+    border: 1px solid #e8edf5;
+    border-radius: 12px;
+    padding: 14px 14px 10px;
+    margin-bottom: 14px;
+}
+
+.txn-entry-area {
+    background: #f9fbff;
+    border: 1px solid #edf2fa;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.txn-entry-row .form-group {
+    margin-bottom: 0;
+}
+
+.txn-entry-row label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 4px;
+}
+
+.txn-table-wrap {
+    border: 1px solid #edf1f7;
+    border-radius: 10px;
+    overflow-x: auto;
+}
+
+.txn-table-wrap :deep(table) {
+    margin-bottom: 0;
+}
+
+.txn-table-wrap :deep(thead th) {
+    background: #f6f9ff;
+}
+
+.txn-summary-panel {
+    background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+}
+
+@media (max-width: 992px) {
+    .txn-entry-area {
+        padding: 10px 8px;
+    }
+
+    .txn-block {
+        padding: 12px 10px 8px;
+    }
+}
+
+@media (max-width: 767px) {
+    .txn-mobile-stack .col-sm-1,
+    .txn-mobile-stack .col-sm-2,
+    .txn-mobile-stack .col-sm-3,
+    .txn-mobile-stack .col-sm-4,
+    .txn-mobile-stack .col-sm-6,
+    .txn-mobile-stack .col-md-1,
+    .txn-mobile-stack .col-md-2,
+    .txn-mobile-stack .col-md-3,
+    .txn-mobile-stack .col-md-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .txn-mobile-stack .form-control,
+    .txn-mobile-stack :deep(.multiselect),
+    .txn-mobile-stack .btn {
+        min-height: 38px;
+    }
+
+    .txn-payment-btn {
+        width: 100%;
+    }
+}
+</style>
+
 <script setup>
  import { computed, onMounted, ref, onBeforeMount, onUnmounted } from 'vue';
     import '@/assets/sass/apps/invoice-add.scss';
@@ -516,6 +609,8 @@
 
     const isVisible = ref(false);
     const barcode = ref('');
+    const Inputqty = ref(null);
+    const InputHarga = ref(null);
     const cartItemsPen = ref([])
     const cartItemsPenJasa = ref([])
     const subtotal = ref()
@@ -530,7 +625,7 @@
     const tot = ref();
     const totjasa = ref();
     const divpajak = ref(false)
-    const listPembayaran = ref({});
+    const listPembayaran = ref([]);
     const params = ref({});
     // const oldnota = ref(headerfull.value.noPenjualan);
     // let nop = headerfull[0].noPenjualan;
@@ -579,6 +674,53 @@
         // // console.log(suppliers)
         return { barangs, jasas, pelanggans, accs, tot, totjasa }
     });
+
+    const moveToQty = () => {
+        Inputqty.value?.focus();
+    };
+
+    const focusInput = () => {
+        setTimeout(() => {
+            InputHarga.value?.focus();
+        }, 0);
+    };
+
+    const toast = window.Swal.mixin({
+        toast: true,
+        position: 'top-center',
+        showConfirmButton: false,
+        timer: 3000,
+        padding: '2em',
+    });
+
+    const showToast = (icon, title) => {
+        toast.fire({
+            icon,
+            title,
+            padding: '2em',
+        });
+    };
+
+    const showConfirm = async (text) => {
+        const result = await window.Swal.fire({
+            title: 'Konfirmasi',
+            text,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Lanjut',
+            cancelButtonText: 'Batal',
+            padding: '2em',
+        });
+
+        return result.isConfirmed;
+    };
+
+    const handleShortcut = (event) => {
+        if (event.key === 'F2') {
+            event.preventDefault();
+            openModal();
+        }
+    };
 
     
 
@@ -640,6 +782,11 @@
         getSubtotal();
         getTotal();
         getBarang();
+        document.addEventListener('keydown', handleShortcut);
+        window.history.pushState(null, '', window.location.href);
+        window.addEventListener('popstate', function (event) {
+            window.history.pushState(null, '', window.location.href);
+        });
         // setTimeout(() => {
         // console.log(arr[0])
         //     try {
@@ -669,6 +816,7 @@
     onUnmounted(() => {
         // window.onbeforeunload = null
         // alert('kal tutup')
+        document.removeEventListener('keydown', handleShortcut);
         localStorage.setItem('cartItemsPen', '[]');
         localStorage.setItem('cartItemsPenJasa', '[]')
         // localStorage.setItem('headerEditPen', '[]')
@@ -676,10 +824,16 @@
 
     const openModal = () => {
         getPembayaran()
+        getNoPembayaran()
         // Logic to open the modal
         console.log('Modal opened');
         isVisible.value = true;
         
+    };
+    const getNoPembayaran = async () => {
+        await store.dispatch('GetNoBayarPenjualan').then(() => {
+            paramsbayar.value.noBayar = store.getters.NoBayarPenjualan;
+        });
     };
     const getPembayaran = async () => {
         await store.dispatch('GetListBayarPenjualan', { noJual: params.value.noNota });
@@ -748,47 +902,46 @@
         store.dispatch('GetBarang')
         store.dispatch('GetJasa')
     }
-    const simpanPenjualan=() => {
-        store.dispatch('DeletePenjualan', { id: params.value.noNota })
-        .then(response => {
-            if(response.status == 200){
-                console.log('berhasil dihapus')
-                const header =params.value
-                const headers =paramspelanggan.value
-                const bayar = paramsbayar.value
-                const headerfull = Object.assign(header, headers)
-                const detailjasa =cartItemsPenJasa.value;
-                const detail =cartItemsPen.value
-                const edit = { editid: 1};
-                store.dispatch('CreatePenjualan', [headerfull,detail,detailjasa,bayar,edit] )
-            
-                total.value = 0
-                subtotal.value = 0
-                tax.value = 0
-                // setTimeout(function() { 
-                //     getCart(); 
-                // }, 5000);
-                router.push({ name: 'penjualan-barang' })
-                total.value = 0
-                divpajak.value = false
+    const simpanPenjualan = async () => {
+        try {
+            if (!cartItemsPen.value.length && !cartItemsPenJasa.value.length) {
+                showToast('warning', 'Detail transaksi kosong');
+                return;
             }
-            
-        }).catch(error => {
-            console.log('error: ', error)
-            return
-        })
-        
-    }
+
+            const header = { ...params.value };
+            const headers = { ...paramspelanggan.value };
+            const bayar = { ...paramsbayar.value };
+            const detailjasa = cartItemsPenJasa.value;
+            const detail = cartItemsPen.value;
+            const edit = { editid: 1 };
+            const headerfull = Object.assign(header, headers);
+
+            await store.dispatch('CreatePenjualan', [headerfull, detail, detailjasa, bayar, edit]);
+
+            total.value = 0;
+            subtotal.value = 0;
+            tax.value = 0;
+            isVisible.value = false;
+            showToast('success', 'Penjualan berhasil diperbarui');
+            router.push({ name: 'penjualan-barang' });
+            divpajak.value = false;
+        } catch (error) {
+            console.log('error: ', error);
+            showToast('error', 'Gagal memperbarui penjualan');
+        }
+    };
 
     function addToCart(brg) {
         // console.log(brg)
         store.dispatch('CheckBarangExist', {kdBarang: brg.kdBarang})
-            .then((response) => {
+            .then(async (response) => {
                 // console.log(response.data);
                 const brgasli = response.data.data;
                 
                 if (brgasli.stokPersediaan < qty.value) {
-                    if (!window.confirm('Stok barang kurang')) {
+                    const isConfirmed = await showConfirm('Stok barang kurang');
+                    if (!isConfirmed) {
                         return;
                     }
                     // alert('Barang kurang dari 1')
@@ -845,6 +998,7 @@
                         });
                         getCart();
                         getTotal()
+                        reset_form();
                         // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
                     }else{
                         cartItemsPen.value.push({
@@ -866,19 +1020,9 @@
                         localStorage.setItem('cartItemsPen',JSON.stringify(cartItemsPen.value));
                         getCart();
                         getTotal()
+                        reset_form();
                         // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
-                        const toast = window.Swal.mixin({
-                            toast: true,
-                            position: 'top-center',
-                            showConfirmButton: false,
-                            timer: 3000,
-                            padding: '2em',
-                        });
-                        toast.fire({
-                            icon: 'success',
-                            title: brg.nmBarang + " berhasil disimpan",
-                            padding: '2em',
-                        });
+                        showToast('success', brg.nmBarang + ' berhasil disimpan');
                     }
                 }
 
@@ -888,11 +1032,12 @@
 
     function addToCartB(barcode) {
         store.dispatch('CheckBarangExist', {kdBarang: barcode})
-            .then((response) => {
+            .then(async (response) => {
                 // console.log(response.data);
                 const brg = response.data.data;
                 if (brg.stokPersediaan < 1) {
-                    if (!window.confirm('Stok barang kurang dari 1. Jika dilanjukan akan mempengaruhi perhitungan laba rugi.')) {
+                    const isConfirmed = await showConfirm('Stok barang kurang dari 1. Jika dilanjutkan akan mempengaruhi perhitungan laba rugi.');
+                    if (!isConfirmed) {
                         return;
                     }
                     // alert('Barang kurang dari 1')
@@ -965,6 +1110,7 @@
                         });
                         getCart();
                         getTotal()
+                        reset_form();
                         // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
                     }else{
                     cartItemsPen.value.push({
@@ -986,6 +1132,7 @@
                     localStorage.setItem('cartItemsPen',JSON.stringify(cartItemsPen.value));
                     getCart();
                     getTotal()
+                    reset_form();
                     // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
                     const toast = window.Swal.mixin({
                         toast: true,
@@ -1038,7 +1185,7 @@
                 cartItemsPenJasa.value[objIndex].qtyjasa = parseInt(newQty);
                 cartItemsPenJasa.value[objIndex].total = parseInt(newTotal);
                 localStorage.setItem('cartItemsPenJasa',JSON.stringify(cartItemsPenJasa.value));
-                alert(oldName+' Quantity Update')
+                showToast('success', oldName + ' Quantity Update')
                 getCartJasa();
                 getTotal()
                 // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
@@ -1057,15 +1204,20 @@
                 getCartJasa();
                 getTotal();
                 // isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
-                alert(jsa.nmJasa+ " berhasil disimpan")
+                showToast('success', jsa.nmJasa + ' berhasil disimpan')
             }
     }
 
     function updateItemQty (barcode, qty) {
         // console.log(barcode, qty)
+        const barangData = penjualan.value.barangs.find(item => item.kdBarang === barcode);
         const cartItems = JSON.parse(localStorage.getItem('cartItemsPen'));
         const objIndex = cartItems.findIndex((e => e.kdBarang === barcode));
         const newQty = parseInt(qty) ;
+        if (barangData && newQty > barangData.stokPersediaan) {
+            showToast('error', 'Quantity dijual melebihi stok persediaan');
+            return;
+        }
         const hpp1 = cartItems[objIndex].totalhpp / cartItems[objIndex].qty ;
         cartItems[objIndex].qty = parseInt(newQty);
         cartItems[objIndex].total = parseInt(newQty * cartItems[objIndex].hrgJual);
@@ -1155,6 +1307,11 @@
         payment.value = localStorage.setItem('payment', '[]');
         // alert('add payment')
     };
+
+    const reset_form = () => {
+        qty.value = 1;
+        barcode.value = '';
+    }
 
     function getSubtotal(){
         const allItems = JSON.parse(localStorage.getItem('cartItemsPen')) || [];

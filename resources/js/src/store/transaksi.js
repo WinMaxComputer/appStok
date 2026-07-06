@@ -605,6 +605,41 @@ const actions = {
         // await dispatch('GetPembelian')
     },
 
+    async UpdateJurnalUmum({dispatch}, payload) {
+        let response
+        try {
+            response = await axios.post('/api/update/jurnal-umum', payload)
+            const toast = window.Swal.mixin({
+                toast: true,
+                position: 'top-center',
+                showConfirmButton: false,
+                timer: 3000,
+                padding: '2em',
+            });
+            toast.fire({
+                icon: 'success',
+                title: 'Jurnal berhasil diupdate',
+                padding: '2em',
+            });
+            return response ;
+        } catch (ex) {
+            const toast =  window.Swal.mixin({
+                toast: true,
+                position: 'top-center',
+                showConfirmButton: false,
+                timer: 3000,
+                padding: '2em'
+            });
+            toast.fire({
+                title: 'Error!',
+                text: 'Update jurnal gagal',
+                icon: 'error',
+                padding: '2em'
+            });
+            throw 'error' ;
+        }
+    },
+
     // async CreateEditPenjualan({commit}, item) {
     //     // await axios.post('/api/tambah/pelanggan', pel)
     //     await commit('setEditPenjualan', item)

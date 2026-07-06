@@ -59,7 +59,30 @@ class pembelianController extends Controller
                 }
 
                 $existingRecord = DB::table('tblpembelian')->where('noNota', $noNota)->first();
+                $isEditRecord = !empty($existingRecord);
                 if ($existingRecord) {
+                    $oldDetails = DB::table('tblpembelian_detail')->where('r_noNota', $noNota)->get();
+                    for ($i = 0; $i < count($oldDetails); $i++) {
+                        $kdbarang = $oldDetails[$i]->kdBarang;
+                        $qty_beli = $oldDetails[$i]->qty;
+
+                        $det_lama = DB::table('tblbarang')->where('kdBarang', $kdbarang)->first();
+                        if (!empty($det_lama)) {
+                            DB::table('tblbarang')->where('kdBarang', $kdbarang)->update([
+                                'stkBarang' => $det_lama->stkBarang - $qty_beli,
+                            ]);
+                        }
+
+                        $det_lama_p = DB::table('tblpersediaan')->where('kdPersediaan', $kdbarang)->first();
+                        if (!empty($det_lama_p)) {
+                            DB::table('tblpersediaan')->where('kdPersediaan', $kdbarang)->update([
+                                'stokPersediaan' => $det_lama_p->stokPersediaan - $qty_beli,
+                            ]);
+                        }
+                    }
+
+                    DB::table('tblstok_fifo')->where('keterangan', $noNota)->delete();
+                    DB::table('tblkartu_stok')->where('r_notrans', $noNota)->delete();
                     DB::table('tblpembelian')->where('noNota', $noNota)->update([
                         'r_supplier'     => $request[0]['kdSupplier'],
                         'subTotal'       => $request[0]['subtotal'],
@@ -119,10 +142,13 @@ class pembelianController extends Controller
                         'stokPersediaan' => $oldStok + $qty,
                         'lastPrice' => $detpem[$i]['hrgPokok'],
                     ]);
-                    DB::table('tblbarang')->where('kdBarang', $kdBarang)->update([
-                        // 'stkBarang' => $oldStok + $qty,
-                        'hrgPokok' => $detpem[$i]['hrgPokok'],
-                    ]);
+                    $barangLama = DB::table('tblbarang')->where('kdBarang', $kdBarang)->first();
+                    if (!empty($barangLama)) {
+                        DB::table('tblbarang')->where('kdBarang', $kdBarang)->update([
+                            'stkBarang' => $barangLama->stkBarang + $qty,
+                            'hrgPokok' => $detpem[$i]['hrgPokok'],
+                        ]);
+                    }
 
                     $detail[] = [
                         'r_noNota' => $noNota,

@@ -19,44 +19,24 @@ class biayaController extends Controller
                 for ($i = 0; $i < count($det_biaya); $i++) {
                     $nama = $det_biaya[$i]['name'];
                     $memo = $det_biaya[$i]['name'];
-                    $biaya = $det_biaya[$i]['biaya'];
+                    $biaya = (float) $det_biaya[$i]['biaya'];
                     $acc = $det_biaya[$i]['acc'];
                     $satuan = $det_biaya[$i]['satuan'];
 
-                    DB::table('tblbiaya')->upsert([
-                            'kd_trans' => $noNota,
-                            'tglBiaya' => $tglNota,
-                            'keterangan_biaya' => $memo,
-                            'jumlah' => $biaya,
-                            'satuan' => $satuan,
-                            'accid' => $acc,
-                            'r_regu' => 'Z',
-                            'created_at' => $tglNota,
-                            'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
-                        ],
-                        [
-                            'tglBiaya' => $tglNota,
-                            'keterangan_biaya' => $memo,
-                            'jumlah' => $biaya,
-                            'satuan' => $satuan,
-                            'accid' => $acc,
-                            'r_regu' => 'Z',
-                            'created_at' => $tglNota,
-                            'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
-                        ]
-                    );
+                    DB::table('tblbiaya')->insert([
+                        'kd_trans' => $noNota,
+                        'tglBiaya' => $tglNota,
+                        'keterangan_biaya' => $memo,
+                        'jumlah' => $biaya,
+                        'satuan' => $satuan,
+                        'accid' => $acc,
+                        'r_regu' => 'Z',
+                        'created_at' => $tglNota,
+                        'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
+                    ]);
                     //===========jurnal biaya 
-                    $pphps4 = 10 ; //$detop[0]['pphps4'];
-                    // $accid = $detpro[$i]['accid']; // acc id yg di debet
-                    $acc_id_d = $det_biaya[$i]['acc']; // $request[0]['subtotal']; // acc id yg di kredit
-                    $acc_id_k = '11110'; // $det_biaya[$i]['acc'];
-                    $acc_laba = '32300';
-                    $acc_pph = '23100'; // acc hutang pph
-                    // $memo = 'Trans-biaya';
-                    //===jumlah pphps4
-                    // $bati = $subtotal - $subtotal_hpp ;
-                    $pphps4_dibayar = $biaya * $pphps4 / 100 ;
-                    //====endjumalh pph
+                    $acc_id_d = $det_biaya[$i]['acc'];
+                    $acc_id_k = '11110';
                     $jurnal = 'JK';
                     insert_gl($noNota,$tglNota,$biaya,$memo,$jurnal);
                     $rgl = DB::table('general_ledger')->get()->last()->notrans;
@@ -64,8 +44,8 @@ class biayaController extends Controller
                         [
                             'rgl' => $rgl,
                             'acc_id' => $acc_id_d,
-                            'debet' => 0,
-                            'kredit' => $biaya,
+                            'debet' => $biaya,
+                            'kredit' => 0,
                             'trans_detail' => 'Trans-biaya',
                             'void_flag' => 0,
                         ],
@@ -76,34 +56,7 @@ class biayaController extends Controller
                             'kredit' => $biaya,
                             'trans_detail' => 'Trans-biaya',
                             'void_flag' => 0,
-                        ],
-                        [
-                            'rgl' => $rgl,
-                            'acc_id' => $acc_laba,
-                            'debet' => $biaya,
-                            'kredit' => 0,
-                            'trans_detail' => 'Trans-biaya',
-                            'void_flag' => 0,
-                        ],
-                        //=========pph pasal4
-                        // [
-                        //     'rgl' => $rgl,
-                        //     'acc_id' => $acc_id_k,
-                        //     'debet' => $pphps4_dibayar,
-                        //     'kredit' => 0,
-                        //     'trans_detail' => 'Trans-biaya',
-                        //     'void_flag' => 0,
-                        // ],
-                        // [
-                        //     'rgl' => $rgl,
-                        //     'acc_id' => $acc_pph,
-                        //     'debet' => 0,
-                        //     'kredit' => $pphps4_dibayar,
-                        //     'trans_detail' => 'Trans-biaya',
-                        //     'void_flag' => 0,
-                        // ]
-                        //==========endpph pasal 4
-                        
+                        ]
                     ];
                     
                     insert_gl_detail($ac);

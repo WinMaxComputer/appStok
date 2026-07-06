@@ -1,5 +1,49 @@
 <template>
     <div class="layout-px-spacing">
+        <div class="print-only-lr">
+            <div class="print-lr-header">
+                <div class="print-lr-title">Laporan Laba Rugi</div>
+                <div class="print-lr-period">Periode {{ sorting.startDate }} s/d {{ sorting.endDate }}</div>
+            </div>
+
+            <div class="print-lr-body">
+                <div class="print-lr-section">
+                    <div class="print-lr-section-title">Detail Akun</div>
+                    <div class="print-lr-columns">
+                        <div v-for="hrt in visibleRows" :key="'print-' + hrt.acc_id" :class="['print-lr-row', levelClass(hrt.level), { 'print-total-row': isHeadTotalRow(hrt) }]">
+                            <div class="print-lr-name">
+                                <span v-if="hrt.jenis !== 'Total'" class="print-lr-code">{{ hrt.acc_id }}</span>
+                                <span>{{ hrt.name }}</span>
+                            </div>
+                            <div class="print-lr-amount">
+                                {{ formatAmount(hrt.amount, hrt.acc_id) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="print-lr-section print-lr-summary">
+                    <div class="print-lr-section-title">Ringkasan Periode</div>
+                    <div class="print-lr-summary-row">
+                        <span>Pendapatan</span>
+                        <strong>{{ Number(summaryBreakdown.pendapatan).toLocaleString() }}</strong>
+                    </div>
+                    <div class="print-lr-summary-row">
+                        <span>HPP</span>
+                        <strong>{{ Number(summaryBreakdown.hpp).toLocaleString() }}</strong>
+                    </div>
+                    <div class="print-lr-summary-row">
+                        <span>Beban Operasional</span>
+                        <strong>{{ Number(summaryBreakdown.bebanOperasional).toLocaleString() }}</strong>
+                    </div>
+                    <div class="print-lr-summary-row print-lr-summary-final">
+                        <span>{{ labarugi['name'] }}</span>
+                        <strong>{{ Number(labarugi['amount']).toLocaleString() }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <teleport to="#breadcrumb">
             <ul class="navbar-nav flex-row">
                 <li>
@@ -16,13 +60,12 @@
         </teleport>
 
         
-
         <div class="row invoice layout-top-spacing layout-spacing apps-invoice">
             <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                 <div class="doc-container">
                     <div class="row">
                         <div class="col-xl-9">
-                            <div class="invoice-container">
+                            <div class="invoice-container screen-lr-report">
                                 <div class="invoice-inbox">
                                     <div id="ct" class="">
                                         <div class="invoice-00001">
@@ -30,14 +73,7 @@
                                                 
 
                                                 <div class="inv--detail-section inv--customer-detail-section">
-                                                    
-                                                    <div class="invoice-detail-title">
-                                                        <div class="invoice-title">
-                                                            Laporan Laba Rugi
-                                                        </div>
-                                                    </div>
-
-                                                    <div>
+                                                    <div class="laba-report-shell">
                                                         <div v-if="load" class="la-ball-circus" id="loading-indicator">
                                                             <h2 class="text-center mt-3">Loading</h2>
                                                             <div></div>
@@ -45,43 +81,44 @@
                                                             <div></div>
                                                             <div></div>
                                                             <div></div>
-                                                        </div> 
-                                                            <table class="table table-sm laba-table mb-0">
-                                                                <tr>
-                                                                    <td><h6>LAPORAN LABA RUGI PERIODE TGL {{ sorting.startDate }} S/D {{ sorting.endDate }}</h6></td>
-                                                                </tr>
-                                                                <tr style="vertical-align:top">
-                                                                    <td>
-                                                                        <table border="1" cellspacing="3" width="75%" class="laba-detail-table">
-                                                                            <tbody v-for="hrt in biayalist" :key="hrt.acc_id" style="border: 1px;">
-                                                                                <tr v-if="shouldRenderRow(hrt)" :class="{ 'head-total-row': isHeadTotalRow(hrt) }">
-                                                                                    <td :style="codeCellStyle(hrt)">{{ hrt.jenis !== 'Total' ? hrt.acc_id : '' }}</td>
-                                                                                    <td :class="[levelClass(hrt.level), { 'fw-bold': isHeadingRow(hrt), 'is-total-row': hrt.jenis === 'Total' }]" :style="nameCellStyle(hrt)">
-                                                                                        {{ hrt.name }}
-                                                                                    </td>
-                                                                                    <td class="text-end" :style="amountCellStyle(hrt)">
-                                                                                        <strong v-if="hrt.jenis === 'Total'">{{ formatAmount(hrt.amount, hrt.acc_id) }}</strong>
-                                                                                        <span v-else-if="hrt.jenis === 'Detail'">{{ formatAmount(hrt.amount, hrt.acc_id) }}</span>
-                                                                                    </td>
-                                                                                </tr>
-                                                                            </tbody>
-                                                                        </table>
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td>
-                                                                        <!-- {{ labarugi }} -->
-                                                                        <table border="1" cellspacing="3" width="100%" class="laba-summary-table">
-                                                                            <tbody >
-                                                                                <tr class="summary-total-row">
-                                                                                    <td style="padding-left: 8px; border-bottom: 1px solid #000;"><b>{{ labarugi['name'] }}</b></td>
-                                                                                    <td class="text-end" style="min-width: 160px; border-bottom: 1px solid #000;"><strong>{{ Number(labarugi['amount']).toLocaleString() }}</strong></td>
-                                                                                </tr>
-                                                                            </tbody>
-                                                                        </table>
-                                                                    </td>
-                                                                </tr>
-                                                            </table>                                        
+                                                        </div>
+
+                                                        <div class="laba-period-banner">
+                                                            <div class="laba-period-label">Laporan Laba Rugi</div>
+                                                            <div class="laba-period-range">Periode {{ sorting.startDate }} s/d {{ sorting.endDate }}</div>
+                                                        </div>
+
+                                                        <div class="laba-breakdown-box laba-detail-box">
+                                                            <div class="laba-breakdown-title">Detail Akun</div>
+                                                            <div class="laba-list-wrap">
+                                                                <div class="laba-accounts-wrap">
+                                                                    <div
+                                                                        v-for="hrt in visibleRows"
+                                                                        :key="hrt.acc_id"
+                                                                        :class="['laba-list-row', levelClass(hrt.level), { 'head-total-row': isHeadTotalRow(hrt), 'detail-soft-row': !isHeadTotalRow(hrt) }]"
+                                                                    >
+                                                                        <div class="laba-list-main" :style="nameCellStyle(hrt)">
+                                                                            <div v-if="hrt.jenis !== 'Total'" class="laba-list-code" :style="codeCellStyle(hrt)">{{ hrt.acc_id }}</div>
+                                                                            <div
+                                                                                class="laba-list-name"
+                                                                                :class="[{ 'fw-bold': isHeadingRow(hrt), 'is-total-row': hrt.jenis === 'Total' }]"
+                                                                            >
+                                                                                {{ hrt.name }}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="laba-list-amount text-end" :style="amountCellStyle(hrt)">
+                                                                            <strong v-if="hrt.jenis === 'Total'">{{ formatAmount(hrt.amount, hrt.acc_id) }}</strong>
+                                                                            <span v-else-if="hrt.jenis === 'Detail'">{{ formatAmount(hrt.amount, hrt.acc_id) }}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="laba-breakdown-row total laba-final-row mt-2">
+                                                                    <span class="laba-summary-name">{{ labarugi['name'] }}</span>
+                                                                    <strong class="laba-summary-amount">{{ Number(labarugi['amount']).toLocaleString() }}</strong>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
 
 
@@ -126,6 +163,29 @@
                                                 {{ load ? 'Memuat...' : 'Cari' }}
                                             </button>
                                         </div>
+                                        <div class="col-xl-12 col-md-6 col-sm-12">
+                                            <div class="laba-breakdown-box mt-2">
+                                                <div class="laba-breakdown-title">Ringkasan Periode</div>
+                                                <div class="laba-breakdown-row">
+                                                    <span>Pendapatan</span>
+                                                    <strong>{{ Number(summaryBreakdown.pendapatan).toLocaleString() }}</strong>
+                                                </div>
+                                                <div class="laba-breakdown-row">
+                                                    <span>HPP</span>
+                                                    <strong>{{ Number(summaryBreakdown.hpp).toLocaleString() }}</strong>
+                                                </div>
+                                                <div class="laba-breakdown-row">
+                                                    <span>Beban Operasional</span>
+                                                    <strong>{{ Number(summaryBreakdown.bebanOperasional).toLocaleString() }}</strong>
+                                                </div>
+                                                <div class="laba-breakdown-row total">
+                                                    <span>Laba Bersih</span>
+                                                    <strong :class="{ 'is-loss': Number(summaryBreakdown.labaBersih) < 0 }">
+                                                        {{ Number(summaryBreakdown.labaBersih).toLocaleString() }}
+                                                    </strong>
+                                                </div>
+                                            </div>
+                                        </div>
 
                                     </div>
                                 </div>
@@ -140,7 +200,7 @@
 </template>
 
 <script setup>
-    import { onMounted, ref } from 'vue';
+    import { computed, onMounted, ref } from 'vue';
 
     import '@/assets/sass/scrollspyNav.scss';
     import '@/assets/sass/tables/table-basic.scss';
@@ -171,6 +231,30 @@
     const labarugi = ref({ amount: 0, name: 'Laba Rugi' });
     const biayalist = ref([]);
 
+    const summaryBreakdown = computed(() => {
+        const rows = Array.isArray(biayalist.value) ? biayalist.value : [];
+        const detailRows = rows.filter((row) => row?.jenis === 'Detail');
+        const sumByPrefix = (prefix) => {
+            return detailRows
+                .filter((row) => String(row?.acc_id || '').startsWith(prefix))
+                .reduce((total, row) => total + Number(row?.amount || 0), 0);
+        };
+
+        const pendapatan = -1 * sumByPrefix('4');
+        const hpp = sumByPrefix('5');
+        const bebanOperasional = sumByPrefix('6');
+        const pendapatanLain = -1 * sumByPrefix('7');
+        const bebanLain = sumByPrefix('8');
+        const labaBersih = (pendapatan - hpp - bebanOperasional + pendapatanLain - bebanLain);
+
+        return {
+            pendapatan,
+            hpp,
+            bebanOperasional,
+            labaBersih,
+        };
+    });
+
     const isHeadingRow = (row) => row?.jenis === 'Total' || String(row?.jenis || '').startsWith('H');
 
     const isHeadTotalRow = (row) => isHeadingRow(row) || row?.jenis === 'Total';
@@ -189,7 +273,11 @@
         return Number(row.amount || 0) !== 0;
     };
 
-    const rowUnderlineStyle = (row) => (isHeadTotalRow(row) ? { borderBottom: '1px solid #000' } : {});
+    const visibleRows = computed(() => {
+        return (Array.isArray(biayalist.value) ? biayalist.value : []).filter((row) => shouldRenderRow(row));
+    });
+
+    const rowUnderlineStyle = () => ({});
 
     const codeCellStyle = (row) => ({
         minWidth: '80px',
@@ -208,35 +296,30 @@
 
     const formatAmount = (amount, accId) => {
         const numericAmount = Number(amount || 0);
-        const isExpense = String(accId || '').substring(0, 1) === '6';
-        const finalAmount = isExpense ? -1 * numericAmount : numericAmount;
-        return Number(finalAmount).toLocaleString();
+        const prefix = String(accId || '').substring(0, 1);
+
+        // Revenue classes are stored as credit-dominant (negative in debet-kredit view).
+        // Present them as positive values for readability in profit/loss rows.
+        if (prefix === '4' || prefix === '7') {
+            return Number(-1 * numericAmount).toLocaleString();
+        }
+
+        return Number(numericAmount).toLocaleString();
     };
 
     const amountCellStyle = (row) => {
-        const isExpense = String(row?.acc_id || '').substring(0, 1) === '6';
-        const style = {
+        return {
             minWidth: '160px',
             paddingLeft: '24px',
             textAlign: 'right',
             ...rowUnderlineStyle(row),
         };
-
-        if (isExpense && String(row?.level) === '2') {
-            style.borderTop = '1px solid black';
-        }
-
-        if (isExpense && (String(row?.level) === '1' || String(row?.level) === '3') && row?.jenis === 'Total') {
-            style.borderBottom = '1px solid black';
-        }
-
-        return style;
     };
 
     const loadReport = async () => {
         load.value = true;
         try {
-            const payload = { ...sorting.value, group: '2,4,5,6' };
+            const payload = { ...sorting.value, group: '2,4,5,6', mode: 'period' };
             await store.dispatch('GetHarta', payload);
             let alldata = store.getters.StateHarta;
             biayalist.value = alldata.filter(p => p.acc_id >= '40000');
@@ -254,119 +337,508 @@
     const cari = async () => {
         await loadReport();
     };
+
+    const escapeHtml = (value) => {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    };
     
     const printPage = () => {
-        window.print();
+        const rows = visibleRows.value.map((row) => {
+            const level = String(row?.level || '1');
+            const indent = {
+                '1': 0,
+                '2': 12,
+                '3': 24,
+                '4': 36,
+            }[level] || 0;
+            const amount = escapeHtml(formatAmount(row.amount, row.acc_id));
+            const code = row.jenis !== 'Total' ? `<span class="code">${escapeHtml(row.acc_id)}</span>` : '';
+            const nameClass = isHeadTotalRow(row) ? 'name total' : 'name';
+            const rowClass = isHeadTotalRow(row) ? 'row total-row' : 'row';
+
+            return `
+                <div class="${rowClass}">
+                    <div class="name-wrap" style="padding-left:${indent}px;">${code}<span class="${nameClass}">${escapeHtml(row.name)}</span></div>
+                    <div class="amount">${amount}</div>
+                </div>
+            `;
+        }).join('');
+
+        const summaryRows = [
+            ['Pendapatan', Number(summaryBreakdown.value.pendapatan).toLocaleString()],
+            ['HPP', Number(summaryBreakdown.value.hpp).toLocaleString()],
+            ['Beban Operasional', Number(summaryBreakdown.value.bebanOperasional).toLocaleString()],
+            [labarugi.value.name, Number(labarugi.value.amount).toLocaleString(), true],
+        ].map(([label, amount, isFinal]) => `
+            <div class="summary-row${isFinal ? ' final' : ''}">
+                <span>${escapeHtml(label)}</span>
+                <strong>${escapeHtml(amount)}</strong>
+            </div>
+        `).join('');
+
+        const printMarkup = `
+            <!doctype html>
+            <html>
+                <head>
+                    <meta charset="utf-8" />
+                    <title>Laporan Laba Rugi</title>
+                    <style>
+                        @page { size: A4 portrait; margin: 6mm; }
+                        * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        body {
+                            margin: 0;
+                            font-family: Arial, sans-serif;
+                            color: #1d2738;
+                            font-size: 10px;
+                            line-height: 1.2;
+                            background: #fff;
+                        }
+                        .page {
+                            width: 100%;
+                            padding: 0;
+                        }
+                        .header {
+                            margin-bottom: 6px;
+                        }
+                        .title {
+                            font-size: 14px;
+                            font-weight: 700;
+                            margin-bottom: 2px;
+                        }
+                        .period {
+                            font-size: 10px;
+                        }
+                        .content {
+                            display: grid;
+                            gap: 8px;
+                            align-items: start;
+                        }
+                        .panel {
+                            background: #f8fbff;
+                            padding: 6px 8px;
+                        }
+                        .panel-title {
+                            font-size: 10px;
+                            font-weight: 700;
+                            margin-bottom: 4px;
+                            color: #32425e;
+                        }
+                        .detail-columns {
+                            display: grid;
+                            gap: 2px;
+                        }
+                        .row {
+                            break-inside: avoid;
+                            page-break-inside: avoid;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: flex-start;
+                            gap: 6px;
+                            padding: 1px 0;
+                        }
+                        .name-wrap {
+                            display: flex;
+                            gap: 5px;
+                            min-width: 0;
+                            flex: 1 1 auto;
+                        }
+                        .code {
+                            white-space: nowrap;
+                            font-weight: 700;
+                            color: #5a6980;
+                        }
+                        .name {
+                            min-width: 0;
+                        }
+                        .amount {
+                            white-space: nowrap;
+                            font-weight: 700;
+                            min-width: 72px;
+                            text-align: right;
+                        }
+                        .total-row {
+                            font-weight: 700;
+                            background: rgba(238,245,255,0.8);
+                        }
+                        .summary-row {
+                            display: flex;
+                            justify-content: space-between;
+                            gap: 8px;
+                            padding: 2px 0;
+                        }
+                        .summary-row.final {
+                            margin-top: 4px;
+                            padding-top: 4px;
+                            font-weight: 700;
+                            background: rgba(238,245,255,0.8);
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="page">
+                        <div class="header">
+                            <div class="title">Laporan Laba Rugi</div>
+                            <div class="period">Periode ${escapeHtml(sorting.value.startDate)} s/d ${escapeHtml(sorting.value.endDate)}</div>
+                        </div>
+                        <div class="content">
+                            <div class="panel">
+                                <div class="panel-title">Detail Akun</div>
+                                <div class="detail-columns">${rows}</div>
+                            </div>
+                            <div class="panel">
+                                <div class="panel-title">Ringkasan Periode</div>
+                                ${summaryRows}
+                            </div>
+                        </div>
+                    </div>
+                </body>
+            </html>
+        `;
+
+        const printWindow = window.open('', '_blank', 'width=900,height=1200');
+        if (!printWindow) {
+            return;
+        }
+
+        printWindow.document.open();
+        printWindow.document.write(printMarkup);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
     };
 </script>
 
 <style scoped>
+.print-only-lr {
+    display: none;
+}
+
+.laba-report-shell {
+    display: grid;
+    gap: 14px;
+}
+
+.laba-period-banner {
+    border-radius: 12px;
+    padding: 14px 16px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    box-shadow: 0 10px 24px rgba(31, 42, 68, 0.06);
+}
+
+.laba-period-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #5b6b84;
+    margin-bottom: 4px;
+}
+
+.laba-period-range {
+    font-size: 16px;
+    font-weight: 700;
+    color: #23314d;
+}
+
 .laba-table {
-    font-size: 12px;
+    font-size: 11px;
 }
 
-.laba-table :deep(td),
-.laba-table :deep(th) {
-    vertical-align: middle;
+.laba-list-wrap {
+    display: grid;
+    gap: 0;
+}
+
+.laba-accounts-wrap {
+    display: grid;
+    gap: 0;
+}
+
+.laba-list-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 5px 0 7px;
+}
+
+.laba-list-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.laba-list-code {
+    color: #52627c;
+    background: transparent;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     white-space: nowrap;
+    font-size: 11px;
+    font-weight: 700;
 }
 
-.laba-detail-table :deep(td),
-.laba-summary-table :deep(td) {
-    padding: 3px 8px;
+.laba-list-name {
+    min-width: 0;
+    color: #22314a;
+    font-size: 11px;
+    line-height: 1.35;
 }
 
-.laba-detail-table :deep(td.level-1) { padding-left: 8px !important; }
-.laba-detail-table :deep(td.level-2) { padding-left: 16px !important; }
-.laba-detail-table :deep(td.level-3) { padding-left: 24px !important; }
-.laba-detail-table :deep(td.level-4) { padding-left: 32px !important; }
+.laba-list-amount {
+    min-width: 170px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-weight: 700;
+    color: #22314a;
+    font-size: 11px;
+    margin-left: 10px;
+}
 
-.laba-detail-table :deep(td.is-total-row.level-1) { padding-left: 8px !important; }
-.laba-detail-table :deep(td.is-total-row.level-2) { padding-left: 16px !important; }
-.laba-detail-table :deep(td.is-total-row.level-3) { padding-left: 24px !important; }
-.laba-detail-table :deep(td.is-total-row.level-4) { padding-left: 32px !important; }
+.detail-soft-row:hover {
+    background: transparent;
+}
 
-.head-total-row :deep(td),
-.summary-total-row :deep(td) {
-    border-bottom: 1px solid #000;
+.laba-list-row.level-1 .laba-list-name { padding-left: 2px !important; }
+.laba-list-row.level-2 .laba-list-name { padding-left: 14px !important; }
+.laba-list-row.level-3 .laba-list-name { padding-left: 26px !important; }
+.laba-list-row.level-4 .laba-list-name { padding-left: 38px !important; }
+
+.head-total-row {
+    font-weight: 700;
+    padding-bottom: 8px;
+    margin-bottom: 2px;
+    background: rgba(238, 245, 255, 0.65);
+}
+
+.laba-summary-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #22314a;
+}
+
+.laba-summary-amount {
+    font-size: 18px;
+    font-weight: 800;
+    color: #22314a;
+}
+
+.laba-detail-box {
+    padding: 12px 14px;
+}
+
+.laba-final-row {
+    margin-top: 8px;
 }
 
 .invoice-actions-btn .row {
     row-gap: 10px;
 }
 
+.laba-breakdown-box {
+    padding: 10px;
+    background: #f8fbff;
+    box-shadow: 0 10px 24px rgba(31, 42, 68, 0.05);
+}
+
+.laba-breakdown-title {
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #2f3c56;
+}
+
+.laba-breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 11px;
+    padding: 4px 0;
+}
+
+.laba-breakdown-row.total {
+    margin-top: 4px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-weight: 700;
+    background: rgba(238, 245, 255, 0.75);
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.is-loss {
+    color: #c62828;
+}
+
 @media (max-width: 991px) {
     .invoice-actions-btn {
         margin-top: 16px;
     }
+
+    .laba-list-row {
+        gap: 10px;
+    }
+
+    .laba-list-amount {
+        min-width: 140px;
+    }
+}
+
+@media (max-width: 767px) {
+    .laba-list-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .laba-list-main {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .laba-list-amount {
+        width: 100%;
+        min-width: 0;
+    }
 }
 
 @media print {
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    html,
+    body {
+        width: 210mm;
+        min-height: 297mm;
+        overflow: hidden !important;
+    }
+
     .layout-px-spacing {
         padding: 0 !important;
+        width: 100% !important;
     }
 
     .page-header,
     .invoice-actions-btn,
     .la-ball-circus,
     .btn,
+    .screen-lr-report,
     .row.invoice.layout-top-spacing.layout-spacing.apps-invoice > .col-xl-12 > .doc-container > .row > .col-xl-3 {
         display: none !important;
     }
 
-    .row.invoice.layout-top-spacing.layout-spacing.apps-invoice > .col-xl-12 > .doc-container > .row > .col-xl-9 {
-        flex: 0 0 100% !important;
-        max-width: 100% !important;
-    }
-
-    .doc-container,
-    .invoice-container,
-    .invoice-inbox,
-    .content-section,
-    .inv--detail-section {
-        margin: 0 !important;
-        padding: 0 !important;
-        box-shadow: none !important;
-        border: 0 !important;
-    }
-
-    .invoice-detail-title,
-    .invoice-title {
-        margin: 0 0 8px 0 !important;
-        padding: 0 !important;
-    }
-
-    .laba-table {
+    .print-only-lr {
+        display: block !important;
         width: 100% !important;
-        font-size: 10px !important;
+        font-family: Arial, sans-serif;
+        color: #000;
     }
 
-    .laba-table :deep(td),
-    .laba-table :deep(th) {
-        color: #000 !important;
-        border-color: #bbb !important;
-        white-space: nowrap !important;
-        padding: 3px 6px !important;
+    .print-lr-header {
+        margin-bottom: 4mm;
     }
 
-    .laba-detail-table :deep(td.level-1) { padding-left: 8px !important; }
-    .laba-detail-table :deep(td.level-2) { padding-left: 16px !important; }
-    .laba-detail-table :deep(td.level-3) { padding-left: 24px !important; }
-    .laba-detail-table :deep(td.level-4) { padding-left: 32px !important; }
-
-    .laba-detail-table :deep(td.is-total-row.level-1) { padding-left: 8px !important; }
-    .laba-detail-table :deep(td.is-total-row.level-2) { padding-left: 16px !important; }
-    .laba-detail-table :deep(td.is-total-row.level-3) { padding-left: 24px !important; }
-    .laba-detail-table :deep(td.is-total-row.level-4) { padding-left: 32px !important; }
-
-    .head-total-row :deep(td),
-    .summary-total-row :deep(td) {
-        border-bottom: 1px solid #000 !important;
+    .print-lr-title {
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 1mm;
     }
+
+    .print-lr-period {
+        font-size: 9px;
+    }
+
+    .print-lr-body {
+        display: grid;
+        gap: 3mm;
+    }
+
+    .print-lr-section {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .print-lr-section-title {
+        font-size: 9px;
+        font-weight: 700;
+        margin-bottom: 1.5mm;
+    }
+
+    .print-lr-columns {
+        display: grid;
+        gap: 0.8mm;
+    }
+
+    .print-lr-row {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 3mm;
+        font-size: 7px;
+        line-height: 1.15;
+        padding-bottom: 0.6mm;
+        margin-bottom: 0.6mm;
+    }
+
+    .print-lr-name {
+        display: flex;
+        gap: 2mm;
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .print-lr-code {
+        white-space: nowrap;
+        font-weight: 700;
+    }
+
+    .print-lr-amount {
+        white-space: nowrap;
+        font-weight: 700;
+        text-align: right;
+    }
+
+    .print-total-row {
+        font-weight: 700;
+    }
+
+    .print-lr-row.level-1 .print-lr-name { padding-left: 0; }
+    .print-lr-row.level-2 .print-lr-name { padding-left: 3mm; }
+    .print-lr-row.level-3 .print-lr-name { padding-left: 6mm; }
+    .print-lr-row.level-4 .print-lr-name { padding-left: 9mm; }
+
+    .print-lr-summary-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 4mm;
+        font-size: 8px;
+        line-height: 1.2;
+        padding: 0.8mm 0;
+    }
+
+    .print-lr-summary-final {
+        font-weight: 700;
+        padding-top: 1.5mm;
+    }
+
 }
 
 @page {
     size: A4 portrait;
-    margin: 10mm;
+    margin: 2mm;
 }
 </style>

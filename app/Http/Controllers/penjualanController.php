@@ -12,6 +12,60 @@ use App\Models\KuponPenjualan;
 use App\Models\Bayarjual;
 class penjualanController extends Controller
 {
+    private function assertBalanced(array $entries, string $context = 'Jurnal Penjualan'): void
+    {
+        $totalDebet = 0;
+        $totalKredit = 0;
+
+        foreach ($entries as $entry) {
+            $totalDebet += (float) ($entry['debet'] ?? 0);
+            $totalKredit += (float) ($entry['kredit'] ?? 0);
+        }
+
+        if (abs($totalDebet - $totalKredit) > 0.00001) {
+            throw new \Exception($context . ' tidak balance (debet: ' . $totalDebet . ', kredit: ' . $totalKredit . ')');
+        }
+    }
+
+    private function rollbackEditPenjualan(string $noNota): void
+    {
+        $gl = DB::table('general_ledger')->where('order_no', $noNota)->get();
+        for ($i = 0; $i < count($gl); $i++) {
+            DB::table('general_ledger')->where('notrans', $gl[$i]->notrans)->delete();
+            DB::table('gl_detail')->where('rgl', $gl[$i]->notrans)->delete();
+        }
+
+        $dtl = DB::table('tblpenjualan_detail')->where('r_noPenjualan', $noNota)->get();
+        for ($i = 0; $i < count($dtl); $i++) {
+            $oldStok = DB::table('tblpersediaan')->where('kdPersediaan', $dtl[$i]->r_kdBarang)->first();
+            if (!empty($oldStok)) {
+                DB::table('tblpersediaan')->where('kdPersediaan', $dtl[$i]->r_kdBarang)->update([
+                    'stokPersediaan' => $oldStok->stokPersediaan + $dtl[$i]->qty,
+                ]);
+                DB::table('tblbarang')->where('kdBarang', $dtl[$i]->r_kdBarang)->update([
+                    'stkBarang' => $oldStok->stokPersediaan + $dtl[$i]->qty,
+                ]);
+            }
+        }
+
+        $stokfifo = DB::table('tbltransaksi_stok')->where('r_trans', $noNota)->get();
+        for ($i = 0; $i < count($stokfifo); $i++) {
+            $oldFifo = DB::table('tblstok_fifo')->where('id', $stokfifo[$i]->r_fifo)->first();
+            if (!empty($oldFifo)) {
+                DB::table('tblstok_fifo')->where('id', $stokfifo[$i]->r_fifo)->update([
+                    'stok' => $oldFifo->stok + $stokfifo[$i]->stok_trans,
+                ]);
+            }
+        }
+
+        DB::table('tblpenjualan')->where('noPenjualan', $noNota)->delete();
+        DB::table('tblpenjualan_detail')->where('r_noPenjualan', $noNota)->delete();
+        DB::table('tblpenjualan_detail_jasa')->where('r_noPenjualan', $noNota)->delete();
+        DB::table('tblkartu_stok')->where('r_notrans', $noNota)->delete();
+        DB::table('tblpembayaran_penjualan')->where('noJual', $noNota)->delete();
+        DB::table('tbltransaksi_stok')->where('r_trans', $noNota)->delete();
+    }
+
     //
     public function simpanPenjualan(Request $request){
         $noNota = $request[0]['noNota'];
@@ -33,6 +87,11 @@ class penjualanController extends Controller
                 }else{
                     $acc_id_k = '11210'; // $detpro[$i]['accid']; // acc id yg di debet
                 }
+
+                if($editid == 1){
+                    $this->rollbackEditPenjualan($noNota);
+                }
+
                 if($type == '1'){
                     $piutang = $total;
                     $startDate = $request[0]['tglNota'];
@@ -180,19 +239,19 @@ class penjualanController extends Controller
                             'r_kdBarang' => $kdBarang,
                             'tgl_trans' => $tglNota,
                             'r_nmBarang' => $detpem[$i]['nmBarang'],
-                            'kategori_jual' => $detpem[$i]['kategori'],
+                            'kategori_jual' => ($detpem[$i]['kategori'] ?? ($detpem[$i]['ktgBarang'] ?? ($detpem[$i]['kategori_jual'] ?? ''))),
                             'hrgJual' => $detpem[$i]['hrgJual'],
                             'satuanJual' => $detpem[$i]['satuan'],
                             'qty' => $qty,
                             'totalHpp' => $total_hpp, // $detpem[$i]['totalhpp'],
-                            'disc' => ($detpem[$i]['hrgJual'] * $qty) * $detpem[$i]['disc'] / 100,
-                            'totalJual' => $detpem[$i]['total'],
+                            'disc' => ($detpem[$i]['hrgJual'] * $qty) * ($detpem[$i]['disc'] ?? 0) / 100,
+                            'totalJual' => ($detpem[$i]['total'] ?? 0),
                             'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
                             'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                         ];
 
                         //========insert kartu stok
-                        $total_jual = $detpem[$i]['total'];
+                        $total_jual = ($detpem[$i]['total'] ?? 0);
                         $stok_awal = $oldStok ; // DB::table('tblpersediaan')->select('stokPersediaan')->where('kdPersediaan', $kdBarang)->first()->stokPersediaan;
                         $stok_akhir = $oldStok - $qty ;
                         insert_kartustok_jual($noNota,$kdBarang,$tglNota,$stok_awal,$qty,$total_jual,$stok_akhir);
@@ -200,15 +259,27 @@ class penjualanController extends Controller
 
 
                         //===========jurnal
-                        $accid = $detpem[$i]['accid']; // acc id yg di debet
-                        $acc_id_d = $detpem[$i]['accid_persediaan']; // acc id yg di debet
-                        $acc_hpp = $detpem[$i]['accid_hpp'];
+                        $accid = $detpem[$i]['accid'] ?? null; // akun pendapatan barang
+                        $acc_id_d = $detpem[$i]['accid_persediaan'] ?? null; // akun persediaan
+                        $acc_hpp = $detpem[$i]['accid_hpp'] ?? null; // akun HPP
+                        if (empty($accid) || empty($acc_id_d) || empty($acc_hpp)) {
+                            throw new \Exception('Mapping akun barang belum lengkap untuk kode ' . $kdBarang);
+                        }
+                        if (substr((string) $accid, 0, 1) !== '4') {
+                            throw new \Exception('Akun pendapatan barang tidak valid untuk kode ' . $kdBarang . ' (harus kelompok 4xxx)');
+                        }
+                        if (substr((string) $acc_id_d, 0, 1) !== '1') {
+                            throw new \Exception('Akun persediaan tidak valid untuk kode ' . $kdBarang . ' (harus kelompok 1xxx)');
+                        }
+                        if (substr((string) $acc_hpp, 0, 1) !== '5') {
+                            throw new \Exception('Akun HPP tidak valid untuk kode ' . $kdBarang . ' (harus kelompok 5xxx)');
+                        }
                         // $acc_id_k = '11110'; // $request[0]['subtotal']; // acc id yg di kredit
                         $acc = '32300';
                         $acc_pph = '23100'; // acc hutang pph
                         $memo = 'Penjualan-'.$nmBarang;
                         $jurnal = 'JK';
-                        $subtotal = $detpem[$i]['total'];
+                        $subtotal = ($detpem[$i]['total'] ?? 0);
                         $subtotal_hpp = $total_hpp; // $detpem[$i]['totalhpp'];
                         //===jumlah pph
                         $bati = $subtotal - $subtotal_hpp ;
@@ -220,8 +291,8 @@ class penjualanController extends Controller
                             [
                                 'rgl' => $rgl,
                                 'acc_id' => $accid,
-                                'debet' => $subtotal,
-                                'kredit' => 0,
+                                'debet' => 0,
+                                'kredit' => $subtotal,
                                 'trans_detail' => 'Penjualan-Barang'.$nmBarang,
                                 'void_flag' => 0,
                             ], 
@@ -253,7 +324,7 @@ class penjualanController extends Controller
                                 'rgl' => $rgl,
                                 'acc_id' => $acc,
                                 'debet' => 0,
-                                'kredit' => $subtotal - $subtotal_hpp,
+                                'kredit' => 0,
                                 'trans_detail' => 'Penjualan-Barang'.$nmBarang,
                                 'void_flag' => 0,
                             ],
@@ -276,6 +347,11 @@ class penjualanController extends Controller
                             // ]
                             //===end pph22
                         ];
+
+                        $ac = array_values(array_filter($ac, function ($entry) {
+                            return ((float) ($entry['debet'] ?? 0) > 0) || ((float) ($entry['kredit'] ?? 0) > 0);
+                        }));
+                        $this->assertBalanced($ac, 'Jurnal Penjualan Barang');
                         
                         insert_gl_detail($ac);
                         //===========end jurnal
@@ -317,6 +393,9 @@ class penjualanController extends Controller
                         //===========jurnal
                         // $accid = $detpemjasa[$i]['accid']; // acc id yg di debet
                         $accid_jasa = $detpemjasa[$i]['accid_jasa'];
+                        if (empty($accid_jasa) || substr((string) $accid_jasa, 0, 1) !== '4') {
+                            throw new \Exception('Akun pendapatan jasa tidak valid untuk kode ' . $kdJasa . ' (harus kelompok 4xxx)');
+                        }
                         $acc = '32300'; // laba ditahan
                         $memo = 'Penjualan-Jasa'.$nmJasa;
                         $jurnal = 'JK';
@@ -339,8 +418,8 @@ class penjualanController extends Controller
                             [
                                 'rgl' => $rgl,
                                 'acc_id' => $accid_jasa ,
-                                'debet' => $subtotal,
-                                'kredit' => 0,
+                                'debet' => 0,
+                                'kredit' => $subtotal,
                                 'trans_detail' => 'Penjualan-Jasa'.$nmJasa,
                                 'void_flag' => 0,
                             ],
@@ -348,7 +427,7 @@ class penjualanController extends Controller
                                 'rgl' => $rgl,
                                 'acc_id' => $acc,
                                 'debet' => 0,
-                                'kredit' => $subtotal,
+                                'kredit' => 0,
                                 'trans_detail' => 'Penjualan-Jasa'.$nmJasa,
                                 'void_flag' => 0,
                             ],
@@ -372,6 +451,11 @@ class penjualanController extends Controller
                             // ]
                             //===end pph22
                         ];
+
+                        $ac = array_values(array_filter($ac, function ($entry) {
+                            return ((float) ($entry['debet'] ?? 0) > 0) || ((float) ($entry['kredit'] ?? 0) > 0);
+                        }));
+                        $this->assertBalanced($ac, 'Jurnal Penjualan Jasa');
                         
                         insert_gl_detail($ac);
                         //===========end jurnal

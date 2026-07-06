@@ -415,14 +415,16 @@ class coaController extends Controller
 
 			$startDate = date("Y-m-d", strtotime($request->input('startDate')));
 			$endDate = date("Y-m-d", strtotime($request->input('endDate')));
+			$mode = $request->input('mode', 'period');
 			if($endDate == ""){
-				$date_lr = '2022-01-01';
-				$timezone = time() + (60*60*+8); 
+				$timezone = time() + (60*60*+8);
 				$cur_tgl = gmdate('Y-m-d', $timezone);
 			}else{
-				$date_lr = $startDate;
 				$cur_tgl = $endDate;
 			}
+
+			// mode=position untuk neraca (saldo posisi s/d akhir periode), selain itu tetap periodik.
+			$date_lr = $mode === 'position' ? '2022-01-01' : $startDate;
 
 
 			DB::statement( DB::raw("SET @harta = 0;"));
@@ -468,7 +470,8 @@ class coaController extends Controller
 			$modalDisetor1 = DB::statement("set @modalDisetor = '$modalDisetor' ;");
 
 			$unbalance = DB::table('general_ledger')->select(DB::raw('SUM(debet)-SUM(kredit) as unbalance'))
-						->leftJoin('gl_detail', 'general_ledger.id', '=', 'gl_detail.rgl')
+						->leftJoin('gl_detail', 'general_ledger.notrans', '=', 'gl_detail.rgl')
+						->where('general_ledger.rlocation', $dealer_ref)
 						->whereBetween('tgl', [$date_lr, $cur_tgl])
 						->first()
 						->unbalance;
@@ -589,6 +592,15 @@ class coaController extends Controller
             DB::table('coa')->insert($dataCCC);
 			// $action_btn = "concat('<button class=''btn btn-success btn-xs'' href=''#'' accid=''',a.acc_id,'''><span class=''fa fa-pencil''></span></button>') as aksi,concat('<button class=''btn btn-success btn-xs'' href=''#'' accid=''',idparent1,''' disabled><span class=''fa fa-pencil''></span></button>') as aksi1,concat('<button class=''btn btn-success btn-xs'' href=''#'' accid=''',idparent2,'''><span class=''fa fa-pencil''></span></button>') as aksi2,concat('<button class=''btn btn-success btn-xs'' href=''#'' accid=''',idparent3,'''><span class=''fa fa-pencil''></span></button>') as aksi3";
 			$data = DB::select("SELECT idparent1,parent1,parent1level,parent1type,idparent2,parent2,parent2level,parent2type,idparent3,parent3,parent3level,parent3type,a.acc_id,a.name,coalesce(b.amount,0) as amount,a.atype from coa a left join gl b on a.acc_id = b.acc_id where left(a.acc_id,1) in ($filter) order by a.acc_id;");
+			// Beberapa akun bisa muncul ganda di tabel level (mis. level3 & level4 dengan acc_id sama).
+			// Deduplikasi per acc_id agar amount tidak terhitung dua kali di laporan.
+			$uniqueData = [];
+			foreach ($data as $row) {
+				if (!array_key_exists($row->acc_id, $uniqueData)) {
+					$uniqueData[$row->acc_id] = $row;
+				}
+			}
+			$data = array_values($uniqueData);
 			// $myquery = DB::table('coa as a')
 			// 			->join('GL as b', 'a.acc_id', 'b.acc_id')
 			// 			->select('a.idparent1','a.parent1','a.parent1level','a.parent1type','a.idparent2','a.parent2','a.parent2level','a.parent2type','a.idparent3','a.parent3','a.parent3level','a.parent3type','a.acc_id','a.name',DB::raw('coalesce(b.amount,0) as amount'),'a.atype')
@@ -766,43 +778,57 @@ class coaController extends Controller
 					  }
 			   
 					  if($head_level1 == 'H5'){
+						$pendapatan = -1 * (double) $tot_income;
+						$hpp = (double) $tot_hpp;
 						$i+=1;        
 						$acc[$i] = array(
 						  'acc_id' => '59999',
 						  'name' => 'Aset Bersih Sebelum Biaya',
-						  'amount' => (double)$tot_income-(double)$tot_hpp,
+						  'amount' => $pendapatan - $hpp,
 						  'level' => '0',
 						  'tipe' => 'H',
 						  'jenis'=> 'Total',
 						);
 					  }elseif($head_level1 == 'H6'){
+						$pendapatan = -1 * (double) $tot_income;
+						$hpp = (double) $tot_hpp;
+						$biayaOperasional = (double) $tot_byyop;
 						$i+=1;        
 						$acc[$i] = array(
 						  'acc_id' => '69999',
 						  'name' => 'LABA NETO SEBELUM PAJAK',
-						  'amount' => ((double)$tot_income-(double)$tot_hpp) - (-1*(double)$tot_byyop),
+						  'amount' => ($pendapatan - $hpp) - $biayaOperasional,
 						  'level' => '0',
 						  'tipe' => 'H',
 						  'jenis'=> 'Total',
 						);
 					  }elseif($head_level1 == 'H7'){
+						$pendapatan = -1 * (double) $tot_income;
+						$hpp = (double) $tot_hpp;
+						$biayaOperasional = (double) $tot_byyop;
+						$pendapatanLain = -1 * (double) $tot_pendlain;
 						$i+=1;        
 						$acc[$i] = array(
 						  'acc_id' => '79999',
 						  'name' => 'Aset Bersih Setelah Penerimaan Lain',
-						  'amount' => (double)$tot_income-(double)$tot_hpp-(double)$tot_byyop+(double)$tot_pendlain,
+						  'amount' => (($pendapatan - $hpp) - $biayaOperasional) + $pendapatanLain,
 						  'level' => '0',
 						  'tipe' => 'H',
 						  'jenis'=> 'Total',
 						); 
 					  }else{
-						$hasil = $tot_hpp; //((double)$tot_income-(double)$tot_hpp)-(double)$tot_byyop ;
+						$pendapatan = -1 * (double) $tot_income;
+						$hpp = (double) $tot_hpp;
+						$biayaOperasional = (double) $tot_byyop;
+						$pendapatanLain = -1 * (double) $tot_pendlain;
+						$biayaLain = (double) $tot_byylain;
+						$hasil = ((($pendapatan - $hpp) - $biayaOperasional) + $pendapatanLain) - $biayaLain;
 						// if ($head_level1 != '') {
 						  $i+=1;        
 						  $acc[$i] = array(
 							'acc_id' => '89999',
 							'name' => 'Asset Bersih Setelah Biaya Lain',
-							'amount' => -1*$hasil, //(((double)$tot_income-(double)$tot_hpp)-(double)$tot_byyop),
+							'amount' => $hasil,
 							'level' => '0',
 							'tipe' => 'H',
 							'jenis'=> 'Total',

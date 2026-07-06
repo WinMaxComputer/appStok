@@ -66,6 +66,11 @@ if(!function_exists('delete_gl')){
 
 if(!function_exists('insert_gl_detail')){
     function insert_gl_detail($det_gl){
+        $sql = false;
+
+        if (empty($det_gl) || !is_array($det_gl)) {
+            return $sql;
+        }
 
         // print_r($det_gl);
         for($i = 0; $i < count($det_gl); $i ++){

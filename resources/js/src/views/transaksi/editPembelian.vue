@@ -24,12 +24,13 @@
                                 <div class="invoice-detail-body">
                                     <div class="invoice-detail-title">
                                        
-                                        <div class="invoice-title">
-                                            Edit Pembelian
+                                        <div class="invoice-title d-flex align-items-center gap-2 flex-wrap">
+                                            <span>Invoice Pembelian</span>
+                                            <span class="badge badge-outline-primary">Edit</span>
                                         </div>
                                     </div>
 
-                                    <div class="invoice-detail-header">
+                                    <div class="invoice-detail-header txn-block">
                                         <div class="row justify-content-between">
                                             <div class="col-xl-5 invoice-address-company">
 
@@ -110,8 +111,8 @@
                                         </div>
                                     </div>
 
-                                    <div class="invoice-detail-items">
-                                        <div class="row">
+                                    <div class="invoice-detail-items txn-block">
+                                        <div class="row g-2 align-items-end txn-entry-row txn-mobile-stack txn-entry-area">
                                             <div class="form-group col-xs-2">
                                                 <label for="Inputqty">Barcode</label>
                                                 <input type="text" ref="InputBarcode" v-model="barcode" class="form-control form-control-sm" placeholder="Barcode" @keyup.enter="addToCartB(barcode)" />
@@ -122,6 +123,7 @@
                                                     v-model="brg" 
                                                     :options="pembelian.barangs" 
                                                     :searchable="true"
+                                                    @select="focusInput()"
                                                     track-by="nmPersediaan"
                                                     label="nmPersediaan"
                                                     open-direction="top"
@@ -131,12 +133,12 @@
                                                 </multiselect>
                                             </div>
                                             <div class="form-group col-md-2">
-                                                <label for="inputState">HARGA</label>
-                                                <input type="text" v-model="brg.lastPrice" class="form-control form-control-sm" placeholder="Price" @keypress="onlyNumber" />
+                                                <label for="InputHarga">HARGA</label>
+                                                <input type="text" ref="InputHarga" v-model="brg.lastPrice" class="form-control form-control-sm" placeholder="Price" @keyup.enter="moveToQty()" @keypress="onlyNumber" />
                                             </div>
-                                            <div class="form-group col-sm-2">
-                                                <label for="inputZip">QTY</label>
-                                                <input type="text" v-model="qty" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
+                                            <div class="form-group col-md-1">
+                                                <label for="Inputqty">QTY</label>
+                                                <input type="text" ref="Inputqty" v-model="qty" class="form-control form-control-sm" placeholder="Quantity" @keyup.enter="addToCart(brg)" @keypress="onlyNumber" />
                                             </div>
                                             <div class="form-group col-md-2">
                                                 <label for="satuan">SATUAN</label>
@@ -147,18 +149,18 @@
                                                 <!-- {{ new Intl.NumberFormat().format(brg.lastPrice * qty) }} -->
                                                 <input type="text" v-model="tot" class="form-control form-control-sm" placeholder="Quantity" @keypress="onlyNumber" />
                                             </div>
-                                            <div class="form-group col-md-1">
+                                            <div class="form-group col-sm-1 d-grid">
                                                 <label for="aksi">Aksi</label>
-                                                <button @click="addToCart(brg)" class="btn btn-xs btn-primary">
+                                                <button @click="addToCart(brg)" class="btn btn-primary btn-sm">
                                                     + 
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="invoice-detail-items">
+                                    <div class="invoice-detail-items txn-block">
                                         <div class="inv--product-table-section">
-                                            <div class="table-responsive">
+                                            <div class="table-responsive txn-table-wrap">
                                                 <table class="table table-hover table-bordered item-table">
                                                     <thead>
                                                         <tr>
@@ -177,7 +179,7 @@
                                                             <td class="description">
                                                                 <input type="number" v-model="item.qty" style="min-width: 50px;" @keypress="onlyNumber" @keyup="updateItemQty(item.kdBarang, item.qty)" />
                                                             </td>
-                                                            <td class="rate">{{ item.satuan }}</td>
+                                                            <td class="qty">{{ item.satuan }}</td>
                                                             <td class="amount">{{ new Intl.NumberFormat().format(item.total) }}</td>
                                                             <td class="tax">
                                                                 <a href="javascript:;" @click="removeItem(id=item.kdBarang)">
@@ -214,7 +216,7 @@
 
                                     
 
-                                    <div class="invoice-detail-total">
+                                    <div class="invoice-detail-total txn-block txn-summary-panel">
                                         <div class="row">
 
                                             <div class="col-md-6">
@@ -234,7 +236,7 @@
                                                             </div> -->
                                                             <div class="col-sm-4">
                                                                 <!-- <a href="javascript:;" @click="simpanPembelian" class="btn btn-success btn-download">Save</a> -->
-                                                                <a href="javascript:;" @click="openModal()" class="btn btn-success btn-download">PAYMENT</a>
+                                                                <a href="javascript:;" @click="openModal()" class="btn btn-success btn-download txn-payment-btn">PAYMENT</a>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -327,8 +329,8 @@
                                                 <div class="totals-row">
                                                     <div class="invoice-totals-row ">
                                                         <div style="font-size: 20px;">
-                                                            <div v-if="params.term === 0">Cash</div>
-                                                            <div v-else-if="params.term === 1">Kredit</div>
+                                                            <div v-if="params.term === '0'">Cash</div>
+                                                            <div v-else-if="params.term === '1'">Kredit</div>
                                                         </div>
                                                         <!-- <div class="invoice-summary-label"></div> -->
                                                         <div class="invoice-summary-value">
@@ -346,7 +348,7 @@
                                                         <!-- <div class="invoice-summary-label"></div> -->
                                                         <div class="invoice-summary-value">
                                                             <div class="balance-due-amount">
-                                                                <select v-model="paramsbayar.metodeBayar" >
+                                                                <select v-model="paramsbayar.metodeBayar" class="form-select form-select-sm" >
                                                                     <option value="cash" selected>Cash</option>
                                                                     <option value="credit_card">Credit Card</option>
                                                                     <option value="bank_transfer">Bank Transfer</option>
@@ -388,6 +390,87 @@
     </div>
 </template>
 
+<style scoped>
+.txn-block {
+    background: #ffffff;
+    border: 1px solid #e8edf5;
+    border-radius: 12px;
+    padding: 14px 14px 10px;
+    margin-bottom: 14px;
+}
+
+.txn-entry-area {
+    background: #f9fbff;
+    border: 1px solid #edf2fa;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.txn-entry-row .form-group {
+    margin-bottom: 0;
+}
+
+.txn-entry-row label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 4px;
+}
+
+.txn-table-wrap {
+    border: 1px solid #edf1f7;
+    border-radius: 10px;
+    overflow-x: auto;
+}
+
+.txn-table-wrap :deep(table) {
+    margin-bottom: 0;
+}
+
+.txn-table-wrap :deep(thead th) {
+    background: #f6f9ff;
+}
+
+.txn-summary-panel {
+    background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+}
+
+@media (max-width: 992px) {
+    .txn-entry-area {
+        padding: 10px 8px;
+    }
+
+    .txn-block {
+        padding: 12px 10px 8px;
+    }
+}
+
+@media (max-width: 767px) {
+    .txn-mobile-stack .col-sm-1,
+    .txn-mobile-stack .col-sm-2,
+    .txn-mobile-stack .col-sm-3,
+    .txn-mobile-stack .col-sm-4,
+    .txn-mobile-stack .col-sm-6,
+    .txn-mobile-stack .col-md-1,
+    .txn-mobile-stack .col-md-2,
+    .txn-mobile-stack .col-md-3,
+    .txn-mobile-stack .col-md-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .txn-mobile-stack .form-control,
+    .txn-mobile-stack :deep(.multiselect),
+    .txn-mobile-stack .btn {
+        min-height: 38px;
+    }
+
+    .txn-payment-btn {
+        width: 100%;
+    }
+}
+</style>
+
 <script setup>
     // import { onMounted, ref } from 'vue';
     import '@/assets/sass/apps/invoice-add.scss';
@@ -419,6 +502,8 @@
     const brg = ref([]);
     const nopembelian = ref([]);
     const qty = ref(1);
+    const Inputqty = ref(null);
+    const InputHarga = ref(null);
     const tot = ref();
     const subtotal = ref();
     const total = ref();
@@ -472,6 +557,16 @@
     // const getAcc=() => {
     //     store.dispatch('GetAcc')
     // }
+    const moveToQty = () => {
+        Inputqty.value?.focus();
+    };
+
+    const focusInput = () => {
+        setTimeout(() => {
+            InputHarga.value?.focus();
+        }, 0);
+    };
+
     const openModal = () => {
         getNoPembayaran()
         // Logic to open the modal
@@ -479,10 +574,52 @@
         isVisible.value = true;
         
     };
+
+    const toast = window.Swal.mixin({
+        toast: true,
+        position: 'top-center',
+        showConfirmButton: false,
+        timer: 3000,
+        padding: '2em',
+    });
+
+    const showToast = (icon, title) => {
+        toast.fire({
+            icon,
+            title,
+            padding: '2em',
+        });
+    };
+
     const getNoPembayaran = async () => {
         await store.dispatch('GetNoBayarPembelian').then(() => {
             paramsbayar.value.noBayar = store.getters.NoBayarPembelian;
         });
+    };
+
+    const getCurrentCartItems = () => {
+        return JSON.parse(localStorage.getItem('cartItemsP')) || [];
+    };
+
+    const setCurrentCartItems = (items) => {
+        cartItems.value = Array.isArray(items) ? items : [];
+        localStorage.setItem('cartItemsP', JSON.stringify(cartItems.value));
+        return cartItems.value;
+    };
+
+    const normalizeDetailForSave = (rows) => {
+        return (rows || [])
+            .map((row) => {
+                const qtyNum = Math.max(0, Number(row.qty || 0));
+                const priceNum = Math.max(0, Number(row.hrgPokok || 0));
+                return {
+                    ...row,
+                    qty: qtyNum,
+                    hrgPokok: priceNum,
+                    total: qtyNum * priceNum,
+                };
+            })
+            .filter((row) => row.kdBarang && row.qty > 0 && row.hrgPokok >= 0);
     };
 
 
@@ -492,6 +629,9 @@
         total.value = (subtotal.value - (subtotal.value * disc.value / 100))
         tax.value = temptotal * pajak /100
 
+        params.value.subtotal = subtotal.value
+        params.value.tax = tax.value
+        params.value.disc = disc.value
         params.value.total = total.value
         console.log('total :'+total.value)
         // return { total, tax}
@@ -501,6 +641,9 @@
         const temptotal = subtotal.value - (subtotal.value * disc.value / 100)
         tax.value = temptotal * pajak /100
         total.value = (subtotal.value - (subtotal.value * disc.value / 100)) + tax.value
+        params.value.subtotal = subtotal.value
+        params.value.tax = tax.value
+        params.value.disc = disc.value
         params.value.total = total.value
         
         console.log('total dengan pajak:'+tax.value)
@@ -536,20 +679,38 @@
     }
 
     const simpanPembelian=() => {
-        const header =params.value
-        const headers =paramssupplier.value
+        const detail = normalizeDetailForSave(getCurrentCartItems())
+        if (!detail.length) {
+            showToast('warning', 'Detail pembelian kosong atau tidak valid');
+            return
+        }
+
+        setCurrentCartItems(detail)
+        getSubtotal()
+        getTotal()
+
+        const header = {
+            ...params.value,
+            subtotal: subtotal.value,
+            tax: tax.value,
+            disc: disc.value,
+            total: total.value,
+        }
+        const headers = { ...paramssupplier.value }
         const headerfull = Object.assign(header, headers)
-        const detail =cartItems.value
-        const bayar = paramsbayar.value
-        store.dispatch('CreatePembelian', [headerfull,detail,bayar] )
+        const bayar = { ...paramsbayar.value, jmlBayar: total.value }
+        store.dispatch('CreatePembelian', [headerfull, detail, bayar] )
         .then(response => {
             // console.log('result: ', response)
             getCart()
             getNoPembelian();
+            isVisible.value = false;
+            showToast('success', 'Pembelian berhasil diperbarui');
             router.push({ name: 'pembelian-persediaan' });
         })
         .catch(error => {
             // console.log('error: ', error)
+            showToast('error', 'Gagal memperbarui pembelian');
             return
         })
     }
@@ -585,6 +746,10 @@
             getSupplier();
             getCart();
             // getNoPembelian();
+            window.history.pushState(null, '', window.location.href);
+            window.addEventListener('popstate', function (event) {
+                window.history.pushState(null, '', window.location.href);
+            });
         })
         .catch(error => {
             // console.log('error: ', error)
@@ -651,77 +816,75 @@
 
     function addToCart(brg) {
         // console.log(brg)
-        if (localStorage.getItem('cartItemsP')===null){
-            cartItems.value = [];
-            // console.log(cartItems.value)
-        }else{
-            cartItems.value = JSON.parse(localStorage.getItem('cartItemsP'));
-        }
-            const oldItems = JSON.parse(localStorage.getItem('cartItemsP')) || [];
+        cartItems.value = getCurrentCartItems();
+            const oldItems = cartItems.value;
             // console.log(oldItems)
             const existingItem = oldItems.find(({ kdBarang }) => kdBarang === brg.kdPersediaan);
             if (existingItem) {
                 const objIndex = cartItems.value.findIndex((e => e.kdBarang === brg.kdPersediaan));
+                if (objIndex < 0) {
+                    return;
+                }
                 const oldName = cartItems.value[objIndex].nmBarang;
-                const oldQty = cartItems.value[objIndex].qty;
-                const oldTotal = cartItems.value[objIndex].total;
-                const newQty = parseInt(oldQty) + parseInt(qty.value) ;
-                const newTotal = parseInt(oldTotal) + parseInt(qty.value * brg.lastPrice) ;
-                cartItems.value[objIndex].qty = parseInt(newQty);
-                cartItems.value[objIndex].total = parseInt(newTotal);
-                localStorage.setItem('cartItemsP',JSON.stringify(cartItems.value));
+                const oldQty = Number(cartItems.value[objIndex].qty || 0);
+                const oldTotal = Number(cartItems.value[objIndex].total || 0);
+                const newQty = oldQty + Number(qty.value || 0);
+                const newTotal = oldTotal + Number(qty.value || 0) * Number(brg.lastPrice || 0);
+                cartItems.value[objIndex].qty = newQty;
+                cartItems.value[objIndex].total = newTotal;
+                setCurrentCartItems(cartItems.value);
                 // alert(oldName+' Quantity Update')
                 getCart();
                 getTotal();
                 reset_form();
-                const toast = window.Swal.mixin({
-                    toast: true,
-                    position: 'top-center',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    padding: '2em',
-                });
-                toast.fire({
-                    icon: 'success',
-                    title: oldName+' Quantity Update',
-                    padding: '2em',
-                });
+                showToast('success', oldName + ' Quantity Update');
             }else{
                 cartItems.value.push({
                     kdBarang:brg.kdPersediaan, 
                     nmBarang:brg.nmPersediaan,
                     accid_persediaan:brg.accid_persediaan,
                     hrgPokok:brg.lastPrice,
-                    qty:qty.value,
+                    qty:Number(qty.value || 0),
                     satuan:brg.satuanPersediaan,
-                    total:qty.value * brg.lastPrice
+                    total:Number(qty.value || 0) * Number(brg.lastPrice || 0)
                 });	
-                localStorage.setItem('cartItemsP',JSON.stringify(cartItems.value));
+                setCurrentCartItems(cartItems.value);
                 getCart();
                 getTotal();
                 reset_form();
-                // alert(brg.nmPersediaan+ " berhasil disimpan")
-                const toast = window.Swal.mixin({
-                        toast: true,
-                        position: 'top-center',
-                        showConfirmButton: false,
-                        timer: 3000,
-                        padding: '2em',
-                    });
-                    toast.fire({
-                        icon: 'success',
-                        title: brg.nmPersediaan+ " berhasil disimpan",
-                        padding: '2em',
-                    });
+                showToast('success', brg.nmPersediaan + ' berhasil disimpan');
             }
     }
+
+    function addToCartB(barcode) {
+        store.dispatch('CheckBarangExist', {kdBarang: barcode})
+            .then((response) => {
+                const brga = response.data.data;
+                const found = pembelian.value.barangs.find(item => item.kdPersediaan === brga.kdBarang);
+                if (found) {
+                    brg.value = found;
+                    focusInput();
+                }
+
+                if (!response.data.exist === true) {
+                    showToast('error', 'Barang tidak ditemukan di database');
+                }
+            })
+            .catch(() => {
+                showToast('error', 'Terjadi kesalahan saat memeriksa barang');
+            });
+    }
+
     function updateItemQty (barcode, qty) {
-        const cartItems = JSON.parse(localStorage.getItem('cartItemsP'));
+        const cartItems = getCurrentCartItems();
         const objIndex = cartItems.findIndex((e => e.kdBarang === barcode));
-        const newQty = parseInt(qty) ;
+        if (objIndex < 0) {
+            return;
+        }
+        const newQty = Math.max(0, Number(qty || 0));
         cartItems[objIndex].qty = parseInt(newQty);
-        cartItems[objIndex].total = parseInt(newQty * cartItems[objIndex].hrgPokok);
-        localStorage.setItem('cartItemsP',JSON.stringify(cartItems));
+        cartItems[objIndex].total = Number(newQty) * Number(cartItems[objIndex].hrgPokok || 0);
+        setCurrentCartItems(cartItems);
         //alert('Quantity Update')
         getCart();
         getTotal();
@@ -730,9 +893,8 @@
 
     function removeItem(id) {
         // alert(id)
-        const arrayFromStroage = JSON.parse(localStorage.getItem('cartItemsP'));
-        const filtered = arrayFromStroage.filter(arrayFromStroage => arrayFromStroage.kdBarang !== id);
-        localStorage.setItem('cartItemsP', JSON.stringify(filtered));
+        const filtered = getCurrentCartItems().filter((row) => row.kdBarang !== id);
+        setCurrentCartItems(filtered);
         // cartItems.value.splice(index, 1)
         // this.isicart = Object.keys(JSON.parse(localStorage.getItem('cartItemsP'))).length;
         getCart();
@@ -743,10 +905,11 @@
     function getCart() {
         // subtotal.value = []
         if (localStorage.getItem('cartItemsP')===null){
-            cartItems.value = localStorage.setItem('cartItemsP', '[]');
+            cartItems.value = [];
+            localStorage.setItem('cartItemsP', '[]');
             subtotal.value = 0
         }else{
-            cartItems.value = JSON.parse(localStorage.getItem('cartItemsP'));
+            cartItems.value = getCurrentCartItems();
             getSubtotal();
             getTotal();
             
@@ -761,11 +924,11 @@
     };
 
     function getSubtotal(){
-        const allItems = JSON.parse(localStorage.getItem('cartItemsP')) || [];
+        const allItems = getCurrentCartItems();
         let sum = 0;
         subtotal.value = 0
         for(let i = 0; i < allItems.length; i++){
-        sum += (parseFloat(allItems[i].total));
+        sum += Number(allItems[i].total || 0);
         }
         subtotal.value = sum
         // console.log(subtotal.value)
