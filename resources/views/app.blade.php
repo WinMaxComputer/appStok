@@ -14,6 +14,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Swamerta App">
     <meta name="application-name" content="Swamerta App">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="HandheldFriendly" content="true">
 
     <title>Swamerta - App</title>
 
@@ -23,6 +25,7 @@
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
     <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/winmax-90e19e7f41d823ab49c83617de39c94d.png') }}">
+    <link rel="apple-touch-startup-image" href="{{ asset('images/winmax-90e19e7f41d823ab49c83617de39c94d.png') }}">
 
     <link href="https://fonts.googleapis.com/css?family=Nunito:400,600,700" rel="stylesheet">
     <style>

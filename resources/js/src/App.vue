@@ -1,10 +1,12 @@
 <template>
     <div :class="[$store.state.layout_style, $store.state.menu_style]">
         <component v-bind:is="layout"></component>
+        <PwaInstallPrompt />
     </div>
 </template>
 <script setup>
     import { computed } from 'vue';
+    import PwaInstallPrompt from './components/pwa-install-prompt.vue';
 
     import '@/assets/sass/app.scss';
 
