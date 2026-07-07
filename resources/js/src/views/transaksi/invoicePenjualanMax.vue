@@ -30,21 +30,20 @@
                                             <div class="content-section">
 
 
-                                                <div class="inv--product-table-section">
-                                                    <div class="row">
+                                                <div class="inv--product-table-section invoice-hero-block">
+                                                    <div class="row invoice-hero-grid">
 
                                                         <div class="col-sm-41 me-auto">
-                                                            <div class="d-flex">
+                                                            <div class="d-flex align-items-start">
                                                                 <img class="company-logo" src="@/assets/images/wmax.png" alt="company" />
-                                                                <!-- <h3 class="in-heading align-self-center">Cork Inc.</h3> -->
                                                             </div>
                                                         </div>
                                                         <div class="col-sm-41 text-sm-end"></div>
                                                         <div class="col-sm-41 text-sm-end">
-                                                             <QRCodeVue3
+                                                                                 <QRCodeVue3
                                                                 :width="50"
                                                                 :height="50"
-                                                                value="{{ noNota }}"
+                                                                                     :value="String(noNota || '')"
                                                                 :qrOptions="{ typeNumber: 0, mode: 'Byte', errorCorrectionLevel: 'H' }"
                                                                 :imageOptions="{ hideBackgroundDots: true, imageSize: 0.4, margin: 0 }"
                                                                 :dotsOptions="{
@@ -57,23 +56,21 @@
                                                         </div>
 
                                                         <div class="col-sm-41 align-self-left">
-                                                            <div class="inv-street-addr">Jln Jepun Bali No.10X Lukluk, Mengwi - Bali</div>
-                                                            <div class="inv-email-address">info@winmaxbali</div>
-                                                            <div class="inv-email-address">+6281 8688 114</div>
-                                                            <div class="inv-email-address">Term: {{ typeBayar === '0' ? 'Cash' : 'Kredit' }} <span v-if="typeBayar === '1'">Tempo {{ new Date(jthTempo).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}</span></div>
+                                                            <div class="invoice-company-meta">
+                                                                <div class="inv-street-addr">Jln Jepun Bali No.10X Lukluk, Mengwi - Bali</div>
+                                                                <div class="inv-email-address">info@winmaxbali</div>
+                                                                <div class="inv-email-address">+6281 8688 114</div>
+                                                                <div class="inv-email-address">Term: {{ typeBayar === '0' ? 'Cash' : 'Kredit' }} <span v-if="typeBayar === '1'">Tempo {{ new Date(jthTempo).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}</span></div>
+                                                            </div>
                                                         </div>
                                                         <div class="col-sm-41 text-sm-end"></div>
                                                         <div class="col-sm-41 text-sm-end">
-                                                            <div class="inv-created-date"><span class="inv-title">Invoice : </span> <span class="inv-date">{{ noNota }}</span></div>
-                                                            <div class="inv-created-date"><span class="inv-title">Invoice Date : </span> <span class="inv-date">{{ new Date(tglNota).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}</span></div>
-                                                            <div class="inv-created-date"><span class="inv-title">
-                                                                Kpd : </span> <span class="inv-date">{{ nmPelanggan }}</span>
+                                                            <div class="invoice-customer-card">
+                                                                <div class="inv-created-date"><span class="inv-title">Invoice : </span> <span class="inv-date">{{ noNota }}</span></div>
+                                                                <div class="inv-created-date"><span class="inv-title">Invoice Date : </span> <span class="inv-date">{{ new Date(tglNota).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) }}</span></div>
+                                                                <div class="inv-created-date"><span class="inv-title">Kpd : </span> <span class="inv-date">{{ nmPelanggan }}</span></div>
+                                                                <div class="inv-created-date"><span class="inv-title">Alamat : </span> <span class="inv-date">{{ alamatPelanggan }}</span></div>
                                                             </div>
-                                                            <div class="inv-created-date"><span class="inv-title">
-                                                                Alamat : </span> <span class="inv-date">{{ alamatPelanggan }}</span>
-                                                                
-                                                            </div>
-                                                            <!-- <p class="inv-due-date"><span class="inv-title">Alamat : </span> <span class="inv-date">Jln Kaswari no 77</span></p> -->
                                                         </div>
                                                     </div>
 
@@ -82,17 +79,17 @@
 
                                                 
 
-                                                <div class="inv--product-table-section" v-if="items.length > 0">
+                                                <div class="inv--product-table-section invoice-block" v-if="items.length > 0">
                                                     <div class="table-responsive">
-                                                        <table style="font-size: 11px;width: 100%;">
+                                                        <table class="invoice-items-table">
                                                             <thead>
                                                                 <tr>
-                                                                    <th v-for="item in columns" :key="item.key" :class="[item.class]" style="padding: 9px 22px;font-size: 11px !important;border: none;border-top: 1px solid #000;border-bottom: 1px solid #000;">
+                                                                    <th v-for="item in columns" :key="item.key" :class="[item.class]">
                                                                         {{ item.label }}
                                                                     </th>
                                                                 </tr>
                                                             </thead>
-                                                            <tbody style="color: #000;font-size: 11px !important;font-weight: 300;border: none;padding: 10px 25px;vertical-align: top !important;">
+                                                            <tbody>
                                                                 <tr v-for="item in items" :key="item.id">
                                                                     <td>{{ item.kdBarang }}</td>
                                                                     <td>{{ item.nmBarang }}</td>
@@ -102,21 +99,15 @@
                                                                     <td class="text-end">{{ Number(item.totalJual).toLocaleString() }}</td>
                                                                 </tr>
                                                             </tbody>
-                                                            <thead>
-                                                                <tr>
-                                                                    <th v-for="item in columns" :key="item.key" :class="[item.class]" style="padding: 9px 2px;font-size: 11px !important;border: none;border-top: 1px solid #000;">
-                                                                    </th>
-                                                                </tr>
-                                                            </thead>
                                                         </table>
                                                     </div>
                                                 </div>
-                                                <div class="inv--product-table-section" v-if="items_jasa.length > 0">
+                                                <div class="inv--product-table-section invoice-block" v-if="items_jasa.length > 0">
                                                     <div class="table-responsive">
-                                                        <table style="font-size: 11px;width: 100%;">
+                                                        <table class="invoice-items-table invoice-items-table--service">
                                                             <thead>
                                                                 <tr>
-                                                                    <th v-for="item in columns_jasa" :key="item.key" :class="[item.class]" style="padding: 9px 22px;font-size: 11px !important;border: none;border-top: 1px solid #000;border-bottom: 1px solid #000;">
+                                                                    <th v-for="item in columns_jasa" :key="item.key" :class="[item.class]">
                                                                         {{ item.label }}
                                                                     </th>
                                                                 </tr>
@@ -133,66 +124,56 @@
                                                                     <td class="text-end">{{ Number(item.totalJasa).toLocaleString() }}</td>
                                                                 </tr>
                                                             </tbody>
-                                                            <thead>
-                                                                <tr>
-                                                                    <th v-for="item in columns_jasa" :key="item.key" :class="[item.class]" style="padding: 9px 22px;font-size: 11px !important;border: none;border-top: 1px solid #000;">
-                                                                    </th>
-                                                                </tr>
-                                                            </thead>
                                                         </table>
                                                     </div>
                                                 </div>
 
                                                 
 
-                                                <div class="inv--total-amounts">
+                                                <div class="inv--total-amounts invoice-summary-block">
                                                     <div class="row">
                                                         <div class="col-sm-51">
-                                                            <div class="inv-email-address">Rek BCA : 2360315331<br> An : I Nyoman Rihan Adi</div>
-                                                            <div class="inv-email-address">Invoice ini sudah di ttd secara digital oleh WinMax Bali<br>Terima kasih</div>
+                                                            <div class="invoice-bank-box">
+                                                                <div class="inv-email-address">Rek BCA : 2360315331<br> An : I Nyoman Rihan Adi</div>
+                                                                <div class="inv-email-address">Invoice ini sudah di ttd secara digital oleh WinMax Bali<br>Terima kasih</div>
+                                                            </div>
                                                         </div>
                                                         <div class="col-sm-21" > 
-                                                            <div v-if="ttdPenerima">Penerima,</div>
-                                                            <img :src="ttdPenerima" alt="Tanda Tangan Penerima" style="max-width: 100%; max-height: 100px;" v-if="ttdPenerima" />
-                                                            <div class="inv-email-address" v-if="ttdPenerima">{{ namaPenerima }}</div>
+                                                            <div class="invoice-signature-box" v-if="ttdPenerima">
+                                                                <div>Penerima,</div>
+                                                                <img :src="ttdPenerima" alt="Tanda Tangan Penerima" class="invoice-signature-image" />
+                                                                <div class="inv-email-address">{{ namaPenerima }}</div>
+                                                            </div>
                                                         </div>
                                                         <div class="col-sm-41">
-                                                           
-                                                            <div class="text-sm-end">
+                                                            <div class="text-sm-end invoice-total-box">
                                                                 <div class="row">
                                                                     <div class="col-sm-7 col-7">
                                                                         <div class="text-end">Sub Total:</div>
                                                                     </div>
                                                                     <div class="col-sm-5 col-6">
-                                                                        <div class="text-end">{{ items.reduce((sum, item) => sum + Number(item.totalJual), 0).toLocaleString() }}</div>
+                                                                        <div class="text-end">{{ formatNumber(subtotalBarang) }}</div>
                                                                     </div>
 
                                                                     <div class="col-sm-7 col-7" v-if="items_jasa.length > 0">
                                                                         <div class="text-end">Jasa:</div>
                                                                     </div>
                                                                     <div class="col-sm-5 col-6" v-if="items_jasa.length > 0">
-                                                                        <div class="text-end">{{ items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0).toLocaleString() }}</div>
+                                                                        <div class="text-end">{{ formatNumber(subtotalJasa) }}</div>
                                                                     </div>
                                                                     <div class="col-sm-7 col-6">
                                                                         <div class="text-end">Total:</div>
                                                                     </div>
                                                                     <div class="col-sm-5 col-6">
                                                                         <div class="text-end">
-                                                                            {{
-                                                                                (
-                                                                                    Number(
-                                                                                        items.reduce((sum, item) => sum + Number(item.totalJual), 0) - Number(discPenjualan)
-                                                                                    ) +
-                                                                                    items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0)
-                                                                                ).toLocaleString()
-                                                                            }}
+                                                                            {{ formatNumber(grandTotal) }}
                                                                         </div>
                                                                     </div>
                                                                     <div class="col-sm-7 col-6" v-if="typeBayar !== '0'">
                                                                         <div class="text-end">Payment :</div>
                                                                     </div>
                                                                     <div class="col-sm-5 col-6" v-if="typeBayar !== '0'">
-                                                                        <div class="text-end">{{ sudahbayar.reduce((sum, item) => sum + Number(item.jmlBayar), 0).toLocaleString() }}</div>
+                                                                        <div class="text-end">{{ formatNumber(totalBayar) }}</div>
                                                                     </div>
 
                                                                     <div class="col-sm-7 col-6" v-if="typeBayar !== '0'">
@@ -200,15 +181,7 @@
                                                                     </div>
                                                                     <div class="col-sm-5 col-6" v-if="typeBayar !== '0'">
                                                                         <div class="text-end">
-                                                                            {{
-                                                                                (
-                                                                                    Number(
-                                                                                        items.reduce((sum, item) => sum + Number(item.totalJual), 0) - Number(discPenjualan)
-                                                                                    ) +
-                                                                                    items_jasa.reduce((sum, item) => sum + Number(item.totalJasa), 0) -
-                                                                                    sudahbayar.reduce((sum, item) => sum + Number(item.jmlBayar), 0)
-                                                                                ).toLocaleString()
-                                                                            }}
+                                                                            {{ formatNumber(sisaBayar) }}
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -295,7 +268,7 @@
 </template>
 
 <script setup>
-    import { onMounted, ref, reactive, onBeforeMount, h } from 'vue';
+    import { computed, onMounted, ref, reactive, onBeforeMount, h } from 'vue';
     import '@/assets/sass/apps/invoice-preview.scss';
 
     import jsPDF from 'jspdf';
@@ -336,6 +309,14 @@
     const jthTempo = ref();
     const isi = ref(null);
     const sudahbayar = ref([]);
+
+    const subtotalBarang = computed(() => items.value.reduce((sum, item) => sum + Number(item.totalJual || 0), 0));
+    const subtotalJasa = computed(() => items_jasa.value.reduce((sum, item) => sum + Number(item.totalJasa || 0), 0));
+    const grandTotal = computed(() => Number(subtotalBarang.value - Number(discPenjualan.value || 0)) + subtotalJasa.value);
+    const totalBayar = computed(() => sudahbayar.value.reduce((sum, item) => sum + Number(item.jmlBayar || 0), 0));
+    const sisaBayar = computed(() => grandTotal.value - totalBayar.value);
+
+    const formatNumber = (value) => Number(value || 0).toLocaleString();
 
 
 
@@ -393,30 +374,38 @@
 
     const printInvoice = () => {
         const element = document.getElementById('element-to-print');
-        html2pdf().set(getPdfOptions()).from(element).outputPdf('bloburl').then((blobUrl) => {
-            const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=1100,height=900');
+        if (!element) {
+            return;
+        }
 
-            if (!printWindow) {
-                return;
-            }
+        const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=1100,height=900');
+        if (!printWindow) {
+            return;
+        }
 
-            printWindow.document.write(`
-                <html>
-                    <head><title>Print Invoice</title></head>
-                    <body style="margin:0;">
-                        <iframe id="print-frame" src="${blobUrl}" style="border:0;width:100%;height:100vh;"></iframe>
-                    </body>
-                </html>
-            `);
-            printWindow.document.close();
+        const printStyles = `
+            <style>
+                * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                body { margin: 0; font-family: Arial, sans-serif; color: #111827; background: #fff; }
+                .print-shell { padding: 8mm; }
+                .invoice-container, .invoice-inbox, .content-section { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; }
+                .table-responsive { overflow: visible !important; }
+                table { width: 100% !important; border-collapse: collapse; }
+                th { padding: 8px 10px; border-top: 1px solid #000; border-bottom: 1px solid #000; text-align: left; font-size: 11px; }
+                td { padding: 6px 10px; font-size: 11px; vertical-align: top; }
+                .text-end { text-align: right !important; }
+                .company-logo { max-height: 54px; width: auto; }
+                .inv-email-address, .inv-street-addr, .inv-created-date { font-size: 11px; line-height: 1.35; }
+                .btn, .modal, .modal-backdrop { display: none !important; }
+                @page { size: A4 portrait; margin: 8mm; }
+            </style>
+        `;
 
-            const triggerPrint = () => {
-                printWindow.focus();
-                printWindow.print();
-            };
-
-            setTimeout(triggerPrint, 1200);
-        });
+        printWindow.document.open();
+        printWindow.document.write(`<!doctype html><html><head><title>Print Invoice</title>${printStyles}</head><body><div class="print-shell">${element.outerHTML}</div></body></html>`);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => printWindow.print(), 250);
     };
 
     const openModal = () => {
@@ -519,6 +508,74 @@
 
 </script>
 <style scoped>
+.invoice-hero-block {
+    margin-bottom: 1.25rem;
+}
+
+.invoice-hero-grid {
+    align-items: flex-start;
+}
+
+.invoice-company-meta,
+.invoice-customer-card,
+.invoice-bank-box,
+.invoice-total-box,
+.invoice-signature-box {
+    font-size: 11px;
+}
+
+.invoice-customer-card {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-end;
+}
+
+.invoice-block {
+    margin-top: 1.5rem;
+}
+
+.invoice-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    background: #fff;
+}
+
+.invoice-items-table thead th {
+    padding: 9px 18px;
+    font-size: 11px;
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    color: #0f172a;
+}
+
+.invoice-items-table tbody td {
+    color: #000;
+    font-size: 11px;
+    font-weight: 400;
+    padding: 8px 18px;
+    vertical-align: top;
+}
+
+.invoice-summary-block {
+    margin-top: 1.75rem;
+}
+
+.invoice-signature-image {
+    max-width: 100%;
+    max-height: 100px;
+}
+
+.invoice-total-box {
+    padding-top: 6px;
+}
+
+.invoice-actions-btn .btn,
+.invoice-actions-btn a.btn {
+    width: 100%;
+}
+
 @media (min-width: 350px) {
   .col-sm-41 {
     flex: 0 0 auto;
@@ -535,6 +592,56 @@
     flex: 0 0 auto;
     width: 33.33333333%;
   }
+}
+
+@media (max-width: 767px) {
+    .invoice-hero-grid {
+        row-gap: 12px;
+    }
+
+    .col-sm-41,
+    .col-sm-51,
+    .col-sm-21 {
+        width: 100% !important;
+    }
+
+    .company-logo {
+        max-height: 46px;
+    }
+
+    .invoice-company-meta,
+    .invoice-customer-card,
+    .invoice-bank-box,
+    .invoice-total-box,
+    .invoice-signature-box {
+        font-size: 10px;
+    }
+
+    .invoice-customer-card {
+        align-items: flex-start;
+    }
+
+    .invoice-items-table {
+        min-width: 640px;
+    }
+
+    .invoice-items-table thead th,
+    .invoice-items-table tbody td {
+        padding: 6px 10px;
+        font-size: 10px;
+    }
+
+    .invoice-summary-block {
+        margin-top: 1.25rem;
+    }
+
+    .invoice-signature-box {
+        margin-top: 8px;
+    }
+
+    .invoice-actions-btn .row {
+        row-gap: 8px;
+    }
 }
 
 @media print {
@@ -616,6 +723,12 @@
     .inv--product-table-section td {
         padding-top: 3px !important;
         padding-bottom: 3px !important;
+    }
+
+    .invoice-items-table thead th,
+    .invoice-items-table tbody td {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
     }
 
     .col-sm-41,
