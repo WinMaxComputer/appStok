@@ -12,12 +12,12 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Swamerta App">
-    <meta name="application-name" content="Swamerta App">
+    <meta name="apple-mobile-web-app-title" content="WinMax App">
+    <meta name="application-name" content="WinMax App">
     <meta name="format-detection" content="telephone=no">
     <meta name="HandheldFriendly" content="true">
 
-    <title>Swamerta - App</title>
+    <title>WinMax - App</title>
 
     @vite(['resources/js/src/main.js'])
 

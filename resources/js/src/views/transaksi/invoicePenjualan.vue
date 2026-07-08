@@ -20,6 +20,7 @@
                 <div class="doc-container">
                     <div class="row">
                         <div class="col-xl-9">
+                            <div class="invoice-paper-shell">
                             <div class="invoice-container" id="element-to-print">
                                 <div class="invoice-inbox" ref="isi">
                                     <div id="ct" class="">
@@ -35,19 +36,16 @@
                                                         </div>
                                                         <div class="col-sm-41 text-sm-end"></div>
                                                         <div class="col-sm-41 text-sm-end">
-                                                                                 <QRCodeVue3
-                                                                :width="50"
-                                                                :height="50"
-                                                                                     :value="String(noNota || '')"
-                                                                :qrOptions="{ typeNumber: 0, mode: 'Byte', errorCorrectionLevel: 'H' }"
-                                                                :imageOptions="{ hideBackgroundDots: true, imageSize: 0.4, margin: 0 }"
-                                                                :dotsOptions="{
-                                                                    type: 'square',
-                                                                    color: '#000',
-                                                                    
-                                                                }"
-                                                                :backgroundOptions="{ color: '#ffffff' }"
-                                                                />
+                                                            <QrcodeVue
+                                                                v-if="noNota"
+                                                                :value="String(noNota)"
+                                                                :size="50"
+                                                                :margin="0"
+                                                                level="H"
+                                                                render-as="svg"
+                                                                foreground="#000000"
+                                                                background="#ffffff"
+                                                            />
                                                         </div>
 
                                                         <div class="col-sm-41 align-self-left">
@@ -68,11 +66,9 @@
                                                             </div>
                                                         </div>
                                                     </div>
-
-
                                                 </div>
 
-                                                
+
 
                                                 <div class="inv--product-table-section invoice-block" v-if="items.length > 0">
                                                     <div class="table-responsive">
@@ -126,41 +122,31 @@
                                                 
 
                                                 <div class="inv--total-amounts invoice-summary-block">
-                                                    <div class="row">
-                                                        <div class="col-sm-51">
+                                                    <div class="invoice-summary-row">
+                                                        <div class="invoice-summary-col invoice-summary-col--notes">
                                                             <div class="invoice-bank-box">
                                                                 <div class="inv-email-address">Rek BCA : 7724022244<br> An : Ni Putu Ita Liantika Oktia Dewi</div>
                                                                 <div class="inv-email-address">Invoice ini sudah di ttd secara digital oleh Swamerta Supplier<br>Terima kasih</div>
                                                             </div>
-                                                        </div>
-                                                        <div class="col-sm-21" > 
                                                             <div class="invoice-signature-box" v-if="ttdPenerima">
                                                                 <div>Penerima,</div>
                                                                 <img :src="ttdPenerima" alt="Tanda Tangan Penerima" class="invoice-signature-image" />
                                                                 <div class="inv-email-address">{{ namaPenerima }}</div>
                                                             </div>
                                                         </div>
-                                                        <div class="col-sm-41">
-                                                            <div class="text-sm-end invoice-total-box">
-                                                                <div class="row">
-                                                                    <div class="col-sm-8 col-7">
-                                                                        <div class="text-end">Sub Total:</div>
-                                                                    </div>
-                                                                    <div class="col-sm-4 col-5">
-                                                                        <div class="text-end">{{ formatNumber(subtotalBarang) }}</div>
-                                                                    </div>
-                                                                    <div class="col-sm-8 col-7" v-if="items_jasa.length > 0">
-                                                                        <div class="text-end">Sub Total Jasa</div>
-                                                                    </div>
-                                                                    <div class="col-sm-4 col-5" v-if="items_jasa.length > 0">
-                                                                        <div class="text-end">{{ formatNumber(subtotalJasa) }}</div>
-                                                                    </div>
-                                                                    <div class="col-sm-8 col-7">
-                                                                        <div class="text-end">Grand Total :</div>
-                                                                    </div>
-                                                                    <div class="col-sm-4 col-5">
-                                                                        <div class="text-end">{{ formatNumber(grandTotal) }}</div>
-                                                                    </div>
+                                                        <div class="invoice-summary-col invoice-summary-col--totals">
+                                                            <div class="invoice-total-box">
+                                                                <div class="invoice-total-line">
+                                                                    <span>Sub Total</span>
+                                                                    <span>{{ formatNumber(subtotalBarang) }}</span>
+                                                                </div>
+                                                                <div class="invoice-total-line" v-if="items_jasa.length > 0">
+                                                                    <span>Sub Total Jasa</span>
+                                                                    <span>{{ formatNumber(subtotalJasa) }}</span>
+                                                                </div>
+                                                                <div class="invoice-total-line invoice-total-line--grand">
+                                                                    <span>Grand Total</span>
+                                                                    <span>{{ formatNumber(grandTotal) }}</span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -175,9 +161,10 @@
                                     </div>
                                 </div>
                             </div>
+                            </div>
                         </div>
 
-                        <Modal 
+                        <Modal
                             v-model:visible="isVisible" 
                             :draggable="true" 
                             :title="'PENERIMA'"
@@ -256,7 +243,7 @@
 
     import { Modal } from 'usemodal-vue3';
     import Vue3Signature from "vue3-signature"
-    import QRCodeVue3 from "qrcode-vue3";
+    import QrcodeVue from "qrcode.vue";
 
 
 
@@ -360,15 +347,26 @@
                 * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                 body { margin: 0; font-family: Arial, sans-serif; color: #111827; background: #fff; }
                 .print-shell { padding: 8mm; }
-                .invoice-container, .invoice-inbox, .content-section { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; }
-                .table-responsive { overflow: visible !important; }
-                table { width: 100% !important; border-collapse: collapse; }
-                th { padding: 8px 10px; border-top: 1px solid #000; border-bottom: 1px solid #000; text-align: left; font-size: 11px; }
-                td { padding: 6px 10px; font-size: 11px; vertical-align: top; }
-                .text-end { text-align: right !important; }
+                .invoice-container, .invoice-inbox, .content-section { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
                 .company-logo { max-height: 54px; width: auto; }
                 .inv-email-address, .inv-street-addr, .inv-created-date { font-size: 11px; line-height: 1.35; }
+                .table-responsive { overflow: visible !important; }
+                table { width: 100% !important; border-collapse: collapse; }
+                th { padding: 8px 10px; border-top: 1.5px solid #0f172a; border-bottom: 1.5px solid #0f172a; text-align: left; font-size: 11px; }
+                td { padding: 6px 10px; font-size: 11px; vertical-align: top; }
+                tbody tr:not(:last-child) td { border-bottom: 1px solid #e5e7eb; }
+                .text-end { text-align: right !important; }
+                .invoice-summary-block { margin-top: 14px; }
+                .invoice-summary-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+                .invoice-summary-col--notes { flex: 1 1 55%; }
+                .invoice-summary-col--totals { flex: 0 0 260px; }
+                .invoice-total-box { border-top: 1.5px solid #0f172a; padding-top: 6px; }
+                .invoice-total-line { display: flex; justify-content: space-between; padding: 2px 0; }
+                .invoice-total-line--grand { border-top: 1px solid #0f172a; margin-top: 3px; padding-top: 4px; font-weight: 700; }
+                .invoice-signature-box { margin-top: 12px; }
+                .invoice-signature-image { max-height: 90px; }
                 .btn, .modal, .modal-backdrop { display: none !important; }
+                tr, img, svg { page-break-inside: avoid; }
                 @page { size: A4 portrait; margin: 8mm; }
             </style>
         `;
@@ -479,6 +477,26 @@
 
 </script>
 <style scoped>
+.invoice-paper-shell {
+    background-color: #eef1f5;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.invoice-container {
+    background-color: #fff;
+    width: 100%;
+    max-width: 900px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 10px 30px rgba(15, 23, 42, 0.06);
+    border-radius: 8px;
+}
+
+.invoice-inbox {
+    padding: 32px 36px;
+}
+
 .invoice-hero-block {
     margin-bottom: 1.25rem;
 }
@@ -514,23 +532,57 @@
 }
 
 .invoice-items-table thead th {
-    padding: 9px 18px;
-    font-size: 11px;
-    border-top: 1px solid #000;
-    border-bottom: 1px solid #000;
+    padding: 9px 12px;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-top: 1.5px solid #0f172a;
+    border-bottom: 1.5px solid #0f172a;
     color: #0f172a;
 }
 
 .invoice-items-table tbody td {
-    color: #000;
+    color: #1f2937;
     font-size: 11px;
     font-weight: 400;
-    padding: 8px 18px;
+    padding: 8px 12px;
     vertical-align: top;
+}
+
+.invoice-items-table tbody tr:not(:last-child) td {
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .invoice-summary-block {
     margin-top: 1.75rem;
+}
+
+.invoice-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+.invoice-summary-col--notes {
+    flex: 1 1 55%;
+    min-width: 220px;
+}
+
+.invoice-summary-col--totals {
+    flex: 0 0 260px;
+    max-width: 100%;
+}
+
+.invoice-bank-box {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.invoice-signature-box {
+    margin-top: 14px;
 }
 
 .invoice-signature-image {
@@ -539,7 +591,23 @@
 }
 
 .invoice-total-box {
+    border-top: 1.5px solid #0f172a;
+    padding-top: 8px;
+}
+
+.invoice-total-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 3px 0;
+}
+
+.invoice-total-line--grand {
+    border-top: 1px solid #0f172a;
+    margin-top: 4px;
     padding-top: 6px;
+    font-weight: 700;
+    font-size: 13px;
 }
 
 .invoice-actions-btn .btn,
@@ -555,25 +623,27 @@
   .text-sm-end {
     text-align: right !important;
   }
-  .col-sm-51 {
-    flex: 0 0 auto;
-    width: 33.33333333%;
-  }
-  .col-sm-21 {
-    flex: 0 0 auto;
-    width: 33.33333333%;
-  }
 }
 
 @media (max-width: 767px) {
+    .invoice-paper-shell {
+        padding: 10px;
+    }
+
+    .invoice-inbox {
+        padding: 20px 16px;
+    }
+
     .invoice-hero-grid {
         row-gap: 12px;
     }
 
-    .col-sm-41,
-    .col-sm-51,
-    .col-sm-21 {
+    .col-sm-41 {
         width: 100% !important;
+    }
+
+    .invoice-customer-card {
+        align-items: flex-start;
     }
 
     .company-logo {
@@ -586,10 +656,6 @@
     .invoice-total-box,
     .invoice-signature-box {
         font-size: 10px;
-    }
-
-    .invoice-customer-card {
-        align-items: flex-start;
     }
 
     .invoice-items-table {
@@ -606,8 +672,8 @@
         margin-top: 1.25rem;
     }
 
-    .invoice-signature-box {
-        margin-top: 8px;
+    .invoice-summary-col--totals {
+        flex-basis: 100%;
     }
 
     .invoice-actions-btn .row {
@@ -645,6 +711,7 @@
     .layout-px-spacing,
     .row.invoice,
     .doc-container,
+    .invoice-paper-shell,
     .invoice-container,
     .invoice-inbox,
     .content-section {
@@ -652,12 +719,9 @@
         max-width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
-    }
-
-    .invoice-container,
-    .invoice-inbox,
-    .content-section {
         box-shadow: none !important;
+        border-radius: 0 !important;
+        background: #fff !important;
     }
 
     .content-section {
@@ -702,9 +766,7 @@
         padding-right: 8px !important;
     }
 
-    .col-sm-41,
-    .col-sm-51,
-    .col-sm-21 {
+    .col-sm-41 {
         padding-left: 2mm !important;
         padding-right: 2mm !important;
     }
