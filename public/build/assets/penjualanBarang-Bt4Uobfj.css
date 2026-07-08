@@ -1,0 +1,13 @@
+
+.row-action-icons[data-v-92e582cb] {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.row-action-icon[data-v-92e582cb] {
+    display: inline-flex;
+    opacity: 0.85;
+}
+.row-action-icon[data-v-92e582cb]:hover {
+    opacity: 1;
+}
