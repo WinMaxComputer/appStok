@@ -86,7 +86,7 @@
                                                                     <td>{{ item.nmBarang }}</td>
                                                                     <td class="text-end">{{ Number(item.hrgJual).toLocaleString() }}</td>
                                                                     <td class="text-end">{{ item.qty }}</td>
-                                                                    <td class="text-end">{{ item.satuanBarang }}</td>
+                                                                    <td class="text-end">{{ item.satuanJual }}</td>
                                                                     <td class="text-end">{{ Number(item.totalJual).toLocaleString() }}</td>
                                                                 </tr>
                                                             </tbody>
@@ -128,6 +128,8 @@
                                                                 <div class="inv-email-address">Rek BCA : 7724022244<br> An : Ni Putu Ita Liantika Oktia Dewi</div>
                                                                 <div class="inv-email-address">Invoice ini sudah di ttd secara digital oleh Swamerta Supplier<br>Terima kasih</div>
                                                             </div>
+                                                        </div>
+                                                        <div class="invoice-summary-col invoice-summary-col--signature">
                                                             <div class="invoice-signature-box" v-if="ttdPenerima">
                                                                 <div>Penerima,</div>
                                                                 <img :src="ttdPenerima" alt="Tanda Tangan Penerima" class="invoice-signature-image" />
@@ -300,6 +302,9 @@
 
     const downloadWithCSS = () => {
         const element = document.getElementById('element-to-print');
+        if (!element) {
+            return;
+        }
         html2pdf().set(getPdfOptions()).from(element).save();
     }
     
@@ -313,7 +318,7 @@
             { key: 'nmBarang', label: 'ITEMS' },
             { key: 'hrgJual', label: 'HARGA' },
             { key: 'qty', label: 'QTY', class: 'text-end' },
-            { key: 'satuanBarang', label: 'SATUAN', class: 'text-end' },
+            { key: 'satuanJual', label: 'SATUAN', class: 'text-end' },
             { key: 'totalJual', label: 'AMOUNT', class: 'text-end' },
         ];
         columns_jasa.value = [
@@ -357,13 +362,14 @@
                 tbody tr:not(:last-child) td { border-bottom: 1px solid #e5e7eb; }
                 .text-end { text-align: right !important; }
                 .invoice-summary-block { margin-top: 14px; }
-                .invoice-summary-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
-                .invoice-summary-col--notes { flex: 1 1 55%; }
+                .invoice-summary-row { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: nowrap; gap: 16px; }
+                .invoice-summary-col--notes { flex: 1 1 auto; min-width: 0; }
+                .invoice-summary-col--signature { flex: 0 0 160px; }
                 .invoice-summary-col--totals { flex: 0 0 260px; }
                 .invoice-total-box { border-top: 1.5px solid #0f172a; padding-top: 6px; }
                 .invoice-total-line { display: flex; justify-content: space-between; padding: 2px 0; }
                 .invoice-total-line--grand { border-top: 1px solid #0f172a; margin-top: 3px; padding-top: 4px; font-weight: 700; }
-                .invoice-signature-box { margin-top: 12px; }
+                .invoice-signature-box { margin-top: 0; }
                 .invoice-signature-image { max-height: 90px; }
                 .btn, .modal, .modal-backdrop { display: none !important; }
                 tr, img, svg { page-break-inside: avoid; }
@@ -477,18 +483,26 @@
 
 </script>
 <style scoped>
+.col-xl-9 {
+    flex: 0 0 auto;
+    width: auto;
+    max-width: 100%;
+}
+
 .invoice-paper-shell {
     background-color: #eef1f5;
     border-radius: 10px;
     padding: 20px;
     display: flex;
     justify-content: center;
+    overflow-x: auto;
 }
 
 .invoice-container {
     background-color: #fff;
-    width: 100%;
-    max-width: 900px;
+    width: 760px;
+    flex: 0 0 auto;
+    overflow: hidden;
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 10px 30px rgba(15, 23, 42, 0.06);
     border-radius: 8px;
 }
@@ -511,6 +525,8 @@
 .invoice-total-box,
 .invoice-signature-box {
     font-size: 11px;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .invoice-customer-card {
@@ -526,32 +542,48 @@
 
 .invoice-items-table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
-    font-size: 11px;
+    font-size: 9px;
     background: #fff;
 }
 
 .invoice-items-table thead th {
-    padding: 9px 12px;
-    font-size: 10.5px;
+    padding: 7px 10px;
+    font-size: 8.5px;
     text-transform: uppercase;
     letter-spacing: 0.03em;
     border-top: 1.5px solid #0f172a;
     border-bottom: 1.5px solid #0f172a;
     color: #0f172a;
+    overflow-wrap: break-word;
 }
 
 .invoice-items-table tbody td {
     color: #1f2937;
-    font-size: 11px;
+    font-size: 9px;
+    overflow-wrap: break-word;
     font-weight: 400;
-    padding: 8px 12px;
+    padding: 6px 10px;
     vertical-align: top;
 }
 
 .invoice-items-table tbody tr:not(:last-child) td {
     border-bottom: 1px solid #e5e7eb;
 }
+
+.invoice-items-table:not(.invoice-items-table--service) th:nth-child(1) { width: 16%; }
+.invoice-items-table:not(.invoice-items-table--service) th:nth-child(2) { width: 26%; }
+.invoice-items-table:not(.invoice-items-table--service) th:nth-child(3) { width: 16%; }
+.invoice-items-table:not(.invoice-items-table--service) th:nth-child(4) { width: 10%; }
+.invoice-items-table:not(.invoice-items-table--service) th:nth-child(5) { width: 14%; }
+.invoice-items-table:not(.invoice-items-table--service) th:nth-child(6) { width: 18%; }
+
+.invoice-items-table--service th:nth-child(1) { width: 16%; }
+.invoice-items-table--service th:nth-child(2) { width: 36%; }
+.invoice-items-table--service th:nth-child(3) { width: 18%; }
+.invoice-items-table--service th:nth-child(4) { width: 10%; }
+.invoice-items-table--service th:nth-child(5) { width: 20%; }
 
 .invoice-summary-block {
     margin-top: 1.75rem;
@@ -561,13 +593,18 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 24px;
+    flex-wrap: nowrap;
+    gap: 16px;
 }
 
 .invoice-summary-col--notes {
-    flex: 1 1 55%;
-    min-width: 220px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.invoice-summary-col--signature {
+    flex: 0 0 160px;
+    max-width: 100%;
 }
 
 .invoice-summary-col--totals {
@@ -582,7 +619,7 @@
 }
 
 .invoice-signature-box {
-    margin-top: 14px;
+    margin-top: 0;
 }
 
 .invoice-signature-image {
@@ -615,70 +652,13 @@
     width: 100%;
 }
 
-@media (min-width: 350px) {
-  .col-sm-41 {
+.col-sm-41 {
     flex: 0 0 auto;
     width: 33.33333333%;
-  }
-  .text-sm-end {
-    text-align: right !important;
-  }
 }
 
-@media (max-width: 767px) {
-    .invoice-paper-shell {
-        padding: 10px;
-    }
-
-    .invoice-inbox {
-        padding: 20px 16px;
-    }
-
-    .invoice-hero-grid {
-        row-gap: 12px;
-    }
-
-    .col-sm-41 {
-        width: 100% !important;
-    }
-
-    .invoice-customer-card {
-        align-items: flex-start;
-    }
-
-    .company-logo {
-        max-height: 46px;
-    }
-
-    .invoice-company-meta,
-    .invoice-customer-card,
-    .invoice-bank-box,
-    .invoice-total-box,
-    .invoice-signature-box {
-        font-size: 10px;
-    }
-
-    .invoice-items-table {
-        min-width: 640px;
-    }
-
-    .invoice-items-table thead th,
-    .invoice-items-table tbody td {
-        padding: 6px 10px;
-        font-size: 10px;
-    }
-
-    .invoice-summary-block {
-        margin-top: 1.25rem;
-    }
-
-    .invoice-summary-col--totals {
-        flex-basis: 100%;
-    }
-
-    .invoice-actions-btn .row {
-        row-gap: 8px;
-    }
+.text-sm-end {
+    text-align: right !important;
 }
 
 @media print {
