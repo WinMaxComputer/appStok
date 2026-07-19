@@ -26,7 +26,33 @@
                             <button class="btn btn-primary mb-2 me-2" @click="export_table('print')">Print</button>
                             <button class="btn btn-primary mb-2 me-2" @click="export_table('pdf')">PDF</button>
                         </div>
-                        <v-client-table :data="items" :columns="columns" :options="table_option">
+                        <div class="row g-2 align-items-end px-3 pb-3">
+                            <div class="col-sm-4 col-md-3">
+                                <label class="form-label mb-1">Filter Barang</label>
+                                <select v-model="itemFilter" class="form-select">
+                                    <option value="all">Semua Barang</option>
+                                    <option value="lowStock">Stok Rendah</option>
+                                    <option value="highStock">Stok Tinggi</option>
+                                    <option value="mostSales">Paling Laris</option>
+                                </select>
+                            </div>
+                            <template v-if="itemFilter === 'mostSales'">
+                                <div class="col-sm-4 col-md-3">
+                                    <label class="form-label mb-1">Penjualan Dari</label>
+                                    <flat-pickr v-model="salesFilter.startDate" :config="kartuStokPickerConfig" class="form-control" @change="loadMostSaleBarang" />
+                                </div>
+                                <div class="col-sm-4 col-md-3">
+                                    <label class="form-label mb-1">Sampai</label>
+                                    <flat-pickr v-model="salesFilter.endDate" :config="kartuStokPickerConfig" class="form-control" @change="loadMostSaleBarang" />
+                                </div>
+                                <div class="col-md-auto">
+                                    <button class="btn btn-outline-primary" @click="loadMostSaleBarang" :disabled="mostSaleLoading">
+                                        {{ mostSaleLoading ? 'Memuat...' : 'Terapkan' }}
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                        <v-client-table :data="filteredItems" :columns="columns" :options="table_option">
                             <template #hrgJual="props"> {{ Number(props.row.hrgJual).toLocaleString() }} </template>
                             <template #hrgPokok="props"> {{ Number(props.row.hrgPokok).toLocaleString() }} </template>
                             <template #kartuStok="props"> 
@@ -380,7 +406,8 @@
 </style>
 
 <script setup>
-    import { onMounted, ref } from 'vue';
+    import { computed, onMounted, ref, watch } from 'vue';
+    import axios from 'axios';
 
     //pdf export
     import jsPDF from 'jspdf';
@@ -405,6 +432,33 @@
 
     const modalinput = ref(false);
     const items = ref([]);
+    const itemFilter = ref('all');
+    const mostSaleLoading = ref(false);
+    const salesByBarang = ref({});
+    const salesFilter = ref({
+        startDate: moment().subtract(30, 'd').format('D-M-YYYY'),
+        endDate: moment().format('D-M-YYYY'),
+    });
+    const getStock = (item) => Number(item.stokPersediaan || 0);
+    const filteredItems = computed(() => {
+        const data = [...items.value];
+
+        if (itemFilter.value === 'lowStock') {
+            return data.filter((item) => getStock(item) <= Number(item.qtyMin || 0));
+        }
+
+        if (itemFilter.value === 'highStock') {
+            return data.filter((item) => item.qtyMax !== null && item.qtyMax !== '' && getStock(item) >= Number(item.qtyMax));
+        }
+
+        if (itemFilter.value === 'mostSales') {
+            return data
+                .filter((item) => Number(salesByBarang.value[item.kdBarang] || 0) > 0)
+                .sort((a, b) => Number(salesByBarang.value[b.kdBarang] || 0) - Number(salesByBarang.value[a.kdBarang] || 0));
+        }
+
+        return data;
+    });
     const table_option = ref({
         perPage: 20,
         perPageValues: [20, 100, 150, 200],
@@ -547,6 +601,34 @@
         })
     }
 
+    const loadMostSaleBarang = async () => {
+        mostSaleLoading.value = true;
+
+        try {
+            const response = await axios.post('/api/most-sale-barang', {
+                startDate: salesFilter.value.startDate,
+                endDate: salesFilter.value.endDate,
+                limit: 10000,
+            });
+
+            salesByBarang.value = (response?.data?.data || []).reduce((result, item) => {
+                result[item.kdBarang] = Number(item.totalQty || 0);
+                return result;
+            }, {});
+        } catch (error) {
+            salesByBarang.value = {};
+            console.log('load most sale barang error: ', error);
+        } finally {
+            mostSaleLoading.value = false;
+        }
+    };
+
+    watch(itemFilter, (filter) => {
+        if (filter === 'mostSales') {
+            loadMostSaleBarang();
+        }
+    });
+
     // input.value = computed(() => {
     //     kdbrg.value = store.getters.NoBarang;
     // })
@@ -636,7 +718,7 @@
 
     const export_table = (type) => {
         let cols = columns.value.filter((d) => d != 'profile' && d != 'action');
-        let records = items.value;
+        let records = filteredItems.value;
         let filename = 'table';
 
         if (type == 'csv') {
@@ -730,7 +812,7 @@
         };
     };
     const excel_items = () => {
-        return items.value;
+        return filteredItems.value;
     };
     const capitalize = (text) => {
         return text
