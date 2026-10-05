@@ -188,9 +188,9 @@
         posting.value = {};
 
         table_1.value.forEach((item) => {
-            item_now.value[item.kdBarang] = '';
-            keterangan.value[item.kdBarang] = '';
-            posting.value[item.kdBarang] = '0';
+            item_now.value[item.kdBarang] = item.qty ?? '';
+            keterangan.value[item.kdBarang] = item.keterangan ?? '';
+            posting.value[item.kdBarang] = item.posting ?? '0';
         });
     };
 
@@ -224,6 +224,7 @@
 
             item_now.value[rowId] = '';
             keterangan.value[rowId] = '';
+            posting.value[rowId] = '0';
         }
 
         if (!arr.length) {
