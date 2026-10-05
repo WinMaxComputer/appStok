@@ -201,13 +201,16 @@
 
         for (let i = 0; i < dataArr.length; i++) {
             const rowId = dataArr[i].kdBarang;
-            const qty = Number(item_now.value[rowId] ?? 0);
+            const inputValue = item_now.value[rowId];
+            const qty = Number(inputValue ?? 0);
             const stok = Number(dataArr[i].stokPersediaan || 0);
             const selisih = stok - qty;
             const subtotal = Number(dataArr[i].hrgPokok || 0) * selisih;
             const ket = keterangan.value[rowId] || '-';
 
-            if (!Number.isNaN(subtotal) && qty > 0) {
+            const isFilled = inputValue !== '' && inputValue !== null && inputValue !== undefined;
+
+            if (!Number.isNaN(subtotal) && isFilled) {
                 arr.push({
                     kdBarang: dataArr[i].kdBarang,
                     nmBarang: dataArr[i].nmBarang,
