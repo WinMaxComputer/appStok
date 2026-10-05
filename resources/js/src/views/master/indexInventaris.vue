@@ -31,6 +31,14 @@
                         <v-client-table :data="items" :columns="columns" :options="table_option">
                             <template #nilai_inventaris="props"> {{ Number(props.row.nilai_inventaris).toLocaleString() }} </template>
                             <template #qty_inventaris="props"> {{ Number(props.row.qty_inventaris).toLocaleString() }} </template>
+                            <template #is_disewakan="props">
+                                <span :class="props.row.is_disewakan ? 'badge badge-success' : 'badge badge-secondary'">
+                                    {{ props.row.is_disewakan ? 'Disewakan' : '-' }}
+                                </span>
+                            </template>
+                            <template #harga_sewa="props">
+                                {{ props.row.is_disewakan ? Number(props.row.harga_sewa).toLocaleString() : '-' }}
+                            </template>
                             <template #action_jurnal="props">
                                 
                                 <div v-if="itemsjurnal.length === 0 ">
@@ -116,6 +124,13 @@
                             <template #action="props">
                                 
                                 
+                                <a href="javascript:void(0);" @click="open_sewa_modal(props.row)" title="Atur Sewa">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-dollar-sign text-success">
+                                        <line x1="12" y1="1" x2="12" y2="23"></line>
+                                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                    </svg>
+                                </a>
+                                &nbsp;
                                 <a href="javascript:void(0);" @click="delete_row(props.row)" >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -211,6 +226,26 @@
                                                     <input type="text" v-model="input.umur_ekonomis" id="number" class="form-control form-control-sm" placeholder="Umur Ekonomis" />
                                                 </div>
                                             </div>
+                                            <div class="form-group row">
+                                                <label class="col-sm-3 col-form-label col-form-label-sm">Disewakan</label>
+                                                <div class="col-sm-9 d-flex align-items-center">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox" v-model="input.is_disewakan" :true-value="1" :false-value="0" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row" v-if="input.is_disewakan">
+                                                <label class="col-sm-3 col-form-label col-form-label-sm">Harga Sewa</label>
+                                                <div class="col-sm-9">
+                                                    <input type="number" v-model="input.harga_sewa" class="form-control form-control-sm" placeholder="Harga sewa per periode" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group row" v-if="input.is_disewakan">
+                                                <label class="col-sm-3 col-form-label col-form-label-sm">Akun Pendapatan Sewa</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" v-model="input.acc_pendapatan_sewa" class="form-control form-control-sm" placeholder="Kode akun pendapatan sewa (mis. 41300)" />
+                                                </div>
+                                            </div>
                                         </div>
                                         
                                         
@@ -273,6 +308,43 @@
                             </div>
                         </div>
 
+                        <div class="modal fade" id="modalSewa" tabindex="-1" role="dialog" aria-labelledby="modalSewaLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="modalSewaLabel">Atur Status Sewa — {{ inputSewa.nama_inventaris }}</h5>
+                                        <button type="button" data-bs-dismiss="modal" aria-label="Close" class="btn-close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="form-group row">
+                                            <label class="col-sm-4 col-form-label col-form-label-sm">Disewakan</label>
+                                            <div class="col-sm-8 d-flex align-items-center">
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" v-model="inputSewa.is_disewakan" :true-value="1" :false-value="0" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row" v-if="inputSewa.is_disewakan">
+                                            <label class="col-sm-4 col-form-label col-form-label-sm">Harga Sewa</label>
+                                            <div class="col-sm-8">
+                                                <input type="number" v-model="inputSewa.harga_sewa" class="form-control form-control-sm" placeholder="Harga sewa per periode" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group row" v-if="inputSewa.is_disewakan">
+                                            <label class="col-sm-4 col-form-label col-form-label-sm">Akun Pendapatan Sewa</label>
+                                            <div class="col-sm-8">
+                                                <input type="text" v-model="inputSewa.acc_pendapatan_sewa" class="form-control form-control-sm" placeholder="Kode akun, mis. 41300" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn" data-bs-dismiss="modal">Batal</button>
+                                        <button type="button" class="btn btn-primary" @click="simpan_sewa">Simpan</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         
                         
                     </div>
@@ -308,7 +380,7 @@
 
     const store = useStore();
 
-    const columns = ref(['kode_inventaris', 'action_jurnal','nama_inventaris', 'tahun_pembuatan', 'tahun_perakitan', 'merek', 'umur_ekonomis', 'nilai_inventaris', 'qty_inventaris' ,'action']);
+    const columns = ref(['kode_inventaris', 'action_jurnal','nama_inventaris', 'tahun_pembuatan', 'tahun_perakitan', 'merek', 'umur_ekonomis', 'nilai_inventaris', 'qty_inventaris', 'is_disewakan', 'harga_sewa' ,'action']);
     const items = ref([]);
     const itemsjurnal = ref([]);
     const table_option = ref({
@@ -344,6 +416,7 @@
 
     const kd = ref([]);
     const kdpenyusutan = ref([]);
+    const inputSewa = ref({ kode_inventaris: '', nama_inventaris: '', is_disewakan: 0, harga_sewa: 0, acc_pendapatan_sewa: '' });
     const input = ref({
         kode_inventaris: kd,
         tahun_pembuatan: moment().format("YYYY-MM-DD"),
@@ -647,6 +720,27 @@
             .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
             .join(' ');
     };
+    const open_sewa_modal = (row) => {
+        inputSewa.value = {
+            kode_inventaris: row.kode_inventaris,
+            nama_inventaris: row.nama_inventaris,
+            is_disewakan: row.is_disewakan || 0,
+            harga_sewa: row.harga_sewa || 0,
+            acc_pendapatan_sewa: row.acc_pendapatan_sewa || '',
+        };
+        const modal = new window.bootstrap.Modal(document.getElementById('modalSewa'));
+        modal.show();
+    };
+
+    const simpan_sewa = () => {
+        store.dispatch('UpdateSewaInventaris', inputSewa.value)
+        .then(() => {
+            bind_data();
+            const modal = window.bootstrap.Modal.getInstance(document.getElementById('modalSewa'));
+            modal.hide();
+        }).catch(() => {});
+    };
+
     const view_row = (item) => {
         alert('ID: ' + item.kdBarang + ', Name: ' + item.nmBarang);
     };

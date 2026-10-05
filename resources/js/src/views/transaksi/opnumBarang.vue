@@ -80,72 +80,31 @@
                             <!-- </div> -->
                         </div>
                         <div class="panel-body">
-                            <div class="table-responsive">
-                                <table role="table" aria-busy="false" aria-colcount="5" class="table table-hover table-bordered" >
-                                    <thead role="rowgroup">
-                                        <tr role="row">
-                                            <th role="columnheader" scope="col" aria-colindex="1"><div>Kode</div></th>
-                                            <th role="columnheader" scope="col" aria-colindex="2"><div>nama</div></th>
-                                            <th role="columnheader" scope="col" aria-colindex="3"><div>stok</div></th>
-                                            <th role="columnheader" scope="col" aria-colindex="4"><div>satuan</div></th>
-                                            <th role="columnheader" scope="col" aria-colindex="5"><div>Qty</div></th>
-                                            <th role="columnheader" scope="col" aria-colindex="5"><div>Keterangan</div></th>
-                                            <th role="columnheader" scope="col" aria-colindex="5"><div>Selisih</div></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody role="rowgroup">
-                                        <tr v-for="item, index in table_1" :key="item.index" role="row">
-                                            <td aria-colindex="1" role="cell">
-                                                Post - 
-                                                <select v-model="posting[index]">
-                                                    <option value="0">Tidak</option>
-                                                    <option value="1">Ya</option>
-                                                </select>
-                                                
-                                                {{ item.kdBarang }}
-                                            </td>
-                                            <td aria-colindex="2" role="cell">{{ item.nmBarang }}</td>
-                                            <td aria-colindex="3" role="cell">{{ item.stokPersediaan }}</td>
-                                            <td aria-colindex="4" role="cell">{{ item.namaKtg }}</td>
-                                            <td aria-colindex="5" role="cell">
-                                                <div :style="{ 'width': inp + 'px' }">
-                                                <input type="text" class="form-control form-control-sm col-sm-2" v-model="item_now[index]" @keypress="onlyNumber" >
-                                                </div>
-                                            </td>
-                                            <td aria-colindex="5" role="cell">
-                                                <div :style="{ 'width': inp + 'px' }">
-                                                <input type="text" class="form-control form-control-sm col-sm-2" v-model="keterangan[index]" >
-                                                </div>    
-                                            </td>
-                                            <td aria-colindex="5" role="cell">{{ item.stokPersediaan - item_now[index] }}</td>
-
-                                                <!-- <span :class="`text-${item.status_class}`"> {{ item.status }} </span> -->
-
-                                            
-                                            <!-- <td aria-colindex="5" role="cell" class="text-center">
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="24"
-                                                    height="24"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    stroke-width="2"
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    class="feather feather-trash-2 icon"
-                                                >
-                                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                                    <line x1="10" y1="11" x2="10" y2="17"></line>
-                                                    <line x1="14" y1="11" x2="14" y2="17"></line>
-                                                </svg>
-                                            </td> -->
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
+                            <v-client-table :data="table_1" :columns="columns" :options="table_option">
+                                <template #kdBarang="props">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <select v-model="posting[props.row.kdBarang]" class="form-select form-select-sm w-auto">
+                                            <option value="0">Tidak</option>
+                                            <option value="1">Ya</option>
+                                        </select>
+                                        <span>{{ props.row.kdBarang }}</span>
+                                    </div>
+                                </template>
+                                <template #nmBarang="props">{{ props.row.nmBarang }}</template>
+                                <template #stokPersediaan="props">{{ props.row.stokPersediaan }}</template>
+                                <template #namaKtg="props">{{ props.row.namaKtg }}</template>
+                                <template #qty="props">
+                                    <div :style="{ width: inp + 'px' }">
+                                        <input type="text" class="form-control form-control-sm" v-model="item_now[props.row.kdBarang]" @keypress="onlyNumber" />
+                                    </div>
+                                </template>
+                                <template #keterangan="props">
+                                    <div :style="{ width: inp + 'px' }">
+                                        <input type="text" class="form-control form-control-sm" v-model="keterangan[props.row.kdBarang]" />
+                                    </div>
+                                </template>
+                                <template #selisih="props">{{ Number(props.row.stokPersediaan || 0) - Number(item_now[props.row.kdBarang] || 0) }}</template>
+                            </v-client-table>
                         </div>
                     </div>
                 </div>
@@ -177,91 +136,107 @@
     const table_1 = ref([]);
     const item_now = ref({});
     const posting = ref({});
-    // Set default value for posting to 0 for each item in table_1
     const keterangan = ref({});
-    const noopnum = ref([]);
-    const total = ref([]);
+    const noopnum = ref('');
+    const total = ref(0);
     const inp = ref(80);
+    const columns = ref(['kdBarang', 'nmBarang', 'stokPersediaan', 'namaKtg', 'qty', 'keterangan', 'selisih']);
+    const table_option = ref({
+        perPage: 10,
+        perPageValues: [5, 10, 20, 50],
+        perPageSelect: true,
+        skin: 'table table-hover table-bordered',
+        columnsClasses: { action: 'actions text-center' },
+        pagination: { nav: 'scroll', chunk: 5 },
+        texts: {
+            count: 'Showing {from} to {to} of {count}',
+            filter: '',
+            filterPlaceholder: 'Search...',
+            limit: 'Results:',
+        },
+        sortable: ['kdBarang', 'nmBarang', 'stokPersediaan', 'namaKtg'],
+        sortIcon: {
+            base: 'sort-icon-none',
+            up: 'sort-icon-asc',
+            down: 'sort-icon-desc',
+        },
+        resizableColumns: true,
+    });
     const headopnum = ref({
-        kdOpnum : noopnum,
-        tglOpnum: moment().format("D-M-YYYY"),
+        kdOpnum: '',
+        tglOpnum: moment().format('D-M-YYYY'),
         userOpnum: '1',
-        totalOpnum: total
-    })
-
-    // const pembelian = computed(() => {
-    //     noopnum.value = store.getters.NoOpnum;
-    //     // console.log(suppliers)
-    //     return { noopnum }
-    // });
+        totalOpnum: 0,
+    });
 
     onMounted(() => {
         bind_data();
         getNoOpnum();
-        
     });
 
-    const getNoOpnum= async() => {
-        await store.dispatch('GetNoOpnum')
+    const getNoOpnum = async () => {
+        await store.dispatch('GetNoOpnum');
         noopnum.value = store.getters.NoOpnum;
-    }
+        headopnum.value.kdOpnum = noopnum.value;
+    };
 
     const bind_data = async () => {
-        await store.dispatch('GetBarang').then(() => {
-            // console.log(store.getters.StateBarang);
-            table_1.value = store.getters.StateBarang;
-            table_1.value.forEach((item, idx) => {
-                // item_now.value[idx] = item.stokPersediaan;
-                // keterangan.value[idx] = 'tes';
-                posting.value[idx] = '0';
-            });
+        await store.dispatch('GetBarang');
+        table_1.value = store.getters.StateBarang || [];
+        item_now.value = {};
+        keterangan.value = {};
+        posting.value = {};
+
+        table_1.value.forEach((item) => {
+            item_now.value[item.kdBarang] = '';
+            keterangan.value[item.kdBarang] = '';
+            posting.value[item.kdBarang] = '0';
         });
-        
-    }
+    };
 
-    const simpanOpnum=() => {
-        // const header =params.value
-        // const headers =paramspelanggan.value
-
-        var dataArr = table_1.value
+    const simpanOpnum = async () => {
+        const dataArr = table_1.value || [];
         const arr = [];
         let tota = 0;
+
         for (let i = 0; i < dataArr.length; i++) {
-            // console.log({kdBarang : dataArr[i].r_kdBarang, nmBarang : dataArr[i].r_nmBarang,});
-            let subto = dataArr[i].hrgPokok * (dataArr[i].stokPersediaan - item_now.value[i])
-            let ket = keterangan.value[i]
-            if (!isNaN(subto)) {
-                if(!ket){
-                    ket = '-'
-                }
-                arr.push ({
-                    'kdBarang' : dataArr[i].kdBarang,
-                    'nmBarang' : dataArr[i].nmBarang,
-                    'accid_persediaan' : dataArr[i].accid_persediaan,
-                    'accid_biaya' : dataArr[i].accid_biaya,
-                    'keterangan' : ket,
-                    'posting' : posting.value[i],
-                    'qty' : item_now.value[i],
-                    'selisih' : dataArr[i].stokPersediaan - item_now.value[i],
-                    'total' : subto
-                })
-                tota += parseInt(subto)
-                total.value = tota
-                // alert(subto)
+            const rowId = dataArr[i].kdBarang;
+            const qty = Number(item_now.value[rowId] ?? 0);
+            const stok = Number(dataArr[i].stokPersediaan || 0);
+            const selisih = stok - qty;
+            const subtotal = Number(dataArr[i].hrgPokok || 0) * selisih;
+            const ket = keterangan.value[rowId] || '-';
+
+            if (!Number.isNaN(subtotal) && qty > 0) {
+                arr.push({
+                    kdBarang: dataArr[i].kdBarang,
+                    nmBarang: dataArr[i].nmBarang,
+                    accid_persediaan: dataArr[i].accid_persediaan,
+                    accid_biaya: dataArr[i].accid_biaya,
+                    keterangan: ket,
+                    posting: posting.value[rowId] ?? '0',
+                    qty: qty,
+                    selisih: selisih,
+                    total: subtotal,
+                });
+                tota += subtotal;
             }
-            
-            item_now.value[i] = NaN
-            keterangan.value[i] = NaN
-        
+
+            item_now.value[rowId] = '';
+            keterangan.value[rowId] = '';
         }
-        // console.log(tota)
-        // const headerfull = Object.assign(header, headers)
-        store.dispatch('CreateOpnum', [headopnum.value,arr])
-        getNoOpnum();
-        bind_data();
-        // item_now.value = ''
-        // keterangan.value = ''
-    }
+
+        if (!arr.length) {
+            return;
+        }
+
+        total.value = tota;
+        headopnum.value.totalOpnum = tota;
+
+        await store.dispatch('CreateOpnum', [headopnum.value, arr]);
+        await getNoOpnum();
+        await bind_data();
+    };
 
 
     const random_class = (index) => {

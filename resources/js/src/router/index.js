@@ -118,6 +118,12 @@ const routes = [
         props: true,
     },
     {
+        path: '/sewa-inventaris',
+        name: 'sewa-inventaris',
+        component: () => import(/* webpackChunkName: "components-tabs" */ '../views/transaksi/transaksiSewa.vue'),
+        props: true,
+    },
+    {
         path: '/penjualan',
         name: 'penjualan',
         component: () => import(/* webpackChunkName: "components-tabs" */ '../views/transaksi/penjualan.vue'),
@@ -225,6 +231,12 @@ const routes = [
         props: true,
     },
     {
+        path: '/laporan/sewa-inventaris',
+        name: 'laporan-sewa-inventaris',
+        component: () => import(/* webpackChunkName: "components-tabs" */ '../views/laporan/sewaInventaris.vue'),
+        props: true,
+    },
+    {
         path: '/laporan/opnum',
         name: 'laporan-opnum',
         component: () => import(/* webpackChunkName: "components-tabs" */ '../views/laporan/laporanOpnum.vue'),
@@ -247,6 +259,11 @@ const routes = [
         name: 'ledger',
         component: () => import(/* webpackChunkName: "components-tabs" */ '../views/laporan/generalLedger.vue'),
         // props: true,
+    },
+    {
+        path: '/laporan/cash-flow',
+        name: 'cash-flow',
+        component: () => import(/* webpackChunkName: "components-tabs" */ '../views/laporan/cashFlow.vue'),
     },
 
 

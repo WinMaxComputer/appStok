@@ -889,43 +889,295 @@ class laporanController extends Controller
 
     public function bukubesar(Request $request){
         $startDate = date("Y-m-d", strtotime($request->input('startDate')));
-        $endDate = date("Y-m-d", strtotime($request->input('endDate')));
+        $endDate   = date("Y-m-d", strtotime($request->input('endDate')));
+        $accountId = trim((string) $request->input('acc_id', ''));
+        $hasAccount = $accountId !== '' && $accountId !== '-';
 
-        // Closing previous period becomes opening balance for selected period.
-        $openingBalance = (float) DB::table('general_ledger')
-            ->join('gl_detail', 'general_ledger.notrans', '=', 'gl_detail.rgl')
-            ->whereDate('general_ledger.tgl', '<', $startDate)
-            ->sum(DB::raw('coalesce(gl_detail.debet,0) - coalesce(gl_detail.kredit,0)'));
+        // Cari saldo kunci bulan terakhir sebelum startDate
+        $prevMonth  = (int) date('m', strtotime('-1 month', strtotime($startDate)));
+        $prevYear   = (int) date('Y', strtotime('-1 month', strtotime($startDate)));
+        $lockedRow  = DB::table('tbl_closing_periode')
+            ->where('tahun', $prevYear)
+            ->where('bulan', $prevMonth)
+            ->where('is_locked', true)
+            ->first();
 
-        DB::statement("SET @saldo := {$openingBalance}");
+        if ($lockedRow) {
+            // Pakai saldo kunci + mutasi dari awal bulan startDate sampai sehari sebelum startDate
+            $startOfStartMonth = date('Y-m-01', strtotime($startDate));
+            $dayBefore         = date('Y-m-d', strtotime($startDate . ' -1 day'));
+            $extraMutasi = (float) DB::table('general_ledger')
+                ->join('gl_detail', 'general_ledger.notrans', '=', 'gl_detail.rgl')
+                ->whereBetween('general_ledger.tgl', [$startOfStartMonth, $dayBefore])
+                ->sum(DB::raw('coalesce(gl_detail.debet,0) - coalesce(gl_detail.kredit,0)'));
+            $openingBalance = (float) $lockedRow->saldo_penutup + $extraMutasi;
+        } else {
+            // Tidak ada saldo kunci — hitung dari seluruh riwayat
+            $openingBalance = (float) DB::table('general_ledger')
+                ->join('gl_detail', 'general_ledger.notrans', '=', 'gl_detail.rgl')
+                ->whereDate('general_ledger.tgl', '<', $startDate)
+                ->sum(DB::raw('coalesce(gl_detail.debet,0) - coalesce(gl_detail.kredit,0)'));
+        }
+
+        // Subquery deduplicasi COA agar JOIN tidak menghasilkan baris ganda
+        $coaSub = DB::table('coa')
+            ->select('acc_id', DB::raw('MIN(name) as name'))
+            ->groupBy('acc_id');
+
+        $openingByAccount = DB::table('gl_detail as gd')
+            ->join('general_ledger as gl', 'gl.notrans', '=', 'gd.rgl')
+            ->whereDate('gl.tgl', '<', $startDate)
+            ->when($hasAccount, function ($query) use ($accountId) {
+                $query->where('gd.acc_id', $accountId);
+            })
+            ->groupBy('gd.acc_id')
+            ->select('gd.acc_id', DB::raw('SUM(COALESCE(gd.debet, 0) - COALESCE(gd.kredit, 0)) as opening_balance'))
+            ->pluck('opening_balance', 'acc_id')
+            ->mapWithKeys(function ($balance, $accId) {
+                return [(string) $accId => (float) $balance];
+            })
+            ->all();
 
         $list = DB::table('general_ledger')
                 ->join('gl_detail', 'general_ledger.notrans', 'gl_detail.rgl')
-                ->join('coa', 'gl_detail.acc_id', 'coa.acc_id')
+                ->joinSub($coaSub, 'coa', 'gl_detail.acc_id', '=', 'coa.acc_id')
                 ->whereBetween('general_ledger.tgl', [$startDate, $endDate])
-                // ->where('general_ledger.jurnal', 'GJ')
-            ->select(
-                'general_ledger.*',
-                'gl_detail.*',
-                'coa.name',
-                DB::raw('(@saldo := @saldo + coalesce(gl_detail.debet,0) - coalesce(gl_detail.kredit,0)) as saldo')
-            )
-            ->orderBy('general_ledger.tgl', 'asc')
-            ->orderBy('general_ledger.notrans', 'asc')
-            ->orderBy('gl_detail.id', 'asc')
+                ->when($hasAccount, function ($query) use ($accountId) {
+                    $query->where('gl_detail.acc_id', $accountId);
+                })
+                ->select('general_ledger.*', 'gl_detail.*', 'coa.name')
+                ->orderBy('general_ledger.tgl', 'asc')
+                ->orderBy('general_ledger.notrans', 'asc')
+                ->orderBy('gl_detail.id', 'asc')
                 ->get();
 
-        $closingBalance = $list->count() ? (float) $list->last()->saldo : $openingBalance;
-        
+        $runningBalanceByAccount = $openingByAccount;
+
+        foreach ($list as $row) {
+            $accId = (string) ($row->acc_id ?? '');
+            $delta = (float) ($row->debet ?? 0) - (float) ($row->kredit ?? 0);
+            $runningBalanceByAccount[$accId] = ($runningBalanceByAccount[$accId] ?? 0.0) + $delta;
+
+            $row->mutasi = $delta;
+            $row->saldo = $runningBalanceByAccount[$accId];
+        }
+
+        $closingBalance = $hasAccount
+            ? (float) ($runningBalanceByAccount[$accountId] ?? 0.0)
+            : array_sum($runningBalanceByAccount);
+
         return response()->json([
             'success' => true,
             'message' => 'buku besar',
-            'opening_balance' => $openingBalance,
+            'opening_balance' => $hasAccount
+                ? (float) ($openingByAccount[$accountId] ?? 0.0)
+                : array_sum($openingByAccount),
             'closing_balance' => $closingBalance,
             'data' => $list
         ], 200);
 
     }
+
+    public function cashFlow(Request $request)
+    {
+        $startDate = date('Y-m-d', strtotime($request->input('startDate')));
+        $endDate = date('Y-m-d', strtotime($request->input('endDate')));
+
+        $cashAccounts = DB::table('coa')
+            ->select('acc_id', 'name')
+            ->where(function ($query) {
+                $query->where('acc_id', 'like', '11%')
+                    ->orWhereRaw('LOWER(name) like ?', ['%kas%'])
+                    ->orWhereRaw('LOWER(name) like ?', ['%cash%'])
+                    ->orWhereRaw('LOWER(name) like ?', ['%bank%'])
+                    ->orWhereRaw('LOWER(name) like ?', ['%linkaja%']);
+            })
+            ->orderBy('acc_id', 'asc')
+            ->get();
+
+        if ($cashAccounts->isEmpty()) {
+            $cashAccounts = DB::table('coa')
+                ->select('acc_id', 'name')
+                ->where('acc_id', 'like', '1%')
+                ->orderBy('acc_id', 'asc')
+                ->get();
+        }
+
+        $cashAccIds = $cashAccounts->pluck('acc_id')->values()->all();
+        $cashAccountNameMap = $cashAccounts->pluck('name', 'acc_id')->all();
+
+        if (empty($cashAccIds)) {
+            return response()->json([
+                'success' => true,
+                'message' => 'cash flow',
+                'summary' => [
+                    'opening_balance' => 0,
+                    'cash_in' => 0,
+                    'cash_out' => 0,
+                    'net_cash_flow' => 0,
+                    'closing_balance' => 0,
+                ],
+                'sections' => [
+                    'operating' => ['in' => 0, 'out' => 0, 'net' => 0],
+                    'investing' => ['in' => 0, 'out' => 0, 'net' => 0],
+                    'financing' => ['in' => 0, 'out' => 0, 'net' => 0],
+                ],
+                'data' => [],
+            ], 200);
+        }
+
+        $openingBalance = (float) DB::table('general_ledger as gl')
+            ->join('gl_detail as gd', 'gl.notrans', '=', 'gd.rgl')
+            ->whereIn('gd.acc_id', $cashAccIds)
+            ->whereDate('gl.tgl', '<', $startDate)
+            ->sum(DB::raw('COALESCE(gd.debet,0) - COALESCE(gd.kredit,0)'));
+
+        $cashRows = DB::table('general_ledger as gl')
+            ->join('gl_detail as gd', 'gl.notrans', '=', 'gd.rgl')
+            ->whereIn('gd.acc_id', $cashAccIds)
+            ->whereBetween('gl.tgl', [$startDate, $endDate])
+            ->select(
+                'gl.notrans',
+                'gl.tgl',
+                'gl.memo',
+                'gd.acc_id as cash_acc_id',
+                DB::raw('COALESCE(gd.debet,0) as debet'),
+                DB::raw('COALESCE(gd.kredit,0) as kredit')
+            )
+            ->orderBy('gl.tgl', 'asc')
+            ->orderBy('gl.notrans', 'asc')
+            ->orderBy('gd.id', 'asc')
+            ->get();
+
+        $counterRows = DB::table('gl_detail as gd')
+            ->leftJoin('coa as c', 'gd.acc_id', '=', 'c.acc_id')
+            ->whereIn('gd.rgl', $cashRows->pluck('notrans')->unique()->values()->all())
+            ->whereNotIn('gd.acc_id', $cashAccIds)
+            ->select(
+                'gd.rgl',
+                'gd.acc_id',
+                DB::raw('MIN(c.name) as name'),
+                DB::raw('SUM(COALESCE(gd.debet,0) - COALESCE(gd.kredit,0)) as amount')
+            )
+            ->groupBy('gd.rgl', 'gd.acc_id')
+            ->get()
+            ->groupBy('rgl')
+            ->map(function ($group) {
+                $sorted = collect($group)->sortByDesc(function ($row) {
+                    return abs((float) $row->amount);
+                })->values();
+
+                return $sorted->first();
+            });
+
+        $transactionLines = DB::table('gl_detail as gd')
+            ->whereIn('gd.rgl', $cashRows->pluck('notrans')->unique()->values()->all())
+            ->select('gd.rgl', 'gd.acc_id')
+            ->get()
+            ->groupBy('rgl');
+
+        $classifyByCounterAcc = function (?string $accId): string {
+            if ($accId === null || $accId === '') {
+                return 'operating';
+            }
+
+            $prefix = substr($accId, 0, 1);
+
+            if ($prefix === '1') {
+                return 'investing';
+            }
+            if ($prefix === '2' || $prefix === '3') {
+                return 'financing';
+            }
+
+            return 'operating';
+        };
+
+        $rows = [];
+        $cashIn = 0.0;
+        $cashOut = 0.0;
+        $sections = [
+            'operating' => ['in' => 0.0, 'out' => 0.0, 'net' => 0.0],
+            'investing' => ['in' => 0.0, 'out' => 0.0, 'net' => 0.0],
+            'financing' => ['in' => 0.0, 'out' => 0.0, 'net' => 0.0],
+        ];
+
+        foreach ($cashRows as $cashRow) {
+            $amount = (float) $cashRow->debet - (float) $cashRow->kredit;
+            if ($amount == 0.0) {
+                continue;
+            }
+
+            $counter = $counterRows->get($cashRow->notrans);
+            $counterAccId = $counter->acc_id ?? null;
+            $counterName = $counter->name ?? null;
+            $counterStatus = 'normal';
+            $counterNote = '';
+
+            if ($counterAccId === null || $counterAccId === '') {
+                $lines = $transactionLines->get($cashRow->notrans, collect());
+                $totalLines = $lines->count();
+                $cashLines = $lines->filter(function ($line) use ($cashAccIds) {
+                    return in_array($line->acc_id, $cashAccIds, true);
+                })->count();
+
+                if ($totalLines > 0 && $totalLines === $cashLines) {
+                    $counterStatus = 'cash_transfer';
+                    $counterNote = 'Transfer antar akun kas';
+                } else {
+                    $counterStatus = 'missing_counter';
+                    $counterNote = 'Akun lawan tidak ditemukan, cek jurnal';
+                }
+            }
+
+            $activity = $classifyByCounterAcc($counterAccId);
+
+            if ($amount > 0) {
+                $cashIn += $amount;
+                $sections[$activity]['in'] += $amount;
+                $sections[$activity]['net'] += $amount;
+            } else {
+                $out = abs($amount);
+                $cashOut += $out;
+                $sections[$activity]['out'] += $out;
+                $sections[$activity]['net'] -= $out;
+            }
+
+            $rows[] = [
+                'tgl' => $cashRow->tgl,
+                'notrans' => $cashRow->notrans,
+                'memo' => $cashRow->memo,
+                'cash_acc_id' => $cashRow->cash_acc_id,
+                'cash_acc_name' => $cashAccountNameMap[$cashRow->cash_acc_id] ?? '-',
+                'counter_acc_id' => $counterAccId,
+                'counter_name' => $counterName,
+                'counter_status' => $counterStatus,
+                'counter_note' => $counterNote,
+                'activity' => $activity,
+                'cash_in' => $amount > 0 ? $amount : 0,
+                'cash_out' => $amount < 0 ? abs($amount) : 0,
+                'net_amount' => $amount,
+            ];
+        }
+
+        $netCashFlow = $cashIn - $cashOut;
+        $closingBalance = $openingBalance + $netCashFlow;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'cash flow',
+            'summary' => [
+                'opening_balance' => $openingBalance,
+                'cash_in' => $cashIn,
+                'cash_out' => $cashOut,
+                'net_cash_flow' => $netCashFlow,
+                'closing_balance' => $closingBalance,
+            ],
+            'sections' => $sections,
+            'data' => $rows,
+        ], 200);
+    }
+
     public function ledger(Request $request){
         $startDate = date("Y-m-d", strtotime($request->input('startDate')));
         $endDate = date("Y-m-d", strtotime($request->input('endDate')));
@@ -941,12 +1193,16 @@ class laporanController extends Controller
             ], 200);
         }
 
+        // Saldo normal akun: aset/biaya bertambah di debet, kewajiban/ekuitas/pendapatan di kredit.
+        $saldoSign = in_array(substr((string) $acc, 0, 1), ['1', '5', '6'], true) ? 1 : -1;
+        $saldoDelta = "({$saldoSign} * (coalesce(b.debet,0) - coalesce(b.kredit,0)))";
+
         $openingBalance = (float) DB::table('gl_detail as b')
             ->join('general_ledger as a', 'a.notrans', '=', 'b.rgl')
             ->where('b.acc_id', $acc)
             ->where('a.rlocation', '01020')
             ->whereDate('a.tgl', '<', $startDate)
-            ->sum(DB::raw('coalesce(b.debet,0) - coalesce(b.kredit,0)'));
+            ->sum(DB::raw($saldoDelta));
 
         DB::statement("SET @saldo := {$openingBalance}");
 
@@ -962,7 +1218,7 @@ class laporanController extends Controller
                 DB::raw('a.memo as Memo'),
                 DB::raw('coalesce(b.debet,0) as Debet'),
                 DB::raw('coalesce(b.kredit,0) as Kredit'),
-                DB::raw('(@saldo := @saldo + coalesce(b.debet,0) - coalesce(b.kredit,0)) as Saldo'),
+                DB::raw("(@saldo := @saldo + {$saldoDelta}) as Saldo"),
                 DB::raw('a.r_anggaran as KodeAnggaran'),
                 DB::raw("case when a.r_anggaran = 0 then 'Default Anggaran' else c.nama_rekening end as Nama_rekening")
             )
@@ -982,4 +1238,114 @@ class laporanController extends Controller
         ], 200);
 
     }
+
+    // Hitung saldo penutup untuk bulan & tahun tertentu (tanpa menyimpan)
+    private function hitungSaldoPenutup(int $tahun, int $bulan): float
+    {
+        $endOfMonth = date('Y-m-d', mktime(0, 0, 0, $bulan + 1, 0, $tahun));
+
+        // Cari saldo kunci bulan sebelumnya
+        $prevLock = $this->cariSaldoKunci($tahun, $bulan - 1 < 1 ? 12 : $bulan - 1, $bulan - 1 < 1 ? $tahun - 1 : $tahun);
+        $base     = $prevLock !== null ? $prevLock : 0.0;
+
+        // Hitung dari bulan itu (atau dari awal jika tidak ada kunci)
+        $startOfMonth = $prevLock !== null
+            ? date('Y-m-d', mktime(0, 0, 0, $bulan, 1, $tahun))
+            : '1900-01-01';
+
+        $mutasi = (float) DB::table('general_ledger')
+            ->join('gl_detail', 'general_ledger.notrans', '=', 'gl_detail.rgl')
+            ->whereBetween('general_ledger.tgl', [$startOfMonth, $endOfMonth])
+            ->sum(DB::raw('coalesce(gl_detail.debet,0) - coalesce(gl_detail.kredit,0)'));
+
+        return $base + $mutasi;
+    }
+
+    // Cari saldo kunci yang sudah dikunci untuk bulan/tahun tertentu
+    private function cariSaldoKunci(int $bulan, int $tahunOverride = null, int $tahunFallback = null): ?float
+    {
+        // Signature diperlukan fleksibel; versi publik menerima (tahun, bulan)
+        return null; // akan di-override oleh closePeriode
+    }
+
+    public function getPeriodeList()
+    {
+        $list = DB::table('tbl_closing_periode')
+            ->orderBy('tahun', 'desc')
+            ->orderBy('bulan', 'desc')
+            ->get();
+
+        return response()->json(['success' => true, 'data' => $list], 200);
+    }
+
+    public function closePeriode(Request $request)
+    {
+        $tahun = (int) $request->input('tahun');
+        $bulan = (int) $request->input('bulan');
+        $user  = auth()->user()->name ?? 'system';
+
+        // Pastikan tidak mengunci ulang periode yang sudah terkunci
+        $existing = DB::table('tbl_closing_periode')
+            ->where('tahun', $tahun)->where('bulan', $bulan)->first();
+
+        if ($existing && $existing->is_locked) {
+            return response()->json(['success' => false, 'message' => 'Periode sudah dikunci'], 422);
+        }
+
+        // Cari saldo kunci bulan sebelumnya sebagai base
+        $prevBulan = $bulan - 1 < 1 ? 12 : $bulan - 1;
+        $prevTahun = $bulan - 1 < 1 ? $tahun - 1 : $tahun;
+        $prevLock  = DB::table('tbl_closing_periode')
+            ->where('tahun', $prevTahun)->where('bulan', $prevBulan)
+            ->where('is_locked', true)->first();
+
+        $base = $prevLock ? (float) $prevLock->saldo_penutup : (float) DB::table('general_ledger')
+            ->join('gl_detail', 'general_ledger.notrans', '=', 'gl_detail.rgl')
+            ->whereDate('general_ledger.tgl', '<', date('Y-m-01', mktime(0,0,0,$bulan,1,$tahun)))
+            ->sum(DB::raw('coalesce(gl_detail.debet,0) - coalesce(gl_detail.kredit,0)'));
+
+        $startOfMonth = date('Y-m-01', mktime(0, 0, 0, $bulan, 1, $tahun));
+        $endOfMonth   = date('Y-m-t',  mktime(0, 0, 0, $bulan, 1, $tahun));
+
+        $mutasi = (float) DB::table('general_ledger')
+            ->join('gl_detail', 'general_ledger.notrans', '=', 'gl_detail.rgl')
+            ->whereBetween('general_ledger.tgl', [$startOfMonth, $endOfMonth])
+            ->sum(DB::raw('coalesce(gl_detail.debet,0) - coalesce(gl_detail.kredit,0)'));
+
+        $saldoPenutup = $base + $mutasi;
+
+        DB::table('tbl_closing_periode')->upsert(
+            [
+                'tahun'         => $tahun,
+                'bulan'         => $bulan,
+                'saldo_penutup' => $saldoPenutup,
+                'is_locked'     => true,
+                'locked_at'     => now(),
+                'locked_by'     => $user,
+                'created_at'    => now(),
+                'updated_at'    => now(),
+            ],
+            ['tahun', 'bulan'],
+            ['saldo_penutup', 'is_locked', 'locked_at', 'locked_by', 'updated_at']
+        );
+
+        return response()->json([
+            'success'       => true,
+            'message'       => "Periode {$bulan}/{$tahun} berhasil dikunci",
+            'saldo_penutup' => $saldoPenutup,
+        ], 200);
+    }
+
+    public function unlockPeriode(Request $request)
+    {
+        $tahun = (int) $request->input('tahun');
+        $bulan = (int) $request->input('bulan');
+
+        DB::table('tbl_closing_periode')
+            ->where('tahun', $tahun)->where('bulan', $bulan)
+            ->update(['is_locked' => false, 'updated_at' => now()]);
+
+        return response()->json(['success' => true, 'message' => "Periode {$bulan}/{$tahun} dibuka kembali"], 200);
+    }
 }
+

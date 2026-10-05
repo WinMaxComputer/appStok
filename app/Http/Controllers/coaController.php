@@ -444,7 +444,7 @@ class coaController extends Controller
                     ];
                 }
             DB::table('gl')->insert($dataSet);
-			DB::table('gl')->insert([ ['acc_id' => '38100', 'amount' => '0'], ['acc_id' => '38999', 'amount' => '0'] ]);
+			DB::table('gl')->updateOrInsert(['acc_id' => '38999'], ['amount' => '0']);
 
 			$tmpgl = DB::select("SELECT acc_id,SUM(debet)-SUM(kredit) as balance from general_ledger a left join gl_detail b on a.notrans = b.rgl where rlocation = '$dealer_ref' and date(tgl) between '$date_lr' and '$cur_tgl' group by acc_id;");
                 $dataSet = [];
@@ -483,7 +483,15 @@ class coaController extends Controller
 			$expense = DB::table('gl')->select(DB::raw('SUM(amount) as expense'))->where('acc_id', 'like', '5%')->orWhere('acc_id', 'like', '6%')->orWhere('acc_id', 'like', '8%')->first()->expense;
 			$expense1 = DB::statement("set @expense = '$expense' ;");
 
-			DB::table('gl')->where('acc_id', '38100')->update([ 'amount' => -1*((-1*$income)-$expense)]);
+			// Masukkan laba berjalan ke akun laba ditahan yang benar-benar ada di COA Neraca.
+			$netIncome = -1 * ((-1 * $income) - $expense);
+			$existingRetainedEarnings = (float) DB::table('gl')
+				->where('acc_id', '32300')
+				->sum('amount');
+			DB::table('gl')->updateOrInsert(
+				['acc_id' => '32300'],
+				['amount' => $existingRetainedEarnings + $netIncome]
+			);
 
 
 			$coaLevel1 = DB::table('level1 as a')

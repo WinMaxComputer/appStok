@@ -26,6 +26,8 @@
                             <!-- <button variant="primary" class="btn m-1 btn-primary" @click="export_table('print')">Print</button> -->
                             <!-- <button variant="primary" class="btn m-1 btn-primary" @click="export_table('pdf')">PDF</button> -->
                             <h5>Kas</h5>
+                            &nbsp;
+                            <button class="btn btn-sm btn-warning ms-3" data-bs-toggle="modal" data-bs-target="#modalTutupPeriode" @click="loadPeriodeList">Tutup Periode</button>
                         </div>
                         <div class="panel-body">
                             <div class="row">
@@ -39,6 +41,12 @@
                                             :config="{dateFormat: 'd-m-Y'}"
                                             class="form-control form-control-sm">
                                         </flat-pickr>
+                                        <select v-model="sorting.acc_id" class="form-control form-control-sm">
+                                            <option value="-">Semua Akun</option>
+                                            <option v-for="coa in items_coa" :key="coa.acc_id" :value="coa.acc_id">
+                                                {{ coa.acc_id }} - {{ coa.name }}
+                                            </option>
+                                        </select>
                                         <button type="button" class="btn m-1 btn-primary" @click="bind_data" :disabled="isLoading">{{ isLoading ? 'Memuat...' : 'Cari' }}</button>
                                         <button type="button" class="btn m-1 btn-primary" @click="export_table('print')">Print</button>
                                     </div>
@@ -97,9 +105,76 @@
             </div>
         </div>
 
+        <!-- Modal Tutup Periode -->
+        <div class="modal fade" id="modalTutupPeriode" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Tutup Periode (Kunci Saldo Bulanan)</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Bulan</label>
+                                <select v-model="periodeInput.bulan" class="form-select form-select-sm">
+                                    <option v-for="b in bulanList" :key="b.val" :value="b.val">{{ b.label }}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Tahun</label>
+                                <input type="number" v-model="periodeInput.tahun" class="form-control form-control-sm" />
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button class="btn btn-warning btn-sm w-100" @click="tutupPeriode" :disabled="periodeLoading">
+                                    {{ periodeLoading ? 'Memproses...' : 'Kunci Periode Ini' }}
+                                </button>
+                            </div>
+                        </div>
 
-        <!--  -->
-        
+                        <div v-if="periodeMsg" class="alert" :class="periodeSuccess ? 'alert-success' : 'alert-danger'" role="alert">
+                            {{ periodeMsg }}
+                        </div>
+
+                        <h6 class="mt-3">Daftar Periode Terkunci</h6>
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Bulan</th>
+                                    <th>Tahun</th>
+                                    <th>Saldo Penutup</th>
+                                    <th>Status</th>
+                                    <th>Dikunci Pada</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="!periodeList.length">
+                                    <td colspan="6" class="text-center text-muted">Belum ada periode dikunci</td>
+                                </tr>
+                                <tr v-for="p in periodeList" :key="p.id">
+                                    <td>{{ bulanLabel(p.bulan) }}</td>
+                                    <td>{{ p.tahun }}</td>
+                                    <td class="text-end">{{ Number(p.saldo_penutup).toLocaleString() }}</td>
+                                    <td>
+                                        <span :class="p.is_locked ? 'badge bg-success' : 'badge bg-secondary'">
+                                            {{ p.is_locked ? 'Terkunci' : 'Terbuka' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ p.locked_at ? p.locked_at.substring(0,16) : '-' }}</td>
+                                    <td>
+                                        <button v-if="p.is_locked" class="btn btn-xs btn-outline-danger btn-sm" @click="bukaKunci(p)">Buka Kunci</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -127,6 +202,7 @@
 
     const columns = ref(['notrans', 'acc_id','name', 'memo' ,'tgl', 'debet', 'kredit', 'mutasi', 'saldo']);
     const items = ref([]);
+    const items_coa = ref([]);
     const table_option = ref({
         perPage: 100,
         perPageValues: [100, 200],
@@ -149,14 +225,60 @@
     });
     const sorting = ref({
         startDate: moment().subtract(30,'d').format("D-M-YYYY"),
-        endDate: moment().format("D-M-YYYY")
+        endDate: moment().format("D-M-YYYY"),
+        acc_id: '-',
     });
 
-    
+    const bulanList = [
+        {val:1,label:'Januari'},{val:2,label:'Februari'},{val:3,label:'Maret'},
+        {val:4,label:'April'},{val:5,label:'Mei'},{val:6,label:'Juni'},
+        {val:7,label:'Juli'},{val:8,label:'Agustus'},{val:9,label:'September'},
+        {val:10,label:'Oktober'},{val:11,label:'November'},{val:12,label:'Desember'},
+    ];
+    const bulanLabel = (n) => (bulanList.find(b => b.val === n) || {}).label || n;
+
+    const periodeInput = ref({ bulan: moment().subtract(1,'month').month() + 1, tahun: moment().subtract(1,'month').year() });
+    const periodeList  = ref([]);
+    const periodeLoading = ref(false);
+    const periodeMsg     = ref('');
+    const periodeSuccess = ref(false);
+
+    const loadPeriodeList = async () => {
+        await store.dispatch('GetPeriodeList');
+        periodeList.value = store.getters.SPeriodeList || [];
+    };
+
+    const tutupPeriode = async () => {
+        periodeLoading.value = true;
+        periodeMsg.value = '';
+        try {
+            const res = await store.dispatch('ClosePeriode', periodeInput.value);
+            periodeSuccess.value = res.success;
+            periodeMsg.value = res.message + (res.success ? ` — Saldo Penutup: ${Number(res.saldo_penutup).toLocaleString()}` : '');
+            await loadPeriodeList();
+        } catch (e) {
+            periodeSuccess.value = false;
+            periodeMsg.value = 'Gagal menutup periode';
+        } finally {
+            periodeLoading.value = false;
+        }
+    };
+
+    const bukaKunci = async (p) => {
+        if (!confirm(`Buka kunci periode ${bulanLabel(p.bulan)} ${p.tahun}?`)) return;
+        await store.dispatch('UnlockPeriode', { tahun: p.tahun, bulan: p.bulan });
+        await loadPeriodeList();
+    };
 
     onMounted(() => {
+        bindAcc();
         bind_data();
     });
+
+    const bindAcc = async () => {
+        await store.dispatch('GetListCoa');
+        items_coa.value = store.getters.StateListCoa || [];
+    };
 
     const toNumber = (value) => Number(value || 0);
 
@@ -167,7 +289,6 @@
             return [];
         }
 
-        // Keep transaction order stable while ensuring dates are processed chronologically.
         list.sort((a, b) => {
             const t1 = new Date(a.tgl).getTime();
             const t2 = new Date(b.tgl).getTime();
@@ -177,22 +298,17 @@
             return t1 - t2;
         });
 
-        const first = list[0];
-        const firstMovement = toNumber(first.debet) - toNumber(first.kredit);
-        let running = toNumber(first.saldo) ? toNumber(first.saldo) - firstMovement : 0;
-
         return list.map((row) => {
             const debet = toNumber(row.debet);
             const kredit = toNumber(row.kredit);
             const mutasi = debet - kredit;
-            running += mutasi;
 
             return {
                 ...row,
                 debet,
                 kredit,
                 mutasi,
-                saldo: running,
+                saldo: toNumber(row.saldo),
             };
         });
     };
@@ -221,9 +337,7 @@
             totalKredit += toNumber(row.kredit);
         });
 
-        const closingBalance = items.value.length
-            ? toNumber(items.value[items.value.length - 1].saldo)
-            : toNumber(bukuBesarMeta.value.closing_balance);
+        const closingBalance = toNumber(bukuBesarMeta.value.closing_balance);
         const openingBalance = toNumber(bukuBesarMeta.value.opening_balance);
 
         return {

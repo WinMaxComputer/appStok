@@ -223,6 +223,7 @@
                         <li><router-link to="/penjualan" @click="toggleMobileMenu">PENJUALAN BARANG</router-link></li>
                         <li><router-link to="/pembelian" @click="toggleMobileMenu">PEMBELIAN BARANG</router-link></li>
                         <li><router-link to="/pembelian-inventaris" @click="toggleMobileMenu">PEMBELIAN INVENTARIS</router-link></li>
+                        <li><router-link to="/sewa-inventaris" @click="toggleMobileMenu">SEWA INVENTARIS</router-link></li>
                         <li><router-link to="/pembayaran-penjualan" @click="toggleMobileMenu">PEMBAYARAN PIUTANG</router-link></li>
                         <li><router-link to="/pembayaran-pembelian" @click="toggleMobileMenu">PEMBAYARAN HUTANG</router-link></li>
                         <li><router-link to="/opnum-barang" @click="toggleMobileMenu">OPNUM BARANG</router-link></li>
@@ -282,6 +283,7 @@
                         </li>
                         <li>
                             <router-link to="/laporan/pembelian-inventaris" @click="toggleMobileMenu">LAP. PEMBELIAN INVENTARIS</router-link>
+                            <router-link to="/laporan/sewa-inventaris" @click="toggleMobileMenu">LAP. SEWA INVENTARIS</router-link>
                         </li>
                         <li>
                             <router-link to="/laporan/penyusutan" @click="toggleMobileMenu">LAP. PENYUSUTAN</router-link>
@@ -294,6 +296,9 @@
                         </li>
                         <li>
                             <router-link to="/laporan/ledger" @click="toggleMobileMenu">GENERAL LEDGER</router-link>
+                        </li>
+                        <li>
+                            <router-link to="/laporan/cash-flow" @click="toggleMobileMenu">ARUS KAS</router-link>
                         </li>
                         <li>
                             <router-link to="/auth/lockscreen-boxed" @click="toggleMobileMenu">LOCK</router-link>

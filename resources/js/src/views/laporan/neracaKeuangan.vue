@@ -143,6 +143,25 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="col-xl-12 col-md-6 col-sm-12">
+                                            <div class="neraca-breakdown-box mt-2">
+                                                <div class="neraca-breakdown-title">Balance Neraca</div>
+                                                <div class="neraca-breakdown-row">
+                                                    <span>Total Aset</span>
+                                                    <strong>{{ formatAmount(neracaSummary.totalAssets) }}</strong>
+                                                </div>
+                                                <div class="neraca-breakdown-row">
+                                                    <span>Total Kewajiban + Ekuitas</span>
+                                                    <strong>{{ formatAmount(neracaSummary.totalLiabilitiesEquity) }}</strong>
+                                                </div>
+                                                <div class="neraca-breakdown-row total">
+                                                    <span>Selisih Balance</span>
+                                                    <strong :class="neracaSummary.isBalanced ? 'text-success' : 'text-danger'">
+                                                        {{ formatAmount(neracaSummary.difference) }}
+                                                    </strong>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -197,6 +216,24 @@ const formatAmount = (amount, accId) => {
     const finalAmount = isNegativeAccount(accId) ? -1 * numericAmount : numericAmount;
     return Number(finalAmount).toLocaleString();
 };
+
+const neracaSummary = computed(() => {
+    const totalRows = (Array.isArray(hartalist.value) ? hartalist.value : [])
+        .filter((row) => row?.jenis === 'Total' && String(row?.level) === '1');
+    const totalForGroups = (groups) => totalRows
+        .filter((row) => groups.includes(String(row.acc_id || '').substring(0, 1)))
+        .reduce((total, row) => total + Math.abs(Number(row.amount || 0)), 0);
+    const totalAssets = totalForGroups(['1']);
+    const totalLiabilitiesEquity = totalForGroups(['2', '3']);
+    const difference = totalAssets - totalLiabilitiesEquity;
+
+    return {
+        totalAssets,
+        totalLiabilitiesEquity,
+        difference,
+        isBalanced: Math.abs(difference) < 0.01,
+    };
+});
 
 const loadData = async () => {
     load.value = true;

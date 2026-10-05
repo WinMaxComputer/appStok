@@ -13,6 +13,7 @@ const state = {
     listbbmdatang: [],
     listpenyusutan: [],
     bukubesar: [],
+    periodeList: [],
     bukubesarmeta: {
         opening_balance: 0,
         closing_balance: 0,
@@ -24,6 +25,19 @@ const state = {
     generalledgermeta: {
         opening_balance: 0,
         closing_balance: 0,
+    },
+    cashflow: [],
+    cashflowmeta: {
+        opening_balance: 0,
+        cash_in: 0,
+        cash_out: 0,
+        net_cash_flow: 0,
+        closing_balance: 0,
+    },
+    cashflowsections: {
+        operating: { in: 0, out: 0, net: 0 },
+        investing: { in: 0, out: 0, net: 0 },
+        financing: { in: 0, out: 0, net: 0 },
     },
     detailbiaya: [],
     listbayarpenjualan: [],
@@ -43,11 +57,15 @@ const getters = {
     SlistPenyusutan: state => state.listpenyusutan,
     SBukuBesar: state => state.bukubesar,
     SBukuBesarMeta: state => state.bukubesarmeta,
+    SPeriodeList: state => state.periodeList,
     StateGjList: state => state.jurnalumum,
     StateCostBbm: state => state.costbbm,
     StateListKartuStok: state => state.listkartustok,
     StateGL: state => state.generalledger,
     StateGLMeta: state => state.generalledgermeta,
+    StateCashFlow: state => state.cashflow,
+    StateCashFlowMeta: state => state.cashflowmeta,
+    StateCashFlowSections: state => state.cashflowsections,
     StateBiayaDetail: state => state.detailbiaya,
     SlistBayarPenjualan: state => state.listbayarpenjualan,
     SlistBayarPembelian: state => state.listbayarpembelian,
@@ -231,6 +249,18 @@ const actions = {
             return
         }
     },
+    async GetPeriodeList({ commit }) {
+        const response = await axios.get('/api/periode/list')
+        commit('setPeriodeList', response.data.data)
+    },
+    async ClosePeriode(_, payload) {
+        const response = await axios.post('/api/periode/close', payload)
+        return response.data
+    },
+    async UnlockPeriode(_, payload) {
+        const response = await axios.post('/api/periode/unlock', payload)
+        return response.data
+    },
     async GetGL({ commit }, buku){
         let response
         try {
@@ -243,6 +273,28 @@ const actions = {
         } catch (ex) {
             // Handle error
             alert('error load buku besar')
+            return
+        }
+    },
+    async GetCashFlow({ commit }, payload){
+        let response
+        try {
+            response = await axios.post('/api/cash-flow', payload)
+            commit('setCashFlow', response.data.data || [])
+            commit('setCashFlowMeta', response.data.summary || {
+                opening_balance: 0,
+                cash_in: 0,
+                cash_out: 0,
+                net_cash_flow: 0,
+                closing_balance: 0,
+            })
+            commit('setCashFlowSections', response.data.sections || {
+                operating: { in: 0, out: 0, net: 0 },
+                investing: { in: 0, out: 0, net: 0 },
+                financing: { in: 0, out: 0, net: 0 },
+            })
+        } catch (ex) {
+            alert('error load cash flow')
             return
         }
     },
@@ -327,6 +379,9 @@ const mutations = {
     setBukuBesarMeta(state, meta){
         state.bukubesarmeta = meta
     },
+    setPeriodeList(state, list){
+        state.periodeList = list
+    },
     setJurnalUmum(state, ju){
         state.jurnalumum = ju
     },
@@ -341,6 +396,15 @@ const mutations = {
     },
     setGLMeta(state, glmeta){
         state.generalledgermeta = glmeta
+    },
+    setCashFlow(state, rows){
+        state.cashflow = rows
+    },
+    setCashFlowMeta(state, meta){
+        state.cashflowmeta = meta
+    },
+    setCashFlowSections(state, sections){
+        state.cashflowsections = sections
     }
 
 

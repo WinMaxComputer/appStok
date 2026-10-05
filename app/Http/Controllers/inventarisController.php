@@ -78,6 +78,9 @@ class inventarisController extends Controller
                 $warna = $request->input('warna');
                 $merek = $request->input('merek');
                 $umur_ekonomis = $request->input('umur_ekonomis');
+                $is_disewakan = $request->input('is_disewakan', 0);
+                $harga_sewa = $request->input('harga_sewa', 0);
+                $acc_pendapatan_sewa = $request->input('acc_pendapatan_sewa', '');
 
                 DB::table('tblinventaris')->upsert([
                         'kode_inventaris' => $kode_inventaris,
@@ -89,6 +92,9 @@ class inventarisController extends Controller
                         'warna' => $warna,
                         'merek' => $merek,
                         'umur_ekonomis' => $umur_ekonomis,
+                        'is_disewakan' => $is_disewakan,
+                        'harga_sewa' => $harga_sewa,
+                        'acc_pendapatan_sewa' => $acc_pendapatan_sewa,
                         'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
                         'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                     ],
@@ -101,6 +107,9 @@ class inventarisController extends Controller
                         'warna' => $warna,
                         'merek' => $merek,
                         'umur_ekonomis' => $umur_ekonomis,
+                        'is_disewakan' => $is_disewakan,
+                        'harga_sewa' => $harga_sewa,
+                        'acc_pendapatan_sewa' => $acc_pendapatan_sewa,
                         'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
                         'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                     ]
@@ -152,20 +161,13 @@ class inventarisController extends Controller
                 ]);
 
                 $detpem = $request[1];
+                $totalSeluruh = 0;
+                $subtotalPerGroup = []; // accumulate debit per group_inventaris
+
                 for ($i = 0; $i < count($detpem); $i++) {
 
                     $kdBarang = $detpem[$i]['kdBarang'];
                     $qty = $detpem[$i]['qty'];
-                    // $brg = DB::table('tblpersediaan')->where('kdPersediaan', $kdBarang)->first();
-                    // $oldStok = $brg->stokPersediaan;
-                    // DB::table('tblpersediaan')->where('kdPersediaan', $kdBarang)->update([
-                    //     'stokPersediaan' => $oldStok + $qty,
-                    //     'lastPrice' => $detpem[$i]['hrgPokok'],
-                    // ]);
-                    // DB::table('tblbarang')->where('kdBarang', $kdBarang)->update([
-                    //     'stkBarang' => $oldStok + $qty,
-                    //     'hrgPokok' => $detpem[$i]['hrgPokok'],
-                    // ]);
                     DB::table('tblinventaris')->where('kode_inventaris', $kdBarang)->update([
                         'nilai_inventaris' => $detpem[$i]['total'],
                         'qty_inventaris' => $qty,
@@ -176,7 +178,7 @@ class inventarisController extends Controller
                         'rsysno_pengadaan' => $noNota,
                         'rkode_inventaris' => $kdBarang,
                         'rkode_pengadaan' => $noNota,
-                        'kode_pengadaan_detail' => $noNota.$kdBarang.$i+1,
+                        'kode_pengadaan_detail' => $noNota.$kdBarang.($i+1),
                         'harga_perolehan' => $detpem[$i]['hrgPokok'],
                         'qty' => $qty,
                         'subtotal' => $detpem[$i]['total'],
@@ -184,10 +186,9 @@ class inventarisController extends Controller
                         'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                     ],
                     [
-                        // 'rsysno_pengadaan' => $noNota,
                         'rkode_inventaris' => $kdBarang,
                         'rkode_pengadaan' => $noNota,
-                        'kode_pengadaan_detail' => $noNota.$kdBarang.$i+1,
+                        'kode_pengadaan_detail' => $noNota.$kdBarang.($i+1),
                         'harga_perolehan' => $detpem[$i]['hrgPokok'],
                         'qty' => $qty,
                         'subtotal' => $detpem[$i]['total'],
@@ -195,38 +196,39 @@ class inventarisController extends Controller
                         'updated_at' => \Carbon\Carbon::now()->toDateTimeString()
                     ]);
 
-                    //===========jurnal
-                    $acc_id_d =  $detpem[$i]['group_inventaris']; // acc id yg di debet
-                    $acc_id_k = '11110'; // $request[0]['subtotal']; // acc id yg di kredit
-                    $memo = 'Pembelian-Inventaris';
-                    $jurnal = 'JK';
-                    $subtotal = $detpem[$i]['total'];
-                    insert_gl($noNota,$tglNota,$subtotal,$memo,$jurnal);
-                    $rgl = DB::table('general_ledger')->get()->last()->notrans;
-                    $ac = [
-                        [
-                            'rgl' => $rgl,
-                            'acc_id' => $acc_id_d,
-                            'debet' => $subtotal,
-                            'kredit' => 0,
-                            'trans_detail' => 'Pembelian-Inventaris',
-                            'void_flag' => 0,
-                        ], 
-                        [
-                            'rgl' => $rgl,
-                            'acc_id' => $acc_id_k,
-                            'debet' => 0,
-                            'kredit' => $subtotal,
-                            'trans_detail' => 'Pembelian-Inventaris',
-                            'void_flag' => 0,
-                        ]
-                    ];
-                    
-                    insert_gl_detail($ac);
-                    //===========end jurnal
-                    // DB::table('tblinventari_pengadaan_detail')->upsert($detail);
+                    $grp = $detpem[$i]['group_inventaris'];
+                    $subtotalPerGroup[$grp] = ($subtotalPerGroup[$grp] ?? 0) + $detpem[$i]['total'];
+                    $totalSeluruh += $detpem[$i]['total'];
                 }
-                // PembelianDetail::insert($detail);
+
+                // Satu GL header untuk seluruh transaksi pembelian
+                $memo   = 'Pembelian-Inventaris';
+                $jurnal = 'JK';
+                insert_gl($noNota, $tglNota, $totalSeluruh, $memo, $jurnal);
+                $rgl = DB::table('general_ledger')->get()->last()->notrans;
+
+                $ac = [];
+                // Debet: satu baris per kategori inventaris
+                foreach ($subtotalPerGroup as $grp => $jumlah) {
+                    $ac[] = [
+                        'rgl'          => $rgl,
+                        'acc_id'       => $grp,
+                        'debet'        => $jumlah,
+                        'kredit'       => 0,
+                        'trans_detail' => $memo,
+                        'void_flag'    => 0,
+                    ];
+                }
+                // Kredit: kas/bank untuk total keseluruhan
+                $ac[] = [
+                    'rgl'          => $rgl,
+                    'acc_id'       => '11110',
+                    'debet'        => 0,
+                    'kredit'       => $totalSeluruh,
+                    'trans_detail' => $memo,
+                    'void_flag'    => 0,
+                ];
+                insert_gl_detail($ac);
                 
 
                 DB::commit();
@@ -652,4 +654,281 @@ class inventarisController extends Controller
          ], 400);
         }
     }
+
+    public function updateSewaInventaris(Request $request){
+        try {
+            $kode = $request->input('kode_inventaris');
+            $is_disewakan = $request->input('is_disewakan', 0);
+            $harga_sewa = $request->input('harga_sewa', 0);
+            $acc_pendapatan_sewa = $request->input('acc_pendapatan_sewa', '');
+
+            DB::table('tblinventaris')->where('kode_inventaris', $kode)->update([
+                'is_disewakan'         => $is_disewakan,
+                'harga_sewa'           => $harga_sewa,
+                'acc_pendapatan_sewa'  => $acc_pendapatan_sewa,
+                'updated_at'           => \Carbon\Carbon::now()->toDateTimeString(),
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Data sewa berhasil diperbarui'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'exception: '.$e->getMessage()], 400);
+        }
+    }
+
+    public function simpanSewaInventaris(Request $request){
+        try {
+            $exception = DB::transaction(function() use ($request) {
+                $noSewa    = $request->input('noSewa');
+                $tglSewa   = $request->input('tglSewa');
+                $kodeInv   = $request->input('kode_inventaris');
+                $jumlah    = (float) $request->input('jumlah_sewa', 0);
+                $periodeSewa = max(1, (int) $request->input('periode_sewa', 1));
+                $keterangan = $request->input('keterangan', 'Pendapatan Sewa Inventaris');
+                $accKas    = $request->input('acc_kas', '11110');
+                $accPendapatan = $request->input('acc_pendapatan_sewa');
+                $inventaris = DB::table('tblinventaris')->where('kode_inventaris', $kodeInv)->first();
+
+                if (!$inventaris || !$inventaris->is_disewakan) {
+                    throw new \RuntimeException('Inventaris belum ditandai sebagai inventaris sewaan');
+                }
+                if ($jumlah <= 0 || empty($accPendapatan)) {
+                    throw new \RuntimeException('Jumlah sewa dan akun pendapatan wajib diisi');
+                }
+
+                DB::table('tblinventaris_sewa')->insert([
+                    'sewa_sysno'       => $noSewa,
+                    'sewa_docno'       => $noSewa,
+                    'tgl_sewa'         => $tglSewa,
+                    'rkode_inventaris' => $kodeInv,
+                    'jumlah_sewa'      => $jumlah,
+                    'periode_sewa'     => $periodeSewa,
+                    'jumlah_penyusutan' => 0,
+                    'keterangan'       => $keterangan,
+                    'created_at'       => \Carbon\Carbon::now()->toDateTimeString(),
+                    'updated_at'       => \Carbon\Carbon::now()->toDateTimeString(),
+                ]);
+
+                // Jurnal: Dr Kas / Cr Pendapatan Sewa
+                $memo   = 'Pendapatan-Sewa-Inventaris';
+                $jurnal = 'JK';
+                insert_gl($noSewa, $tglSewa, $jumlah, $memo, $jurnal);
+                $rgl = DB::table('general_ledger')->get()->last()->notrans;
+
+                $ac = [
+                    [
+                        'rgl'          => $rgl,
+                        'acc_id'       => $accKas,
+                        'debet'        => $jumlah,
+                        'kredit'       => 0,
+                        'trans_detail' => $memo,
+                        'void_flag'    => 0,
+                    ],
+                    [
+                        'rgl'          => $rgl,
+                        'acc_id'       => $accPendapatan,
+                        'debet'        => 0,
+                        'kredit'       => $jumlah,
+                        'trans_detail' => $memo,
+                        'void_flag'    => 0,
+                    ],
+                ];
+
+                insert_gl_detail($ac);
+
+                $umurBulan = (int) $inventaris->umur_ekonomis * 12;
+                $jumlahPenyusutan = 0;
+                if ($umurBulan > 0 && (float) $inventaris->nilai_inventaris > 0) {
+                    $penyusutanPerBulan = (float) $inventaris->nilai_inventaris / $umurBulan;
+                    $jumlahPenyusutan = min(
+                        (float) $inventaris->nilai_inventaris,
+                        $penyusutanPerBulan * $periodeSewa
+                    );
+                }
+
+                if ($jumlahPenyusutan > 0) {
+                    DB::table('tblinventaris_penyusutan')->insert([
+                        'penyusutan_sysno' => $noSewa,
+                        'penyusutan_docno' => $noSewa,
+                        'tgl_penyusutan' => $tglSewa,
+                        'memo_penyusutan' => 'Penyusutan dari Sewa Inventaris',
+                        'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
+                        'updated_at' => \Carbon\Carbon::now()->toDateTimeString(),
+                    ]);
+
+                    DB::table('tblinventaris_penyusutan_detail')->insert([
+                        'rsysno_penyusutan' => $noSewa,
+                        'rkode_inventaris' => $kodeInv,
+                        'tgl_penyusutan' => $tglSewa,
+                        'jumlah_penyusutan' => $jumlahPenyusutan,
+                        'created_at' => \Carbon\Carbon::now()->toDateTimeString(),
+                        'updated_at' => \Carbon\Carbon::now()->toDateTimeString(),
+                    ]);
+
+                    DB::table('tblinventaris_sewa')->where('sewa_sysno', $noSewa)->update([
+                        'jumlah_penyusutan' => $jumlahPenyusutan,
+                        'updated_at' => \Carbon\Carbon::now()->toDateTimeString(),
+                    ]);
+
+                    DB::table('tblinventaris')->where('kode_inventaris', $kodeInv)->update([
+                        'nilai_inventaris' => (float) $inventaris->nilai_inventaris - $jumlahPenyusutan,
+                        'updated_at' => \Carbon\Carbon::now()->toDateTimeString(),
+                    ]);
+
+                    $memoPenyusutan = 'Penyusutan-Sewa-Inventaris';
+                    insert_gl($noSewa . '-S', $tglSewa, $jumlahPenyusutan, $memoPenyusutan, 'JK');
+                    $rglPenyusutan = DB::table('general_ledger')->get()->last()->notrans;
+                    insert_gl_detail([
+                        [
+                            'rgl' => $rglPenyusutan,
+                            'acc_id' => '61103',
+                            'debet' => $jumlahPenyusutan,
+                            'kredit' => 0,
+                            'trans_detail' => $memoPenyusutan,
+                            'void_flag' => 0,
+                        ],
+                        [
+                            'rgl' => $rglPenyusutan,
+                            'acc_id' => $inventaris->accid_akum,
+                            'debet' => 0,
+                            'kredit' => $jumlahPenyusutan,
+                            'trans_detail' => $memoPenyusutan,
+                            'void_flag' => 0,
+                        ],
+                    ]);
+                }
+                DB::commit();
+            });
+
+            if (is_null($exception)) {
+                return response()->json(['success' => true, 'message' => 'Sewa berhasil tersimpan'], 200);
+            }
+            DB::rollback();
+            return response()->json(['success' => false, 'message' => 'Sewa gagal disimpan'], 500);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['success' => false, 'message' => 'exception: '.$e->getMessage()], 400);
+        }
+    }
+
+    public function daftarSewaInventaris(Request $request){
+        $startDate = date('Y-m-d', strtotime($request->input('startDate')));
+        $endDate   = date('Y-m-d', strtotime($request->input('endDate')));
+
+        $data = DB::table('tblinventaris_sewa')
+            ->join('tblinventaris', 'tblinventaris_sewa.rkode_inventaris', '=', 'tblinventaris.kode_inventaris')
+            ->whereBetween('tblinventaris_sewa.tgl_sewa', [$startDate, $endDate])
+            ->select('tblinventaris_sewa.*', 'tblinventaris.nama_inventaris', 'tblinventaris.acc_pendapatan_sewa')
+            ->get();
+
+        return response()->json(['success' => true, 'message' => 'Daftar Sewa Inventaris', 'data' => $data], 200);
+    }
+
+    public function updateTransaksiSewaInventaris(Request $request){
+        try {
+            DB::transaction(function() use ($request) {
+                $id = $request->input('id_sewa');
+                $old = DB::table('tblinventaris_sewa')->where('id_sewa', $id)->lockForUpdate()->first();
+                if (!$old) {
+                    throw new \RuntimeException('Transaksi sewa tidak ditemukan');
+                }
+
+                $oldAsset = DB::table('tblinventaris')->where('kode_inventaris', $old->rkode_inventaris)->lockForUpdate()->first();
+                DB::table('tblinventaris')->where('kode_inventaris', $old->rkode_inventaris)->update([
+                    'nilai_inventaris' => (float) $oldAsset->nilai_inventaris + (float) $old->jumlah_penyusutan,
+                ]);
+                DB::table('tblinventaris_penyusutan_detail')->where('rsysno_penyusutan', $old->sewa_sysno)->delete();
+                DB::table('tblinventaris_penyusutan')->where('penyusutan_sysno', $old->sewa_sysno)->delete();
+                DB::table('general_ledger')->whereIn('order_no', [$old->sewa_sysno, $old->sewa_sysno . '-S'])->get()->each(function($gl) {
+                    DB::table('gl_detail')->where('rgl', $gl->notrans)->delete();
+                    DB::table('general_ledger')->where('notrans', $gl->notrans)->delete();
+                });
+
+                $asset = DB::table('tblinventaris')->where('kode_inventaris', $request->input('kode_inventaris'))->lockForUpdate()->first();
+                if (!$asset || !$asset->is_disewakan) {
+                    throw new \RuntimeException('Inventaris belum ditandai sebagai inventaris sewaan');
+                }
+                $jumlah = (float) $request->input('jumlah_sewa', 0);
+                $periode = max(1, (int) $request->input('periode_sewa', 1));
+                $accPendapatan = $request->input('acc_pendapatan_sewa') ?: $asset->acc_pendapatan_sewa;
+                if ($jumlah <= 0 || empty($accPendapatan)) {
+                    throw new \RuntimeException('Jumlah sewa dan akun pendapatan wajib diisi');
+                }
+                $penyusutan = 0;
+                $umurBulan = (int) $asset->umur_ekonomis * 12;
+                if ($umurBulan > 0 && (float) $asset->nilai_inventaris > 0) {
+                    $penyusutan = min((float) $asset->nilai_inventaris, ((float) $asset->nilai_inventaris / $umurBulan) * $periode);
+                }
+
+                DB::table('tblinventaris_sewa')->where('id_sewa', $id)->update([
+                    'tgl_sewa' => $request->input('tglSewa'),
+                    'rkode_inventaris' => $asset->kode_inventaris,
+                    'jumlah_sewa' => $jumlah,
+                    'periode_sewa' => $periode,
+                    'jumlah_penyusutan' => $penyusutan,
+                    'keterangan' => $request->input('keterangan', 'Pendapatan Sewa Inventaris'),
+                    'updated_at' => now(),
+                ]);
+                DB::table('tblinventaris')->where('kode_inventaris', $asset->kode_inventaris)->update([
+                    'nilai_inventaris' => (float) $asset->nilai_inventaris - $penyusutan,
+                ]);
+
+                insert_gl($old->sewa_sysno, $request->input('tglSewa'), $jumlah, 'Pendapatan-Sewa-Inventaris', 'JK');
+                $rgl = DB::table('general_ledger')->get()->last()->notrans;
+                insert_gl_detail([
+                    ['rgl' => $rgl, 'acc_id' => $request->input('acc_kas', '11110'), 'debet' => $jumlah, 'kredit' => 0, 'trans_detail' => 'Pendapatan-Sewa-Inventaris', 'void_flag' => 0],
+                    ['rgl' => $rgl, 'acc_id' => $accPendapatan, 'debet' => 0, 'kredit' => $jumlah, 'trans_detail' => 'Pendapatan-Sewa-Inventaris', 'void_flag' => 0],
+                ]);
+
+                if ($penyusutan > 0) {
+                    DB::table('tblinventaris_penyusutan')->insert([
+                        'penyusutan_sysno' => $old->sewa_sysno, 'penyusutan_docno' => $old->sewa_sysno,
+                        'tgl_penyusutan' => $request->input('tglSewa'), 'memo_penyusutan' => 'Penyusutan dari Sewa Inventaris',
+                        'created_at' => now(), 'updated_at' => now(),
+                    ]);
+                    DB::table('tblinventaris_penyusutan_detail')->insert([
+                        'rsysno_penyusutan' => $old->sewa_sysno, 'rkode_inventaris' => $asset->kode_inventaris,
+                        'tgl_penyusutan' => $request->input('tglSewa'), 'jumlah_penyusutan' => $penyusutan,
+                        'created_at' => now(), 'updated_at' => now(),
+                    ]);
+                    insert_gl($old->sewa_sysno . '-S', $request->input('tglSewa'), $penyusutan, 'Penyusutan-Sewa-Inventaris', 'JK');
+                    $rglSusut = DB::table('general_ledger')->get()->last()->notrans;
+                    insert_gl_detail([
+                        ['rgl' => $rglSusut, 'acc_id' => '61103', 'debet' => $penyusutan, 'kredit' => 0, 'trans_detail' => 'Penyusutan-Sewa-Inventaris', 'void_flag' => 0],
+                        ['rgl' => $rglSusut, 'acc_id' => $asset->accid_akum, 'debet' => 0, 'kredit' => $penyusutan, 'trans_detail' => 'Penyusutan-Sewa-Inventaris', 'void_flag' => 0],
+                    ]);
+                }
+            });
+            return response()->json(['success' => true, 'message' => 'Transaksi sewa berhasil diubah'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 400);
+        }
+    }
+
+    public function hapusSewaInventaris(Request $request){
+        try {
+            DB::transaction(function() use ($request) {
+                $sewa = DB::table('tblinventaris_sewa')->where('id_sewa', $request->input('id_sewa'))->lockForUpdate()->first();
+                if (!$sewa) {
+                    throw new \RuntimeException('Transaksi sewa tidak ditemukan');
+                }
+                $asset = DB::table('tblinventaris')->where('kode_inventaris', $sewa->rkode_inventaris)->lockForUpdate()->first();
+                if ($asset) {
+                    DB::table('tblinventaris')->where('kode_inventaris', $asset->kode_inventaris)->update([
+                        'nilai_inventaris' => (float) $asset->nilai_inventaris + (float) $sewa->jumlah_penyusutan,
+                    ]);
+                }
+                DB::table('tblinventaris_penyusutan_detail')->where('rsysno_penyusutan', $sewa->sewa_sysno)->delete();
+                DB::table('tblinventaris_penyusutan')->where('penyusutan_sysno', $sewa->sewa_sysno)->delete();
+                DB::table('general_ledger')->whereIn('order_no', [$sewa->sewa_sysno, $sewa->sewa_sysno . '-S'])->get()->each(function($gl) {
+                    DB::table('gl_detail')->where('rgl', $gl->notrans)->delete();
+                    DB::table('general_ledger')->where('notrans', $gl->notrans)->delete();
+                });
+                DB::table('tblinventaris_sewa')->where('id_sewa', $sewa->id_sewa)->delete();
+            });
+            return response()->json(['success' => true, 'message' => 'Transaksi sewa berhasil dihapus'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 400);
+        }
+    }
 }
+

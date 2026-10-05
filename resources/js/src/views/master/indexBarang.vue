@@ -36,6 +36,15 @@
                                     <option value="mostSales">Paling Laris</option>
                                 </select>
                             </div>
+                            <div class="col-sm-4 col-md-3">
+                                <label class="form-label mb-1">Kategori</label>
+                                <select v-model="categoryFilter" class="form-select">
+                                    <option value="all">Semua Kategori</option>
+                                    <option v-for="category in categories" :key="category" :value="category">
+                                        {{ category }}
+                                    </option>
+                                </select>
+                            </div>
                             <template v-if="itemFilter === 'mostSales'">
                                 <div class="col-sm-4 col-md-3">
                                     <label class="form-label mb-1">Penjualan Dari</label>
@@ -433,6 +442,7 @@
     const modalinput = ref(false);
     const items = ref([]);
     const itemFilter = ref('all');
+    const categoryFilter = ref('all');
     const mostSaleLoading = ref(false);
     const salesByBarang = ref({});
     const salesFilter = ref({
@@ -440,8 +450,16 @@
         endDate: moment().format('D-M-YYYY'),
     });
     const getStock = (item) => Number(item.stokPersediaan || 0);
+    const categories = computed(() => {
+        return [...new Set(items.value
+            .map((item) => String(item.namaKtg || '').trim())
+            .filter(Boolean))]
+            .sort((a, b) => a.localeCompare(b));
+    });
     const filteredItems = computed(() => {
-        const data = [...items.value];
+        const data = items.value.filter((item) => {
+            return categoryFilter.value === 'all' || String(item.namaKtg || '').trim() === categoryFilter.value;
+        });
 
         if (itemFilter.value === 'lowStock') {
             return data.filter((item) => getStock(item) <= Number(item.qtyMin || 0));

@@ -76,11 +76,15 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/list-bayarpembelian', [App\Http\Controllers\laporanController::class, 'laporanBayarPembelian']);
     Route::post('/laporan-opnum', [App\Http\Controllers\laporanController::class, 'laporanOpnum']);
     Route::post('/laporan-penyusutan', [App\Http\Controllers\laporanController::class, 'laporanPenyusutan']);
+    Route::post('/cash-flow', [App\Http\Controllers\laporanController::class, 'cashFlow']);
     Route::post('/listpenjualan-kupon', [App\Http\Controllers\laporanController::class, 'listKupon']);
     Route::post('/pembelian-barang', [App\Http\Controllers\laporanController::class, 'pembelianBrg']);
     Route::post('/list-bbmdatang', [App\Http\Controllers\laporanController::class, 'daftarBbmDatang']);
     Route::post('/list-penyusutan', [App\Http\Controllers\laporanController::class, 'laporanPenyusutan']);
     Route::post('/buku-besar', [App\Http\Controllers\laporanController::class, 'bukubesar']);
+    Route::get('/periode/list', [App\Http\Controllers\laporanController::class, 'getPeriodeList']);
+    Route::post('/periode/close', [App\Http\Controllers\laporanController::class, 'closePeriode']);
+    Route::post('/periode/unlock', [App\Http\Controllers\laporanController::class, 'unlockPeriode']);
     Route::post('/kartu-stok', [App\Http\Controllers\laporanController::class, 'listKartustok']);
     Route::post('/laporan-tera', [App\Http\Controllers\laporanController::class, 'listTera']);
     Route::post('/general-ledger', [App\Http\Controllers\laporanController::class, 'ledger']);
@@ -98,6 +102,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/laporan/pembelian-inventaris', [App\Http\Controllers\inventarisController::class, 'daftarPembelianInventaris']);
     Route::post('/penyusutan/getinv-bykat', [App\Http\Controllers\inventarisController::class, 'getInvBykat']);
     Route::post('/hapus/inventaris', [App\Http\Controllers\inventarisController::class, 'hapusInventaris']);
+    Route::post('/update/sewa-inventaris', [App\Http\Controllers\inventarisController::class, 'updateSewaInventaris']);
+    Route::post('/sewa/inventaris', [App\Http\Controllers\inventarisController::class, 'simpanSewaInventaris']);
+    Route::post('/laporan/sewa-inventaris', [App\Http\Controllers\inventarisController::class, 'daftarSewaInventaris']);
+    Route::post('/update/transaksi-sewa-inventaris', [App\Http\Controllers\inventarisController::class, 'updateTransaksiSewaInventaris']);
+    Route::post('/hapus/transaksi-sewa-inventaris', [App\Http\Controllers\inventarisController::class, 'hapusSewaInventaris']);
+    Route::get('/kdsewa', [App\Http\Controllers\nomorController::class, 'kodeSewa']);
     
 
     //=================hapus

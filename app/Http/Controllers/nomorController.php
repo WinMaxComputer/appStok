@@ -827,4 +827,26 @@ class nomorController extends Controller
             }
         }
     }
+
+    public function kodeSewa()
+    {
+        $count = DB::table('tblinventaris_sewa')->where('sewa_sysno', 'like', 'SW%')->max('sewa_sysno');
+        if ($count == '') {
+            $tahun = date('ym');
+            $post  = 'SW' . $tahun . '1';
+            return response()->json(['success' => true, 'message' => 'Detail Post!', 'kdSewa' => $post], 200);
+        }
+
+        $terakhir  = substr($count, 6, 20);
+        $kodeBaru  = $terakhir + 1;
+        $tahun     = date('ym');
+        $post      = 'SW' . $tahun . $kodeBaru;
+
+        if (DB::table('tblinventaris_sewa')->where('sewa_sysno', $post)->exists()) {
+            $kodeBarulagi = $kodeBaru + 1;
+            $post = 'SW' . $tahun . $kodeBarulagi;
+        }
+
+        return response()->json(['success' => true, 'message' => 'Detail Post!', 'kdSewa' => $post], 200);
+    }
 }

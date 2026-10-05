@@ -5,7 +5,8 @@ const state = {
     inventaris: [],
     penyusutan: [],
     laporanpembelianinventaris: [],
-    listinvkat: []
+    listinvkat: [],
+    laporansewainventaris: [],
   };
   
 const getters = {
@@ -13,6 +14,7 @@ const getters = {
     StatePenyusutan: state => state.penyusutan,
     StateLaporanPembelianInventaris: state => state.laporanpembelianinventaris,
     StateListInvKat : state => state.listinvkat,
+    StateLaporanSewaInventaris: state => state.laporansewainventaris,
 };
 
 const actions = {  
@@ -271,6 +273,47 @@ const actions = {
         }
         // await dispatch('GetPembelian')
     },
+
+    async UpdateSewaInventaris({dispatch}, data) {
+        try {
+            await axios.post('/api/update/sewa-inventaris', data)
+            await dispatch('GetInventaris')
+            const toast = window.Swal.mixin({ toast: true, position: 'top-center', showConfirmButton: false, timer: 3000, padding: '2em' });
+            toast.fire({ icon: 'success', title: 'Data sewa berhasil diperbarui', padding: '2em' });
+        } catch (ex) {
+            const toast = window.Swal.mixin({ toast: true, position: 'top-center', showConfirmButton: false, timer: 3000, padding: '2em' });
+            toast.fire({ title: 'Error!', text: 'Gagal memperbarui data sewa', icon: 'error', padding: '2em' });
+            throw 'error';
+        }
+    },
+
+    async CreateSewaInventaris({dispatch}, data) {
+        try {
+            const response = await axios.post('/api/sewa/inventaris', data)
+            const toast = window.Swal.mixin({ toast: true, position: 'top-center', showConfirmButton: false, timer: 3000, padding: '2em' });
+            toast.fire({ icon: 'success', title: 'Sewa berhasil tersimpan', padding: '2em' });
+            return response;
+        } catch (ex) {
+            const toast = window.Swal.mixin({ toast: true, position: 'top-center', showConfirmButton: false, timer: 3000, padding: '2em' });
+            toast.fire({ title: 'Error!', text: 'Mohon Lengkapi Data', icon: 'error', padding: '2em' });
+            throw 'error';
+        }
+    },
+
+    async GetLaporanSewaInventaris({ commit }, data) {
+        const response = await axios.post('/api/laporan/sewa-inventaris', data)
+        commit('setLaporanSewaInventaris', response.data.data)
+    },
+    async UpdateTransaksiSewaInventaris({ dispatch }, data) {
+        const response = await axios.post('/api/update/transaksi-sewa-inventaris', data)
+        await dispatch('GetInventaris')
+        return response.data
+    },
+    async DeleteTransaksiSewaInventaris({ dispatch }, data) {
+        const response = await axios.post('/api/hapus/transaksi-sewa-inventaris', data)
+        await dispatch('GetInventaris')
+        return response.data
+    },
     
 
 };
@@ -280,6 +323,9 @@ const mutations = {
     },
     setLaporanInventaris(state, li){
         state.laporanpembelianinventaris = li
+    },
+    setLaporanSewaInventaris(state, ls){
+        state.laporansewainventaris = ls
     }
     // DeleteBarang({dispatch}, id) {
     //     axios.delete(`hapus/barang/${id}`)
